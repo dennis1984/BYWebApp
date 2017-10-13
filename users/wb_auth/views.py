@@ -3,17 +3,17 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
 
-from users.wx_auth.serializers import (AccessTokenSerializer,
+from users.wb_auth.serializers import (AccessTokenSerializer,
                                        RandomStringSerializer,
                                        Oauth2AccessTokenSerializer,
                                        Oauth2RefreshTokenSerializer)
-from users.wx_auth.models import (WXRandomString,
+from users.wb_auth.models import (WBRandomString,
                                   Oauth2_Application,
                                   Oauth2_RefreshToken,
                                   Oauth2_AccessToken)
-from users.wx_auth.forms import AuthCallbackForm
-from users.wx_auth import settings as wx_auth_settings
-from users.serializers import WXUserSerializer
+from users.wb_auth.forms import AuthCallbackForm
+from users.wb_auth import settings as wb_auth_settings
+from users.serializers import WBUserSerializer
 from users.models import User
 from horizon.views import APIView
 from horizon.http_requests import send_http_request
@@ -28,20 +28,20 @@ import json
 
 class AuthCallback(APIView):
     """
-    微信用户授权后回调
+    微博用户授权后回调
     """
     def verify_random_str(self, cld):
         """
         return: true: WXRandomString instance
                 false: Exception
         """
-        instance = WXRandomString.get_object_by_random_str(cld['state'])
+        instance = WBRandomString.get_object_by_random_str(cld['state'])
         if isinstance(instance, Exception):
             return Exception(('Error', 'The random string is not existed.'))
         return instance
 
-    def get_user_by_open_id(self, out_open_id):
-        kwargs = {'out_open_id': out_open_id}
+    def get_user_by_uid(self, uid):
+        kwargs = {'wb_uid': uid}
         return User.get_object(**kwargs)
 
     def mark_user_login(self, user):
@@ -54,7 +54,7 @@ class AuthCallback(APIView):
 
     def post(self, request, *args, **kwargs):
         """
-        接受微信跳转页面传过来的code票据
+        接受微博跳转页面传过来的code票据
         """
         form = AuthCallbackForm(request.data)
         if not form.is_valid():
@@ -71,9 +71,9 @@ class AuthCallback(APIView):
             pass
 
         # 获取access token
-        access_token_params = wx_auth_settings.WX_AUTH_PARAMS['get_access_token']
+        access_token_params = wb_auth_settings.WB_AUTH_PARAMS['get_access_token']
         access_token_params['code'] = cld['code']
-        access_token_url = wx_auth_settings.WX_AUTH_URLS['get_access_token']
+        access_token_url = wb_auth_settings.WB_AUTH_URLS['get_access_token']
         result = send_http_request(access_token_url, access_token_params)
         if isinstance(result, Exception) or not getattr(result, 'text'):
             return Response({'Detail': result.args},
@@ -92,11 +92,11 @@ class AuthCallback(APIView):
             return Response({'Detail': serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # 获取微信userinfo
-        userinfo_params = wx_auth_settings.WX_AUTH_PARAMS['get_userinfo']
-        userinfo_params['openid'] = response_dict['openid']
+        # 获取微博userinfo
+        userinfo_params = wb_auth_settings.WB_AUTH_PARAMS['get_userinfo']
+        userinfo_params['uid'] = response_dict['uid']
         userinfo_params['access_token'] = response_dict['access_token']
-        userinfo_url = wx_auth_settings.WX_AUTH_URLS['get_userinfo']
+        userinfo_url = wb_auth_settings.WB_AUTH_URLS['get_userinfo']
         result = send_http_request(userinfo_url, userinfo_params)
         if isinstance(result, Exception) or not getattr(result, 'text'):
             return Response({'Detail': result.args},
@@ -104,19 +104,18 @@ class AuthCallback(APIView):
 
         # 存储数据到用户表
         userinfo_response_dict = json.loads(result.text)
-        if 'openid' not in userinfo_response_dict:
+        if 'id' not in userinfo_response_dict:
             return Response({'Detail': 'Get User Info failed'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         # 检查用户是否存在
-        _user = self.get_user_by_open_id(userinfo_response_dict['openid'])
+        _user = self.get_user_by_uid(userinfo_response_dict['id'])
         if isinstance(_user, Exception):       # 新用户
-            serializer = WXUserSerializer(data=userinfo_response_dict)
+            serializer = WBUserSerializer(data=userinfo_response_dict)
             if not serializer.is_valid():
                 return Response({'Detail': serializer.errors},
                                 status=status.HTTP_400_BAD_REQUEST)
             _user = serializer.save()
-            # _user = self.get_user_by_open_id(userinfo_response_dict['openid'])
             # is_binding = False
         _token = Oauth2AccessToken().get_token(_user)
         if isinstance(_token, Exception):

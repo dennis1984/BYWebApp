@@ -3,11 +3,11 @@ from horizon import forms
 
 
 class PhoneForm(forms.Form):
-    username = forms.CharField(max_length=20, min_length=11,
-                               error_messages={
-                                   'required': u'手机号不能为空',
-                                   'min_length': u'手机号位数不够'
-                               })
+    phone = forms.CharField(max_length=20, min_length=11,
+                            error_messages={
+                                'required': u'手机号不能为空',
+                                'min_length': u'手机号位数不够'
+                            })
 
 
 class PasswordForm(forms.Form):
@@ -71,9 +71,12 @@ class SetPasswordForm(CreateUserForm):
 
 class WXAuthCreateUserForm(VerifyIdentifyingCodeForm):
     """
-    微信授权登录后绑定用户手机号
+    微信、微博授权登录后绑定用户手机号、邮箱及微博等
     """
-    # out_open_id = forms.CharField(max_length=64)
+    phone = forms.CharField(max_length=20, min_length=11, required=False)
+    identifying_code = forms.CharField(max_length=10, required=False)
+    # email = forms.EmailField(max_length=64, required=False)
+    # weibo = forms.EmailField(max_length=64, required=False)
 
 
 class AdvertListForm(forms.Form):
@@ -84,3 +87,6 @@ class AdvertListForm(forms.Form):
 class WXAuthLoginForm(forms.Form):
     callback_url = forms.CharField(max_length=256, required=False)
 
+
+class WBAuthLoginForm(forms.Form):
+    callback_url = forms.CharField(max_length=256, required=False)

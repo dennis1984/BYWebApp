@@ -1,4 +1,4 @@
-#-*- coding:utf8 -*-
+# -*- coding:utf8 -*-
 import requests
 import urllib
 from rest_framework.views import View

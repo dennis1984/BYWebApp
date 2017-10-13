@@ -26,7 +26,7 @@ class WXUserSerializer(serializers.ModelSerializer):
         if data:
             _data = copy.deepcopy(data)
             _data['gender'] = _data.pop('sex')
-            _data['out_open_id'] = _data.pop('openid')
+            _data['wx_out_open_id'] = _data.pop('openid')
             # data['head_picture'] = data.pop('headimgurl')
             # _data['phone'] = 'WX%s' % main.make_random_char_and_number_of_string(18)
             self.make_correct_params(_data)
@@ -36,8 +36,8 @@ class WXUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('phone', 'out_open_id', 'nickname', 'gender',
-                  'province', 'city', 'head_picture')
+        fields = ('email', 'weibo', 'phone', 'wb_uid', 'wx_out_open_id',
+                  'nickname', 'gender', 'province', 'city', 'head_picture')
 
     def is_valid(self, raise_exception=False):
         result = super(WXUserSerializer, self).is_valid(raise_exception)
@@ -49,7 +49,7 @@ class WXUserSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
         kwargs['channel'] = 'WX'
-        kwargs['password'] = make_password(self.validated_data['out_open_id'])
+        kwargs['password'] = make_password(self.validated_data['wx_out_open_id'])
         kwargs['head_picture'] = self.initial_data['headimgurl']
         return super(WXUserSerializer, self).save(**kwargs)
 
@@ -83,12 +83,48 @@ class WXUserSerializer(serializers.ModelSerializer):
         return source_dict
 
 
+class WBUserSerializer(serializers.ModelSerializer):
+    def __init__(self, instance=None, data=None, **kwargs):
+        if data:
+            _data = {'gender': data['gender'],
+                     'wb_uid': data['uid'],
+                     'nickname': data['screen_name'],
+                     'province': data['province'],
+                     'city': data['city'],
+                     }
+            #        'head_picture': data['avatar_large']
+            # data['head_picture'] = data.pop('headimgurl')
+            # _data['phone'] = 'WX%s' % main.make_random_char_and_number_of_string(18)
+            # self.make_correct_params(_data)
+            super(WBUserSerializer, self).__init__(data=_data, **kwargs)
+        else:
+            super(WBUserSerializer, self).__init__(instance, **kwargs)
+
+    class Meta:
+        model = User
+        fields = ('email', 'weibo', 'phone', 'wb_uid', 'wx_out_open_id',
+                  'nickname', 'gender', 'province', 'city', 'head_picture')
+
+    def is_valid(self, raise_exception=False):
+        result = super(WBUserSerializer, self).is_valid(raise_exception)
+        if not result:
+            if self.errors.keys() == ['head_picture']:
+                return True
+            return False
+        return True
+
+    def save(self, **kwargs):
+        kwargs['channel'] = 'WB'
+        kwargs['password'] = make_password(self.validated_data['wb_uid'])
+        kwargs['head_picture'] = self.initial_data['avatar_large']
+        return super(WBUserSerializer, self).save(**kwargs)
+
+
 class UserSerializer(BaseModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
-        # fields = ('id', 'phone', 'business_name', 'head_picture',
-        #           'food_court_id')
+        # fields = '__all__'
+        fields = ('id', 'phone', 'nickname', 'head_picture',)
 
     @has_permission_to_update
     def update_password(self, request, instance, validated_data):
@@ -105,19 +141,8 @@ class UserSerializer(BaseModelSerializer):
         return super(UserSerializer, self).update(instance, validated_data)
 
     def binding_phone_to_user(self, request, instance, validated_data):
-        _validated_data = {'phone': validated_data['username']}
-        instance = super(UserSerializer, self).update(instance, _validated_data)
-
-        # 同步手机号到优惠券发送记录
-        records = CouponsSendRecord.filter_objects(user_id=instance.id)
-        for record in records:
-            record.phone = _validated_data['phone']
-            try:
-                record.save()
-            except:
-                return
-
-        return instance
+        _validated_data = {'phone': validated_data['phone']}
+        return super(UserSerializer, self).update(instance, _validated_data)
 
 
 class UserInstanceSerializer(serializers.ModelSerializer):
@@ -163,3 +188,7 @@ class IdentifyingCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IdentifyingCode
         fields = '__all__'
+
+
+
+

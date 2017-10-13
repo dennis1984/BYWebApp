@@ -33,11 +33,12 @@ def days_7_plus():
     return now() + datetime.timedelta(days=7)
 
 
-def make_time_delta(days=0, minutes=0, seconds=0):
+def make_time_delta(days=0, hours=0, minutes=0, seconds=0):
     """
     设置时间增量
     """
     return now() + datetime.timedelta(days=days,
+                                      hours=hours,
                                       minutes=minutes,
                                       seconds=seconds)
 

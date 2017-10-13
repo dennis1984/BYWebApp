@@ -46,9 +46,16 @@ class User(AbstractBaseUser):
                               null=True, blank=True)
     phone = models.CharField(u'手机号', max_length=20, unique=True, db_index=True,
                              null=True, blank=True)
-    out_open_id = models.CharField(u'第三方唯一标识', max_length=64, unique=True,
-                                   db_index=True, null=True)
+    weibo = models.CharField(u'微博账户', max_length=64, unique=True,
+                             null=True, blank=True)
+    wx_out_open_id = models.CharField(u'微信第三方唯一标识', max_length=64, unique=True,
+                                      db_index=True, null=True, blank=True)
+    wb_uid = models.CharField(u'微博uid', max_length=16, unique=True, db_index=True,
+                              null=True, blank=True)
     nickname = models.CharField(u'昵称', max_length=100, null=True, blank=True)
+
+    # 角色：0: 未设定 1:新手 2：xx
+    role = models.IntegerField(u'我的角色等级', default=0)
 
     # 性别，0：未设定，1：男，2：女
     gender = models.IntegerField(u'性别', default=0)
@@ -59,9 +66,9 @@ class User(AbstractBaseUser):
                                      upload_to=HEAD_PICTURE_PATH,
                                      default=os.path.join(HEAD_PICTURE_PATH, 'noImage.png'))
 
-    # 注册渠道：客户端：YS，微信第三方：WX，QQ第三方：QQ，淘宝：TB
-    #          新浪微博：SINA_WB
-    channel = models.CharField(u'注册渠道', max_length=20, default='YS')
+    # 注册渠道：客户端：WEB，微信第三方：WX，QQ第三方：QQ，淘宝：TB
+    #         新浪微博：WB
+    channel = models.CharField(u'注册渠道', max_length=20, default='WEB')
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     date_joined = models.DateTimeField(u'创建时间', default=now)
