@@ -230,14 +230,14 @@ WEB_URL_FIX = os.path.join('http://', DOMAIN_NAME)
 
 # 图片根目录
 BUSINESS_PICTURE_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static', 'business', 'picture')
-CONSUMER_PICTURE_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static', 'consumer', 'picture')
+WEB_PICTURE_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static', 'web', 'picture')
 
 PICTURE_DIRS = {
-    'consumer': {
-        'head_picture': os.path.join(CONSUMER_PICTURE_ROOT, 'head_picture'),   # 用户头像图片目录
-        'qrcode': os.path.join(CONSUMER_PICTURE_ROOT, 'qrcode'),               # 二维码图片目录
+    'web': {
+        'head_picture': os.path.join(WEB_PICTURE_ROOT, 'head_picture'),   # 用户头像图片目录
+        'media': os.path.join(WEB_PICTURE_ROOT, 'media'),                 # 资源图片目录
     },
-    'business': {
+    'admin': {
         'dishes': os.path.join(BUSINESS_PICTURE_ROOT, 'dishes'),               # 菜品图片目录
         'head_picture': os.path.join(BUSINESS_PICTURE_ROOT, 'head_picture'),   # 用户头像图片目录
         'qrcode': os.path.join(BUSINESS_PICTURE_ROOT, 'qrcode'),               # 二维码图片目录
