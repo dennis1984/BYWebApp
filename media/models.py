@@ -7,7 +7,9 @@ from django.conf import settings
 from django.db import transaction
 from decimal import Decimal
 
-from horizon.models import model_to_dict, BaseManager
+from horizon.models import (model_to_dict,
+                            BaseManager,
+                            get_perfect_filter_params)
 
 import json
 import datetime
@@ -57,24 +59,16 @@ class Media(models.Model):
     objects = BaseManager()
 
     class Meta:
-        db_table = 'by_collect'
-        unique_together = ('user_id', 'dishes_id', 'status')
-        ordering = ['-created']
+        db_table = 'by_media'
+        # unique_together = ('user_id', 'dishes_id', 'status')
+        ordering = ['-updated']
 
     def __unicode__(self):
         return self.title
 
     @classmethod
-    def is_collected(cls, request, dishes_id):
-        kwargs = {'user_id': request.user.id,
-                  'dishes_id': dishes_id}
-        result = cls.get_object(**kwargs)
-        if isinstance(result, Exception):
-            return False
-        return True
-
-    @classmethod
     def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.get(**kwargs)
         except Exception as e:
@@ -82,12 +76,8 @@ class Media(models.Model):
 
     @classmethod
     def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
-
-    @classmethod
-    def get_collect_list_with_user(cls, request):
-        kwargs = {'user_id': request.user.id}
-        return cls.filter_objects(**kwargs)
