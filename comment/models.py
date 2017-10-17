@@ -4,9 +4,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.timezone import now
 
-from orders.models import ConsumeOrders
 from horizon.models import model_to_dict, get_perfect_detail_by_detail
-from Business_App.bz_dishes.models import Dishes
 
 import json
 import datetime
@@ -93,9 +91,9 @@ class Comment(models.Model):
             return Exception('Params data is error.')
 
         details = []
-        for dishes_detail in dishes_comment:
-            perfect_detail = get_perfect_detail_by_detail(Dishes, dishes_detail)
-            details.append(perfect_detail)
+        # for dishes_detail in dishes_comment:
+        #     perfect_detail = get_perfect_detail_by_detail(Dishes, dishes_detail)
+        #     details.append(perfect_detail)
         return details
 
 

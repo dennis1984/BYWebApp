@@ -1,5 +1,5 @@
-#-*- coding:utf8 -*-
-from users.models import ConsumerUser
+# -*- coding:utf8 -*-
+from users.models import User
 from rest_framework.request import Request
 from django.db.models import Model
 

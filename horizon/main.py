@@ -99,7 +99,7 @@ def timezoneStringTostring(timezone_string):
     return str(timezone)
 
 
-QRCODE_PICTURE_PATH = settings.PICTURE_DIRS['consumer']['qrcode']
+QRCODE_PICTURE_PATH = settings.PICTURE_DIRS['admin']['qrcode']
 
 
 def make_qrcode(source_data, save_path=QRCODE_PICTURE_PATH, version=5):

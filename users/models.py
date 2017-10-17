@@ -38,7 +38,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-HEAD_PICTURE_PATH = settings.PICTURE_DIRS['consumer']['head_picture']
+HEAD_PICTURE_PATH = settings.PICTURE_DIRS['web']['head_picture']
 
 
 class User(AbstractBaseUser):
@@ -159,7 +159,7 @@ class IdentifyingCode(models.Model):
     expires = models.DateTimeField(u'过期时间', default=minutes_15_plus)
 
     class Meta:
-        db_table = 'bz_identifying_code'
+        db_table = 'by_identifying_code'
         ordering = ['-expires']
 
     def __unicode__(self):

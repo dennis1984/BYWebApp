@@ -6,7 +6,6 @@ from django.utils.timezone import now
 from django.db import transaction
 from decimal import Decimal
 
-from orders.models import PayOrders, ORDERS_ORDERS_TYPE
 from horizon.models import model_to_dict
 
 import json

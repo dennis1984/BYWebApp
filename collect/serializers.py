@@ -4,7 +4,6 @@ from horizon.decorators import has_permission_to_update
 from horizon.serializers import (BaseSerializer,
                                  BaseModelSerializer,
                                  BaseListSerializer)
-from Business_App.bz_dishes.models import Dishes
 from rest_framework import serializers
 
 from horizon.main import make_random_number_of_string

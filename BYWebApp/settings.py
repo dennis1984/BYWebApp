@@ -165,7 +165,7 @@ USE_L10N = True
 USE_TZ = False
 
 
-AUTH_USER_MODEL = 'users.ConsumerUser'
+AUTH_USER_MODEL = 'users.User'
 
 AUTHENTICATION_BACKENDS = (
     # 'django.contrib.auth.backends.ModelBackend',
