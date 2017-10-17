@@ -94,6 +94,9 @@ class Attribute(models.Model):
 
 
 class Tag(models.Model):
+    """
+    标签
+    """
     name = models.CharField('标签名称', max_length=64, unique=True, db_index=True)
 
     attribute_id = models.IntegerField('匹配属性ID')
@@ -107,7 +110,7 @@ class Tag(models.Model):
     objects = BaseManager()
 
     class Meta:
-        db_table = 'by_attribute'
+        db_table = 'by_tag'
         ordering = ['-update']
 
     def __unicode__(self):

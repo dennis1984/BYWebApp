@@ -1,5 +1,4 @@
 # -*- coding:utf8 -*-
-from PAY.wxpay import settings as wx_settings
 from oauthlib.common import generate_token
 from django.conf import settings
 from django.utils.timezone import now
@@ -208,7 +207,7 @@ def make_sign_for_wxpay(source_dict):
     for item in key_list:
         string_param += '%s=%s&' % (item['key'], item['value'])
         # 把密钥和其它参数组合起来
-    string_param += 'key=%s' % wx_settings.KEY
+    # string_param += 'key=%s' % wx_settings.KEY
     md5_string = md5(string_param.encode('utf8')).hexdigest()
     return md5_string.upper()
 
