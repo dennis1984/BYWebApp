@@ -33,7 +33,7 @@ class Dimension(models.Model):
     class Meta:
         db_table = 'by_dimension'
         # unique_together = ('user_id', 'dishes_id', 'status')
-        ordering = ['-update']
+        ordering = ['-updated']
 
     def __unicode__(self):
         return self.name
@@ -71,7 +71,7 @@ class Attribute(models.Model):
 
     class Meta:
         db_table = 'by_attribute'
-        ordering = ['-update']
+        ordering = ['-updated']
 
     def __unicode__(self):
         return self.name
@@ -111,7 +111,7 @@ class Tag(models.Model):
 
     class Meta:
         db_table = 'by_tag'
-        ordering = ['-update']
+        ordering = ['-updated']
 
     def __unicode__(self):
         return self.name

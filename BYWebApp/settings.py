@@ -52,9 +52,11 @@ INSTALLED_APPS = [
     'comment',
     'setup',
     'common',
+    'dimensions',
+    'media',
 
     # 允许跨域请求
-    'corsheaders',
+    # 'corsheaders',
 ]
 
 MIDDLEWARE = [
