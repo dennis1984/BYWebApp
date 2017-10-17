@@ -60,6 +60,7 @@ class Attribute(models.Model):
     属性
     """
     name = models.CharField('属性名称', max_length=64, unique=True, db_index=True)
+    description = models.CharField('描述', max_length=256, null=True, blank=True)
     dimension_id = models.IntegerField('所属维度ID')
 
     # 资源状态：1：正常 非1：已删除
@@ -97,7 +98,8 @@ class Tag(models.Model):
     """
     标签
     """
-    name = models.CharField('标签名称', max_length=64, unique=True, db_index=True)
+    name = models.CharField('标签名称', max_length=64, db_index=True)
+    description = models.CharField('描述', max_length=256, null=True, blank=True)
 
     attribute_id = models.IntegerField('匹配属性ID')
     match_value = models.FloatField('与属性匹配值', default=1.0)
@@ -111,6 +113,7 @@ class Tag(models.Model):
 
     class Meta:
         db_table = 'by_tag'
+        unique_together = ['name', 'attribute_id']
         ordering = ['-updated']
 
     def __unicode__(self):
