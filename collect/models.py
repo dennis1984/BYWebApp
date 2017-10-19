@@ -6,20 +6,10 @@ from django.utils.timezone import now
 from django.db import transaction
 from decimal import Decimal
 
-from horizon.models import model_to_dict
+from horizon.models import model_to_dict, BaseManager
 
 import json
 import datetime
-
-
-class CollectManager(models.Manager):
-    def get(self, *args, **kwargs):
-        object_data = super(CollectManager, self).get(status=1, *args, **kwargs)
-        return object_data
-
-    def filter(self, *args, **kwargs):
-        object_data = super(CollectManager, self).filter(status=1, *args, **kwargs)
-        return object_data
 
 
 class Collect(models.Model):
@@ -37,12 +27,12 @@ class Collect(models.Model):
     created = models.DateTimeField('创建时间', default=now)
     updated = models.DateTimeField('更新时间', auto_now=True)
 
-    objects = CollectManager()
+    objects = BaseManager()
 
     class Meta:
         db_table = 'by_collect'
         unique_together = ('user_id', 'type', 'status')
-        ordering = ['-created']
+        ordering = ['-updated']
 
     def __unicode__(self):
         return '%s:%s:%s' % (self.user_id, self.type, self.collection_id)

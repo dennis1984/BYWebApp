@@ -239,6 +239,7 @@ PICTURE_DIRS = {
     'web': {
         'head_picture': os.path.join(WEB_PICTURE_ROOT, 'head_picture'),   # 用户头像图片目录
         'media': os.path.join(WEB_PICTURE_ROOT, 'media'),                 # 资源图片目录
+        'tag': os.path.join(WEB_PICTURE_ROOT, 'tag'),
     },
     'admin': {
         'dishes': os.path.join(BUSINESS_PICTURE_ROOT, 'dishes'),               # 菜品图片目录
