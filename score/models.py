@@ -10,23 +10,21 @@ import json
 import datetime
 
 
-class Comment(models.Model):
+class Score(models.Model):
     """
-    用户点评
+    用户积分
     """
-    user_id = models.IntegerField('用户ID')
-    media_id = models.IntegerField('媒体资源ID', db_index=True)
-    content = models.CharField('点评内容', max_length=512)
+    user_id = models.IntegerField('用户ID', unique=True, db_index=True)
+    score = models.IntegerField('积分', default=0)
 
-    reply_id = models.IntegerField('管理员回复评论ID', null=True)
     created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
 
     class Meta:
-        db_table = 'by_comment'
-        unique_together = ['user_id', 'media_id']
+        db_table = 'by_score'
 
     def __unicode__(self):
-        return '%s:%s' % (self.user_id, self.media_id)
+        return '%s' % self.user_id
 
     @classmethod
     def get_object(cls, **kwargs):
@@ -43,21 +41,22 @@ class Comment(models.Model):
             return e
 
 
-class ReplyComment(models.Model):
+class ScoreRecord(models.Model):
     """
-    管理员回复点评
+    积分记录
     """
-    comment_id = models.IntegerField(u'被回复点评的记录ID', unique=True)
-    user_id = models.IntegerField('管理员用户ID')
+    user_id = models.IntegerField('用户ID')
 
-    messaged = models.TextField('评价留言', null=True, blank=True)
+    # 积分动作：0：未指定 1：获取积分（发表点评可获得积分）  2：消耗积分（下载报告需要消耗积分）
+    action = models.IntegerField('消耗/获取积分', default=0)
     created = models.DateTimeField('创建时间', default=now)
 
     class Meta:
-        db_table = 'by_reply_comment'
+        db_table = 'by_score_record'
+        ordering = ['-created']
 
     def __unicode__(self):
-        return str(self.comment_id)
+        return str(self.user_id)
 
     @classmethod
     def get_object(cls, **kwargs):

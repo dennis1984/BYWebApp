@@ -27,20 +27,25 @@ class Collect(models.Model):
     用户收藏
     """
     user_id = models.IntegerField('用户ID', db_index=True)
-    dishes_id = models.IntegerField('菜品ID',)
-    # 收藏品状态：1：有效 2：已删除 3：其他
+    # 收藏类型：0：未指定  1：案例  2：资源  3：资讯
+    type = models.IntegerField('收藏类型', default=0)
+    # 收藏品ID
+    collection_id = models.IntegerField('收藏品ID')
+
+    # 收藏品状态：1：有效 非：已取消收藏
     status = models.IntegerField('收藏品状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
 
     objects = CollectManager()
 
     class Meta:
         db_table = 'by_collect'
-        unique_together = ('user_id', 'dishes_id', 'status')
+        unique_together = ('user_id', 'type', 'status')
         ordering = ['-created']
 
     def __unicode__(self):
-        return '%s:%s' % (self.user_id, self.dishes_id)
+        return '%s:%s:%s' % (self.user_id, self.type, self.collection_id)
 
     @classmethod
     def is_collected(cls, request, dishes_id):

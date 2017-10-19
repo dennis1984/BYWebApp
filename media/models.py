@@ -53,7 +53,7 @@ class Media(models.Model):
     # 监制：数据格式为JSON字符串，如：['欧文']
     producer = models.CharField('监制', max_length=256)
     # 出品公司：数据格式为JSON字符串，如：['华文映像', '福星传媒']
-    production_company = models.CharField('出品公司', )
+    production_company = models.CharField('出品公司', max_length=256)
 
     recorded_time = models.DateTimeField('开机时间')
     air_time = models.DateTimeField('播出时间')

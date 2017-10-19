@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'common',
     'dimensions',
     'media',
+    'score',
 
     # 允许跨域请求
     # 'corsheaders',
