@@ -147,7 +147,7 @@ class TagConfigure(models.Model):
     """
     标签配置
     """
-    tag_id = models.CharField('标签ID', db_index=True)
+    tag_id = models.IntegerField('标签ID', db_index=True)
 
     attribute_id = models.IntegerField('匹配属性ID')
     match_value = models.FloatField('与属性匹配值', default=1.0)

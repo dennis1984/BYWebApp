@@ -34,6 +34,11 @@ class Media(models.Model):
     # 项目进度  1：筹备期 2：策划期 3：xxx
     progress = models.IntegerField('项目进度', default=1)
 
+    # 模板类型 1：模板1  2：模板2
+    template_type = models.IntegerField('展示页面模板类型', default=1)
+    # 资源概要展示类型：1：电影、剧集  2：综艺、活动
+    outline_type = models.IntegerField('资源概要展示类型', default=1)
+
     # 资源热度
     temperature = models.FloatField('热度')
     # 票房预测
@@ -55,8 +60,15 @@ class Media(models.Model):
     # 出品公司：数据格式为JSON字符串，如：['华文映像', '福星传媒']
     production_company = models.CharField('出品公司', max_length=256)
 
+    # 预计开机/录制时间
     recorded_time = models.DateTimeField('开机时间')
+    # 预计上映/播出时间
     air_time = models.DateTimeField('播出时间')
+    # 预计播出平台：数据格式为JSON字符串，如：['一线卫视', '视频网络渠道']
+    play_platform = models.CharField('播出平台', max_length=256)
+
+    # 运营标记 0: 未设定 1：热门
+    mark = models.IntegerField('运营标记', default=0)
 
     picture_profile = models.ImageField('简介图片', max_length=200,
                                         upload_to=MEDIA_PICTURE_PATH,
