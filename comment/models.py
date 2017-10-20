@@ -4,7 +4,9 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.timezone import now
 
-from horizon.models import model_to_dict, get_perfect_detail_by_detail
+from horizon.models import (model_to_dict,
+                            get_perfect_filter_params,
+                            BaseManager)
 
 import json
 import datetime
@@ -15,21 +17,35 @@ class Comment(models.Model):
     用户点评
     """
     user_id = models.IntegerField('用户ID')
-    media_id = models.IntegerField('媒体资源ID', db_index=True)
+
+    # 点评资源类型： 1：资源 2：案例 3：资讯
+    source_type = models.IntegerField('点评资源类型', default=1)
+    # 资源数据ID
+    source_id = models.IntegerField('点评资源ID')
     content = models.CharField('点评内容', max_length=512)
 
     reply_id = models.IntegerField('管理员回复评论ID', null=True)
+    like = models.IntegerField('喜欢数量', default=0)
+    dislike = models.IntegerField('不喜欢数量', default=0)
+
+    # 数据状态：1：正常 非1：已删除
+    status = models.IntegerField('数据状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
+
+    objects = BaseManager()
 
     class Meta:
         db_table = 'by_comment'
-        unique_together = ['user_id', 'media_id']
+        unique_together = ['user_id', 'source_type', 'source_id']
+        index_together = ['source_type', 'source_id']
+        ordering = ['-created']
 
     def __unicode__(self):
-        return '%s:%s' % (self.user_id, self.media_id)
+        return '%s:%s:%s' % (self.user_id, self.source_type, self.source_id)
 
     @classmethod
     def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.get(**kwargs)
         except Exception as e:
@@ -37,6 +53,7 @@ class Comment(models.Model):
 
     @classmethod
     def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.filter(**kwargs)
         except Exception as e:

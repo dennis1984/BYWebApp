@@ -25,10 +25,13 @@ class PasswordForm(forms.Form):
     #                                    })
 
 
-class SendIdentifyingCodeForm(PhoneForm):
+class SendIdentifyingCodeForm(forms.Form):
     """
-    发送手机验证码（未登录状态）
+    发送手机/邮箱验证码（未登录状态）
     """
+    username_type = forms.ChoiceField(choices=(('phone', 1),
+                                               ('email', 2)))
+    username = forms.CharField(max_length=200)
     method = forms.ChoiceField(choices=(('register', 1),
                                         ('forget_password', 2)),
                                error_messages={
@@ -55,12 +58,24 @@ class UpdateUserInfoForm(forms.Form):
     province = forms.CharField(max_length=16, required=False)
     city = forms.CharField(max_length=32, required=False)
     head_picture = forms.ImageField(required=False)
+    role_id = forms.IntegerField(required=False)
 
 
-class CreateUserForm(VerifyIdentifyingCodeForm, PasswordForm):
+class CreateUserForm(PasswordForm):
     """
     用户注册
     """
+    username_type = forms.ChoiceField(choices=(('phone', 1),
+                                               ('email', 2)))
+    username = forms.CharField(max_length=200)
+    identifying_code = forms.CharField(min_length=6, max_length=10,
+                                       error_messages={
+                                           'required': u'验证码不能为空'
+                                       })
+
+
+class EmailForm(forms.Form):
+    email = forms.EmailField(max_length=200)
 
 
 class SetPasswordForm(CreateUserForm):

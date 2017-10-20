@@ -1,3 +1,4 @@
+# -*- coding:utf8 -*-
 from users.models import User
 from django.utils.timezone import now
 
@@ -5,7 +6,10 @@ from django.utils.timezone import now
 class UserBackend(object):
     def authenticate(self, username=None, password=None):
         try:
-            user = User.objects.get(phone=username, is_active=1)
+            try:
+                user = User.objects.get(phone=username, is_active=1)
+            except User.DoesNotExist:
+                user = User.objects.get(email=username, is_active=1)
         except User.DoesNotExist:
             pass
         else:

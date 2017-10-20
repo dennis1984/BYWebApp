@@ -5,7 +5,9 @@ from django.utils.timezone import now
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from oauth2_provider.models import AccessToken
-from horizon.models import model_to_dict
+from horizon.models import (model_to_dict,
+                            get_perfect_filter_params,
+                            BaseManager)
 from horizon.main import minutes_15_plus
 import datetime
 import re
@@ -13,7 +15,7 @@ import os
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, username, password, **kwargs):
+    def create_user(self, username_type, username,  password, **kwargs):
         """
         创建用户，
         参数包括：username （手机号）
@@ -24,13 +26,21 @@ class UserManager(BaseUserManager):
         if len(password) < 6:
             raise ValueError('Password length must not less then 6!')
 
-        user = self.model(phone=username)
+        if username_type == 'phone':
+            user = self.model(phone=username)
+        elif username_type == 'email':
+            user = self.model(email=username)
+        else:
+            raise ValueError('Param "username_type" is invalid.')
+
+        # user = self.model(phone=username)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
     def create_superuser(self, username, password, **kwargs):
-        user = self.create_user(username=username,
+        user = self.create_user(username_type='phone',
+                                username=username,
                                 password=password,
                                 **kwargs)
         user.is_admin = True
@@ -46,16 +56,14 @@ class User(AbstractBaseUser):
                               null=True, blank=True)
     phone = models.CharField(u'手机号', max_length=20, unique=True, db_index=True,
                              null=True, blank=True)
-    weibo = models.CharField(u'微博账户', max_length=64, unique=True,
-                             null=True, blank=True)
     wx_out_open_id = models.CharField(u'微信第三方唯一标识', max_length=64, unique=True,
                                       db_index=True, null=True, blank=True)
     wb_uid = models.CharField(u'微博uid', max_length=16, unique=True, db_index=True,
                               null=True, blank=True)
     nickname = models.CharField(u'昵称', max_length=100, null=True, blank=True)
 
-    # 角色：0: 未设定 1:新手 2：xx
-    role = models.IntegerField(u'我的角色等级', default=0)
+    # 角色
+    role = models.CharField(u'我的角色', max_length=32, null=True, blank=True)
 
     # 性别，0：未设定，1：男，2：女
     gender = models.IntegerField(u'性别', default=0)
@@ -102,10 +110,20 @@ class User(AbstractBaseUser):
 
     @classmethod
     def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.get(**kwargs)
-        except cls.DoesNotExist as e:
-            return Exception(e)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def get_object_by_username(cls, username_type, username):
+        if username_type == 'phone':
+            return cls.get_object(phone=username)
+        elif username_type == 'email':
+            return cls.get_object(email=username)
+        else:
+            return Exception('Params is incorrect.')
 
     @classmethod
     def get_user_detail(cls, request):
@@ -154,8 +172,8 @@ def make_token_expire(request):
 
 
 class IdentifyingCode(models.Model):
-    phone = models.CharField(u'手机号', max_length=20, db_index=True)
-    identifying_code = models.CharField(u'手机验证码', max_length=6)
+    phone_or_email = models.CharField(u'手机号/邮箱', max_length=200, db_index=True)
+    identifying_code = models.CharField(u'验证码', max_length=6)
     expires = models.DateTimeField(u'过期时间', default=minutes_15_plus)
 
     class Meta:
@@ -163,13 +181,43 @@ class IdentifyingCode(models.Model):
         ordering = ['-expires']
 
     def __unicode__(self):
-        return self.phone
+        return self.phone_or_email
 
     @classmethod
-    def get_object_by_phone(cls, phone):
-        instances = cls.objects.filter(**{'phone': phone, 'expires__gt': now()})
+    def get_object_by_phone_or_email(cls, username):
+        instances = cls.objects.filter(**{'phone_or_email': username,
+                                          'expires__gt': now()})
         if instances:
             return instances[0]
         else:
             return None
 
+
+class Role(models.Model):
+    """
+    用户角色
+    """
+    name = models.CharField('角色名称', max_length=32)
+    created = models.DateTimeField('创建时间')
+
+    class Meta:
+        db_table = 'by_user_role'
+
+    def __unicode__(self):
+        return self.name
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e
