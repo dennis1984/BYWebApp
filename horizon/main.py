@@ -15,6 +15,13 @@ import base64
 import random
 import time
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.utils import COMMASPACE, formatdate
+from email import encoders
+
 
 def minutes_5_plus():
     return now() + datetime.timedelta(minutes=5)
@@ -308,3 +315,32 @@ def send_message_to_phone(params, receive_phones, template_name=None):
     query_str = '%s&ParamString=%s' % (urllib.urlencode(query), params_query)
 
     return send_http_request(url, query_str, add_header={'Authorization': 'APPCODE %s' % AppCode})
+
+
+def send_email(to, subject, text, files=()):
+    """
+    发送邮件
+    使用影联客的邮箱用户名和密码
+    """
+    server = {'host': 'smtp.163.com',
+              'user': 'year2005706',
+              'password': 'xxx',
+              'postfix': '163.com'}
+
+    _from = '%s@%s' % (server['user'], server['postfix'])
+
+    message = MIMEMultipart()
+    message['From'] = _from
+    message['Subject'] = subject
+    message['To'] = COMMASPACE.join(to)
+    message['Date'] = formatdate(localtime=True)
+    message.attach(MIMEText(text))
+
+    smtp = smtplib.SMTP(server['host'])
+    smtp.login(server['user'], server['password'])
+    smtp.sendmail(_from, to, message.as_string())
+    smtp.close()
+
+    return
+
+
