@@ -42,7 +42,7 @@ class Report(models.Model):
 
     class Meta:
         db_table = 'by_report'
-        unique_together = ('media', 'status')
+        unique_together = ('media_id', 'status')
         ordering = ['-updated']
 
     def __unicode__(self):

@@ -33,7 +33,7 @@ class Collect(models.Model):
 
     class Meta:
         db_table = 'by_collect'
-        unique_together = ('user_id', 'type', 'status')
+        unique_together = ('user_id', 'source_type', 'source_id', 'status')
         ordering = ['-updated']
 
     def __unicode__(self):
