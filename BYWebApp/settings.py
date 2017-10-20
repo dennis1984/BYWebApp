@@ -173,7 +173,7 @@ AUTH_USER_MODEL = 'users.User'
 
 AUTHENTICATION_BACKENDS = (
     # 'django.contrib.auth.backends.ModelBackend',
-    'users.auth.ConsumerUserBackend',
+    'users.auth.UserBackend',
 )
 
 # Static files (CSS, JavaScript, Images)
