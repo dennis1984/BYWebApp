@@ -18,9 +18,7 @@ import time
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
 from email.utils import COMMASPACE, formatdate
-from email import encoders
 
 
 def minutes_5_plus():
@@ -322,21 +320,25 @@ def send_email(to, subject, text, files=()):
     发送邮件
     使用影联客的邮箱用户名和密码
     """
+    assert isinstance(to, (list, tuple))
+
     server = {'host': 'smtp.163.com',
+              'port': 465,
               'user': 'year2005706',
               'password': 'xxx',
+              'prefix': '影联客',
               'postfix': '163.com'}
 
     _from = '%s@%s' % (server['user'], server['postfix'])
 
     message = MIMEMultipart()
-    message['From'] = _from
+    message['From'] = '%s<%s>' % (server['prefix'], _from)
     message['Subject'] = subject
     message['To'] = COMMASPACE.join(to)
     message['Date'] = formatdate(localtime=True)
-    message.attach(MIMEText(text))
+    message.attach(MIMEText(text, _subtype='plain', _charset='utf8'))
 
-    smtp = smtplib.SMTP(server['host'])
+    smtp = smtplib.SMTP_SSL(server['host'], server['port'])
     smtp.login(server['user'], server['password'])
     smtp.sendmail(_from, to, message.as_string())
     smtp.close()
