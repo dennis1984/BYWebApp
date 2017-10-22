@@ -2,7 +2,6 @@
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
-from users.models import User, IdentifyingCode
 from django.conf import settings
 
 from horizon.models import model_to_dict
@@ -12,6 +11,8 @@ from horizon.serializers import (BaseListSerializer,
                                  BaseModelSerializer,
                                  BaseSerializer,
                                  timezoneStringTostring)
+from users.models import User, IdentifyingCode, Role
+
 from Admin_App.ad_coupons.models import CouponsSendRecord
 
 import urllib
@@ -21,7 +22,7 @@ import re
 import copy
 
 
-class WXUserSerializer(serializers.ModelSerializer):
+class WXUserSerializer(BaseModelSerializer):
     def __init__(self, instance=None, data=None, **kwargs):
         if data:
             _data = copy.deepcopy(data)
@@ -83,7 +84,7 @@ class WXUserSerializer(serializers.ModelSerializer):
         return source_dict
 
 
-class WBUserSerializer(serializers.ModelSerializer):
+class WBUserSerializer(BaseModelSerializer):
     def __init__(self, instance=None, data=None, **kwargs):
         if data:
             _data = {'gender': data['gender'],
@@ -148,7 +149,7 @@ class UserSerializer(BaseModelSerializer):
         return super(UserSerializer, self).update(instance, _validated_data)
 
 
-class UserInstanceSerializer(serializers.ModelSerializer):
+class UserInstanceSerializer(BaseModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'phone', 'nickname', 'head_picture',)
@@ -172,8 +173,8 @@ class UserDetailSerializer(BaseSerializer):
     @property
     def data(self):
         _data = super(UserDetailSerializer, self).data
-        if _data.get('pk', None):
-            _data['member_id'] = 'NO.%06d' % _data['pk']
+        # if _data.get('pk', None):
+        #     _data['member_id'] = 'NO.%06d' % _data['pk']
         return _data
 
 
@@ -181,17 +182,17 @@ class UserListSerializer(BaseListSerializer):
     child = UserDetailSerializer()
 
 
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = ('url', 'name')
-
-
-class IdentifyingCodeSerializer(serializers.ModelSerializer):
+class IdentifyingCodeSerializer(BaseModelSerializer):
     class Meta:
         model = IdentifyingCode
         fields = '__all__'
 
 
+class RoleDetailSerializer(BaseSerializer):
+    class Meta:
+        model = Role
+        fields = '__all__'
 
 
+class RoleListSerializer(BaseListSerializer):
+    child = RoleDetailSerializer()

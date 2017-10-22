@@ -8,7 +8,8 @@ from users.serializers import (UserSerializer,
                                UserInstanceSerializer,
                                UserDetailSerializer,
                                UserListSerializer,
-                               IdentifyingCodeSerializer)
+                               IdentifyingCodeSerializer,
+                               RoleListSerializer)
 from users.permissions import IsOwnerOrReadOnly
 from users.models import (User,
                           make_token_expire,
@@ -427,6 +428,26 @@ class AuthLogout(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         make_token_expire(request)
         return Response(status=status.HTTP_200_OK)
+
+
+class RoleList(generics.GenericAPIView):
+    """
+    用户角色列表
+    """
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_role_list(self):
+        return Role.filter_objects()
+
+    def post(self, request, *args, **kwargs):
+        role = self.get_role_list()
+
+        serializer = RoleListSerializer(role)
+        data_list = serializer.list_data()
+        if isinstance(data_list, Exception):
+            return Response({'Detail': data_list.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(data_list, status=status.HTTP_200_OK)
 
 
 class UserViewSet(viewsets.ModelViewSet):
