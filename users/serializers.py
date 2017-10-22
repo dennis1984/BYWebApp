@@ -140,8 +140,11 @@ class UserSerializer(BaseModelSerializer):
             validated_data['password'] = make_password(validated_data['password'])
         return super(UserSerializer, self).update(instance, validated_data)
 
-    def binding_phone_to_user(self, request, instance, validated_data):
-        _validated_data = {'phone': validated_data['phone']}
+    def binding_phone_or_email_to_user(self, request, instance, validated_data):
+        if validated_data['username_type'] == 'phone':
+            _validated_data = {'phone': validated_data['phone']}
+        else:
+            _validated_data = {'email': validated_data['email']}
         return super(UserSerializer, self).update(instance, _validated_data)
 
 

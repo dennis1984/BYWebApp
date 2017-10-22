@@ -39,6 +39,15 @@ class SendIdentifyingCodeForm(forms.Form):
                                })
 
 
+class SendIdentifyingCodeWithLoginForm(forms.Form):
+    """
+    发送手机/邮箱验证码（登录状态）
+    """
+    username_type = forms.ChoiceField(choices=(('phone', 1),
+                                               ('email', 2)))
+    # username = forms.CharField(max_length=200)
+
+
 class VerifyIdentifyingCodeForm(PhoneForm):
     """
     验证手机验证码
@@ -84,14 +93,14 @@ class SetPasswordForm(CreateUserForm):
     """
 
 
-class WXAuthCreateUserForm(VerifyIdentifyingCodeForm):
+class BindingActionForm(forms.Form):
     """
-    微信、微博授权登录后绑定用户手机号、邮箱及微博等
+    绑定用户手机号、邮箱等
     """
-    phone = forms.CharField(max_length=20, min_length=11, required=False)
+    username_type = forms.ChoiceField(choices=(('phone', 1),
+                                               ('email', 2)))
+    username = forms.CharField(max_length=200)
     identifying_code = forms.CharField(max_length=10, required=False)
-    # email = forms.EmailField(max_length=64, required=False)
-    # weibo = forms.EmailField(max_length=64, required=False)
 
 
 class AdvertListForm(forms.Form):

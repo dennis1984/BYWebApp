@@ -97,16 +97,22 @@ class User(AbstractBaseUser):
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
 
-    @property
-    def is_binding(self):
-        re_com = re.compile(r'^1[0-9]{10}$')
-        try:
-            result = re_com.match(self.phone)
-        except:
-            return False
-        if result is None:
-            return False
-        return True
+    def is_binding(self, username_type):
+        # re_com = re.compile(r'^1[0-9]{10}$')
+        # try:
+        #     result = re_com.match('%s' % self.phone)
+        # except:
+        #     return False
+        # if result is None:
+        #     return False
+        # return True
+        if username_type == 'phone':
+            if self.phone:
+                return True
+        elif username_type == 'email':
+            if self.email:
+                return True
+        return False
 
     @classmethod
     def get_object(cls, **kwargs):

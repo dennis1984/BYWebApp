@@ -16,11 +16,11 @@ from users.models import (User,
                           Role)
 from users.forms import (CreateUserForm,
                          SendIdentifyingCodeForm,
+                         SendIdentifyingCodeWithLoginForm,
                          VerifyIdentifyingCodeForm,
                          UpdateUserInfoForm,
                          SetPasswordForm,
-                         WXAuthCreateUserForm,
-                         AdvertListForm,
+                         BindingActionForm,
                          WXAuthLoginForm,
                          WBAuthLoginForm,
                          PhoneForm,
@@ -36,7 +36,7 @@ import urllib
 
 def verify_identifying_code(params_dict):
     """
-    验证手机验证码
+    验证验证码
     """
     username = params_dict['username']
     identifying_code = params_dict['identifying_code']
@@ -58,10 +58,10 @@ class IdentifyingCodeAction(APIView):
                                                username=cld['username'])
         if cld['method'] == 'register':     # 用户注册
             if isinstance(instance, User):
-                return Exception(('Error', 'The phone number is already registered.'))
+                return Exception(('Error', 'The phone/email  is already registered.'))
         elif cld['method'] == 'forget_password':   # 忘记密码
             if isinstance(instance, Exception):
-                return Exception(('Error', 'The user of the phone number is not existed.'))
+                return Exception(('Error', 'The user of the phone/email is not existed.'))
         else:
             return Exception(('Error', 'Parameters Error.'))
         return True
@@ -123,16 +123,39 @@ class IdentifyingCodeActionWithLogin(generics.GenericAPIView):
     """
     permission_classes = (IsOwnerOrReadOnly,)
 
+    def send_identifying_code(self, identifying_code, **kwargs):
+        # 发送到短信平台
+        if kwargs['username_type'] == 'phone':
+            main.send_message_to_phone({'code': identifying_code},
+                                       (kwargs['username'],))
+        elif kwargs['username_type'] == 'email':
+            # 发送邮件
+            _to = [kwargs['username']]
+            subject = '验证码'
+            text = '您的验证码是%s, 15分钟有效。' % identifying_code
+            main.send_email(_to, subject, text)
+
     def post(self, request, *args, **kwargs):
-        phone = request.user.phone
+        form = SendIdentifyingCodeWithLoginForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        if not request.user.is_binding(cld['username_type']):
+            return Response({'Detail': 'Your phone or email is not existed.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if cld['username_type'] == 'phone':
+            cld['username'] = request.user.phone
+        else:
+            cld['username'] = request.user.email
         identifying_code = make_random_number_of_string(str_length=6)
-        serializer = IdentifyingCodeSerializer(data={'phone': phone,
+        serializer = IdentifyingCodeSerializer(data={'phone_or_email': cld['username'],
                                                      'identifying_code': identifying_code})
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        # 发送到短线平台
-        main.send_message_to_phone({'code': identifying_code}, (phone,))
+
+        self.send_identifying_code(identifying_code, **cld)
         return Response(status=status.HTTP_200_OK)
 
 
@@ -333,25 +356,39 @@ class UserBindingAction(generics.GenericAPIView):
     def get_object_by_openid(self, out_open_id):
         return User.get_object(**{'out_open_id': out_open_id})
 
+    def is_request_data_valid(self, **kwargs):
+        if kwargs['username_type'] == 'phone':
+            form = PhoneForm({'phone': kwargs['username']})
+            if not form.is_valid():
+                return False, form.errors
+        elif kwargs['username_type'] == 'email':
+            form = EmailForm({'email': kwargs['username']})
+            if not form.is_valid():
+                return False, form.errors
+        return True, None
+
     def post(self, request, *args, **kwargs):
         """
         绑定动作
         """
-        form = WXAuthCreateUserForm(request.data)
+        form = BindingActionForm(request.data)
         if not form.is_valid():
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
+        is_valid, error_message = self.is_request_data_valid(**cld)
+        if not is_valid:
+            return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
         result = verify_identifying_code(cld)
         if isinstance(result, Exception):
             return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
 
-        if request.user.is_binding:
-            return Response({'Detail': 'The phone is already binded'},
+        if request.user.is_binding(cld['username_type']):
+            return Response({'Detail': 'The phone/email is already binding'},
                             status=status.HTTP_400_BAD_REQUEST)
         serializer = UserSerializer(request.user)
         try:
-            serializer.binding_phone_to_user(request, request.user, cld)
+            serializer.binding_phone_or_email_to_user(request, request.user, cld)
         except Exception as e:
             return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
 
