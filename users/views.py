@@ -278,7 +278,7 @@ class UserAction(generics.GenericAPIView):
     def get_perfect_validate_data(self, **cleaned_data):
         if 'role_id' in cleaned_data:
             role = Role.get_object(pk=cleaned_data['role_id'])
-            cleaned_data['role'] = role['name']
+            cleaned_data['role'] = role.name
             cleaned_data.pop('role_id')
         return cleaned_data
 

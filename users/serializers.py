@@ -160,14 +160,15 @@ class UserDetailSerializer(BaseSerializer):
     phone = serializers.CharField(max_length=20, allow_blank=True,
                                   allow_null=True)
     nickname = serializers.CharField(max_length=100, required=False)
+    role = serializers.CharField()
     gender = serializers.IntegerField(default=0)
     birthday = serializers.DateField(required=False)
     region = serializers.CharField(required=False)
     channel = serializers.CharField(default='YS')
     province = serializers.CharField(max_length=16)
     city = serializers.CharField(max_length=32)
-    last_login = serializers.DateTimeField()
 
+    last_login = serializers.DateTimeField()
     head_picture = serializers.ImageField()
 
     @property
@@ -188,7 +189,7 @@ class IdentifyingCodeSerializer(BaseModelSerializer):
         fields = '__all__'
 
 
-class RoleDetailSerializer(BaseSerializer):
+class RoleDetailSerializer(BaseModelSerializer):
     class Meta:
         model = Role
         fields = '__all__'

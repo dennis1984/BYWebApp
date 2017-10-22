@@ -204,7 +204,7 @@ class Role(models.Model):
     用户角色
     """
     name = models.CharField('角色名称', max_length=32)
-    created = models.DateTimeField('创建时间')
+    created = models.DateTimeField('创建时间', default=now)
 
     class Meta:
         db_table = 'by_user_role'
