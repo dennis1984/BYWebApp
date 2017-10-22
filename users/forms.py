@@ -45,7 +45,7 @@ class SendIdentifyingCodeWithLoginForm(forms.Form):
     """
     username_type = forms.ChoiceField(choices=(('phone', 1),
                                                ('email', 2)))
-    # username = forms.CharField(max_length=200)
+    username = forms.CharField(max_length=200, required=False)
 
 
 class VerifyIdentifyingCodeForm(PhoneForm):
@@ -100,7 +100,7 @@ class BindingActionForm(forms.Form):
     username_type = forms.ChoiceField(choices=(('phone', 1),
                                                ('email', 2)))
     username = forms.CharField(max_length=200)
-    identifying_code = forms.CharField(max_length=10, required=False)
+    identifying_code = forms.CharField(max_length=10)
 
 
 class AdvertListForm(forms.Form):

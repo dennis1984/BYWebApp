@@ -58,12 +58,12 @@ class IdentifyingCodeAction(APIView):
                                                username=cld['username'])
         if cld['method'] == 'register':     # 用户注册
             if isinstance(instance, User):
-                return Exception(('Error', 'The phone/email  is already registered.'))
+                return Exception('The phone or email is already registered.')
         elif cld['method'] == 'forget_password':   # 忘记密码
             if isinstance(instance, Exception):
-                return Exception(('Error', 'The user of the phone/email is not existed.'))
+                return Exception('The user of the phone or email is not existed.')
         else:
-            return Exception(('Error', 'Parameters Error.'))
+            return Exception('Parameters Error.')
         return True
 
     def is_request_data_valid(self, **kwargs):
@@ -135,19 +135,36 @@ class IdentifyingCodeActionWithLogin(generics.GenericAPIView):
             text = '您的验证码是%s, 15分钟有效。' % identifying_code
             main.send_email(_to, subject, text)
 
+    def is_request_data_valid(self, request, **kwargs):
+        if kwargs['username']:
+            if kwargs['username_type'] == 'phone':
+                if request.user.is_binding(kwargs['username_type']):
+                    if kwargs['username'] != request.user.phone:
+                        return False, 'The phone number is incorrect.'
+            elif kwargs['username_type'] == 'email':
+                if request.user.is_binding(kwargs['username_type']):
+                    if kwargs['username'] != request.user.email:
+                        return False, 'The email is incorrect.'
+        else:
+            if not request.user.is_binding(kwargs['username_type']):
+                return False, 'Your phone or email is not existed.'
+        return True, None
+
     def post(self, request, *args, **kwargs):
         form = SendIdentifyingCodeWithLoginForm(request.data)
         if not form.is_valid():
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        if not request.user.is_binding(cld['username_type']):
-            return Response({'Detail': 'Your phone or email is not existed.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        if cld['username_type'] == 'phone':
-            cld['username'] = request.user.phone
-        else:
-            cld['username'] = request.user.email
+        is_valid, error_message = self.is_request_data_valid(**cld)
+        if not is_valid:
+            return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'username' not in cld:
+            if cld['username_type'] == 'phone':
+                cld['username'] = request.user.phone
+            else:
+                cld['username'] = request.user.email
         identifying_code = make_random_number_of_string(str_length=6)
         serializer = IdentifyingCodeSerializer(data={'phone_or_email': cld['username'],
                                                      'identifying_code': identifying_code})
