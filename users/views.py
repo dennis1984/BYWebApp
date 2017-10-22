@@ -68,23 +68,26 @@ class IdentifyingCodeAction(APIView):
 
     def is_request_data_valid(self, **kwargs):
         if kwargs['username_type'] == 'phone':
-            form = PhoneForm(kwargs['username'])
+            form = PhoneForm({'phone': kwargs['username']})
             if not form.is_valid():
                 return False, form.errors
         elif kwargs['username_type'] == 'email':
-            form = EmailForm(kwargs['username'])
+            form = EmailForm({'email': kwargs['username']})
             if not form.is_valid():
                 return False, form.errors
         return True, None
 
-    def send_identifying_code(self, **kwargs):
+    def send_identifying_code(self, identifying_code, **kwargs):
         # 发送到短信平台
         if kwargs['username_type'] == 'phone':
-            main.send_message_to_phone({'code': kwargs['identifying_code']},
-                                       (kwargs['phone'],))
+            main.send_message_to_phone({'code': identifying_code},
+                                       (kwargs['username'],))
         elif kwargs['username_type'] == 'email':
             # 发送邮件
-            pass
+            _to = [kwargs['username']]
+            subject = '验证码'
+            text = '您的验证码是%s, 15分钟有效。' % identifying_code
+            main.send_email(_to, subject, text)
 
     def post(self, request, *args, **kwargs):
         """
@@ -110,7 +113,7 @@ class IdentifyingCodeAction(APIView):
         serializer.save()
 
         # 发送验证码
-        self.send_identifying_code(**cld)
+        self.send_identifying_code(identifying_code, **cld)
         return Response(status=status.HTTP_200_OK)
 
 

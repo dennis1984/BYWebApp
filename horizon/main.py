@@ -338,11 +338,14 @@ def send_email(to, subject, text, files=()):
     message['Date'] = formatdate(localtime=True)
     message.attach(MIMEText(text, _subtype='plain', _charset='utf8'))
 
-    smtp = smtplib.SMTP_SSL(server['host'], server['port'])
-    smtp.login(server['user'], server['password'])
-    smtp.sendmail(_from, to, message.as_string())
-    smtp.close()
+    try:
+        smtp = smtplib.SMTP_SSL(server['host'], server['port'])
+        smtp.login(server['user'], server['password'])
+        smtp.sendmail(_from, to, message.as_string())
+        smtp.close()
+    except:
+        return False
 
-    return
+    return True
 
 
