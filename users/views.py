@@ -136,15 +136,23 @@ class IdentifyingCodeActionWithLogin(generics.GenericAPIView):
             main.send_email(_to, subject, text)
 
     def is_request_data_valid(self, request, **kwargs):
-        if kwargs['username']:
+        if 'username' in kwargs:
             if kwargs['username_type'] == 'phone':
                 if request.user.is_binding(kwargs['username_type']):
                     if kwargs['username'] != request.user.phone:
                         return False, 'The phone number is incorrect.'
+                else:
+                    user = User.get_object_by_username(**kwargs)
+                    if isinstance(user, User):
+                        return False, 'The phone number is already binding.'
             elif kwargs['username_type'] == 'email':
                 if request.user.is_binding(kwargs['username_type']):
                     if kwargs['username'] != request.user.email:
                         return False, 'The email is incorrect.'
+                else:
+                    user = User.get_object_by_username(**kwargs)
+                    if isinstance(user, User):
+                        return False, 'The email is already binding.'
         else:
             if not request.user.is_binding(kwargs['username_type']):
                 return False, 'Your phone or email is not existed.'
@@ -156,7 +164,7 @@ class IdentifyingCodeActionWithLogin(generics.GenericAPIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        is_valid, error_message = self.is_request_data_valid(**cld)
+        is_valid, error_message = self.is_request_data_valid(request, **cld)
         if not is_valid:
             return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -200,11 +208,11 @@ class UserNotLoggedAction(APIView):
 
     def is_request_data_valid(self, **kwargs):
         if kwargs['username_type'] == 'phone':
-            form = PhoneForm(kwargs['username'])
+            form = PhoneForm({'phone': kwargs['username']})
             if not form.is_valid():
                 return False, form.errors
         elif kwargs['username_type'] == 'email':
-            form = EmailForm(kwargs['username'])
+            form = EmailForm({'email': kwargs['username']})
             if not form.is_valid():
                 return False, form.errors
         return True, None

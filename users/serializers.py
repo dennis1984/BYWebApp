@@ -124,7 +124,7 @@ class UserSerializer(BaseModelSerializer):
     class Meta:
         model = User
         # fields = '__all__'
-        fields = ('id', 'phone', 'nickname', 'head_picture',)
+        fields = ('id', 'phone', 'email', 'nickname', 'head_picture',)
 
     @has_permission_to_update
     def update_password(self, request, instance, validated_data):
@@ -142,9 +142,9 @@ class UserSerializer(BaseModelSerializer):
 
     def binding_phone_or_email_to_user(self, request, instance, validated_data):
         if validated_data['username_type'] == 'phone':
-            _validated_data = {'phone': validated_data['phone']}
+            _validated_data = {'phone': validated_data['username']}
         else:
-            _validated_data = {'email': validated_data['email']}
+            _validated_data = {'email': validated_data['username']}
         return super(UserSerializer, self).update(instance, _validated_data)
 
 
