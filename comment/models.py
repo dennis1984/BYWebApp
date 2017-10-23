@@ -31,7 +31,8 @@ class Comment(models.Model):
     source_id = models.IntegerField('点评资源ID')
     content = models.CharField('点评内容', max_length=512)
 
-    reply_id = models.IntegerField('管理员回复评论ID', null=True)
+    # 是否被管理员推荐该评论: 0: 否  1：是
+    is_recommend = models.IntegerField('是否被管理员推荐', default=0)
     like = models.IntegerField('喜欢数量', default=0)
     dislike = models.IntegerField('不喜欢数量', default=0)
 
@@ -49,12 +50,6 @@ class Comment(models.Model):
 
     def __unicode__(self):
         return '%s:%s:%s' % (self.user_id, self.source_type, self.source_id)
-
-    @property
-    def is_recommend(self):
-        if self.reply_id:
-            return True
-        return False
 
     @classmethod
     def get_object(cls, **kwargs):
@@ -78,15 +73,31 @@ class Comment(models.Model):
         details = []
         for ins in instances:
             is_recommend = ins.is_recommend
-            reply_content = ''
+            reply_message = ''
             if is_recommend:
                 reply = ReplyComment.get_object(comment_id=ins.pk)
-                reply_content = reply.message
+                reply_message = reply.message
+
+            source_ins = cls.get_source_object(source_type=ins.source_type,
+                                               source_id=ins.source_id)
+            if isinstance(source_ins, Exception):
+                source_title = ''
+            else:
+                source_title = source_ins.title
             item_dict = model_to_dict(ins)
             item_dict['is_recommend'] = is_recommend
-            item_dict['reply_content'] = reply_content
+            item_dict['reply_message'] = reply_message
+            item_dict['source_title'] = source_title
             details.append(item_dict)
         return details
+
+    @classmethod
+    def get_source_object(cls, source_type, source_id):
+        source_class = SOURCE_TYPE_DB.get(source_type)
+        if not source_class:
+            return Exception('Params is incorrect')
+
+        return source_class.get_object(pk=source_id)
 
 
 class ReplyComment(models.Model):
