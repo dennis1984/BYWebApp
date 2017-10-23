@@ -57,7 +57,8 @@ class BaseListSerializer(serializers.ListSerializer):
             for key in item.keys():
                 if isinstance(dict_format[key], datetime.datetime):
                     item[key] = timezoneStringTostring(item[key])
-                if isinstance(dict_format[key], models.fields.files.ImageFieldFile):
+                if isinstance(dict_format[key], (models.fields.files.ImageFieldFile,
+                                                 models.fields.files.FieldFile)):
                     image_str = urllib.unquote(item[key])
                     if image_str.startswith('http://') or image_str.startswith('https://'):
                         item['%s_url' % key] = image_str

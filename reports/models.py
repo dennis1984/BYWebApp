@@ -97,3 +97,24 @@ class ReportDownloadRecord(models.Model):
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+    @classmethod
+    def filter_details(cls, **kwargs):
+        instances = cls.filter_objects(**kwargs)
+        if isinstance(instances, Exception):
+            return instances
+
+        details = []
+        for ins in instances:
+            report = Report.get_object(pk=ins.report_id)
+            if isinstance(report, Exception):
+                continue
+            item_detail = model_to_dict(ins)
+            report_detail = model_to_dict(report)
+            report_detail['tags'] = json.loads(report.tags)
+            for pop_key in ['created', 'updated']:
+                report_detail.pop(pop_key)
+
+            item_detail.update(**report_detail)
+            details.append(item_detail)
+        return details

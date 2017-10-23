@@ -17,7 +17,7 @@ class CommentInputForm(forms.Form):
     messaged = forms.CharField(max_length=512, required=False)
 
 
-class CommentListForm(forms.Form):
+class ReportListForm(forms.Form):
     page_index = forms.IntegerField(min_value=1, required=False)
     page_size = forms.IntegerField(min_value=1, required=False)
 

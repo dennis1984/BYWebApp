@@ -11,40 +11,11 @@ from horizon.decorators import has_permission_to_update
 import json
 import os
 
-COMMENT_BUSINESS_CN_DETAIL = {
-    1: u'服务质量',
-    2: u'卫生环境',
-    3: u'出餐速度',
-}
-
 
 class CommentSerializer(BaseModelSerializer):
     def __init__(self, instance=None, data=None, **kwargs):
         if data:
-            request = kwargs['request']
-            orders = data['orders']
-            cld = data['cld']
-
-            dishes_ids = json.loads(orders.dishes_ids)
-            dishes_ids_dict = {item['id']: item for item in dishes_ids}
-            business_comment = json.loads(cld['business_comment'])
-            dishes_comment = json.loads(cld['dishes_comment'])
-            for item in dishes_comment:
-                key = item['dishes_id']
-                item['dishes_name'] = dishes_ids_dict[key]['title']
-                item['image'] = dishes_ids_dict[key].get('image', 'image_url')
-            for item in business_comment:
-                item['cn_name'] = COMMENT_BUSINESS_CN_DETAIL[item['id']]
-
-            orders_data = {'user_id': request.user.id,
-                           'orders_id': orders.orders_id,
-                           'business_id': orders.business_id,
-                           'business_name': orders.business_name,
-                           'business_comment': json.dumps(business_comment),
-                           'dishes_comment': json.dumps(dishes_comment),
-                           'messaged': cld.get('messaged'), }
-            kwargs.pop('request')
-            super(CommentSerializer, self).__init__(data=orders_data, **kwargs)
+            super(CommentSerializer, self).__init__(data=data, **kwargs)
         else:
             super(CommentSerializer, self).__init__(instance, **kwargs)
 
@@ -59,18 +30,16 @@ class CommentSerializer(BaseModelSerializer):
             return e
 
 
-class CommentDetailSerializer(BaseSerializer):
+class ReportDetailSerializer(BaseSerializer):
     user_id = serializers.IntegerField()
-    orders_id = serializers.CharField(max_length=32)
-    business_id = serializers.IntegerField()
-    business_name = serializers.CharField(max_length=100)
-    business_comment = serializers.ListField()
-    dishes_comment = serializers.ListField()
-
-    messaged = serializers.CharField(max_length=2048,
-                                     allow_null=True, allow_blank=True)
+    title = serializers.CharField()
+    subtitle = serializers.CharField(allow_blank=True, allow_null=True)
+    description = serializers.CharField(allow_blank=True, allow_null=True)
+    media_id = serializers.IntegerField()
+    tags = serializers.ListField()
+    report_file_url = serializers.CharField()
     created = serializers.DateTimeField()
 
 
-class CommentListSerializer(BaseListSerializer):
-    child = CommentDetailSerializer()
+class ReportListSerializer(BaseListSerializer):
+    child = ReportDetailSerializer()

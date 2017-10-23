@@ -32,7 +32,7 @@ class CommentAction(generics.GenericAPIView):
         return True, None
 
     def get_comment_object(self, request, comment_id):
-        return Comment.get_object(pk=comment_id, user_id=request)
+        return Comment.get_object(pk=comment_id, user_id=request.user.id)
 
     def post(self, request, *args, **kwargs):
         """
@@ -68,7 +68,7 @@ class CommentAction(generics.GenericAPIView):
         cld = form.cleaned_data
         instance = self.get_comment_object(request, cld['comment_id'])
         if isinstance(instance, Exception):
-            return Response({'Detail': instance.args})
+            return Response({'Detail': instance.args}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = CommentSerializer(instance)
         try:

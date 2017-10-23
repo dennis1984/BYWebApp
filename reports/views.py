@@ -2,143 +2,65 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from comment.serializers import (CommentSerializer,
-                                 CommentDetailSerializer,)
-from comment.permissions import IsOwnerOrReadOnly
-from comment.models import (Comment, )
-from comment.forms import (CommentInputForm,
-                           CommentListForm,
+from reports.serializers import (CommentSerializer,
+                                 ReportDetailSerializer,
+                                 ReportListSerializer)
+from reports.permissions import IsOwnerOrReadOnly
+from reports.models import (Report, ReportDownloadRecord)
+from reports.forms import (CommentInputForm,
+                           ReportListForm,
                            CommentDetailForm)
 
 import json
 
 
-class CommentAction(generics.GenericAPIView):
+class ReportList(generics.GenericAPIView):
     """
-    点评相关功能
-    """
-    permission_classes = (IsOwnerOrReadOnly, )
-
-    def is_orders_valid(self, request, orders_id):
-        # orders = ConsumeOrders.get_object(orders_id=orders_id)
-        orders = Exception
-        if isinstance(orders, Exception):
-            return False, orders
-        if orders.user_id != request.user.id:
-            return False, Exception('Cannot perform this action')
-        if orders.is_commented:
-            return False, Exception('Cannot perform this action')
-        return True, orders
-
-    def is_request_data_valid(self, request):
-        form = CommentInputForm(request.data)
-        if not form.is_valid():
-            return False, Exception(form.errors)
-        cld = form.cleaned_data
-        try:
-            bz_comment = json.loads(cld['business_comment'])
-            dishes_comment = json.loads(cld['dishes_comment'])
-        except Exception as e:
-            return False, e
-        bz_comment_format = {'id': int,
-                             'star': int}
-        dishes_comment_format = {'dishes_id': int,
-                                 'star': int}
-        if not (isinstance(bz_comment, (list, tuple)) and
-                isinstance(dishes_comment, (list, tuple))):
-            return False, TypeError('The fields business_comment and dishes_comment '
-                                    'type must be list')
-
-        format_error = 'The fields %s data format is incorrect'
-        date_error = 'The fields %s data is incorrect'
-        for item in bz_comment:
-            if not isinstance(item, dict):
-                return False, TypeError(format_error % 'business_comment')
-            if sorted(item.keys()) != sorted(bz_comment_format.keys()):
-                return False, ValueError(date_error % 'business_comment')
-            for key, value in item.items():
-                if not isinstance(value, bz_comment_format[key]):
-                    return False, TypeError(format_error % 'business_comment')
-        for item in dishes_comment:
-            if not isinstance(item, dict):
-                return False, TypeError(format_error % 'dishes_comment')
-            if sorted(item.keys()) != sorted(dishes_comment_format.keys()):
-                return False, ValueError(date_error % 'dishes_comment')
-            for key, value in item.items():
-                if not isinstance(value, dishes_comment_format[key]):
-                    return False, TypeError(format_error % 'dishes_comment')
-
-        return True, cld
-
-    def post(self, request, *args, **kwargs):
-        """
-        用户点评订单(订单为消费订单，即子订单)
-        """
-        result, data = self.is_request_data_valid(request)
-        if not result:
-            return Response({'Detail': data.args}, status=status.HTTP_400_BAD_REQUEST)
-
-        cld = data
-        # result, orders = self.is_orders_valid(request, cld['orders_id'])
-        # if not result:
-        #     return Response({'Detail': orders.args}, status=status.HTTP_400_BAD_REQUEST)
-        # serializer = CommentSerializer(data={'orders': orders, 'cld': cld},
-        #                                request=request)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     # 标志订单状态为已评论
-        #     orders_serializer = ConsumeOrdersSerializer()
-        #     orders_serializer.set_commented(orders)
-        #     return Response(serializer.data, status=status.HTTP_200_OK)
-        # return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class CommentList(generics.GenericAPIView):
-    """
-    用户点评列表
+    用户下载报告列表
     """
     permission_classes = (IsOwnerOrReadOnly, )
 
-    def get_consume_orders_list(self, request):
-        return None
+    def get_reports_list(self, request):
+        return ReportDownloadRecord.filter_details(user_id=request.user.id)
 
     def post(self, request, *args, **kwargs):
-        form = CommentListForm(request.data)
+        form = ReportListForm(request.data)
         if not form.is_valid():
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        # details = self.get_consume_orders_list(request)
-        # if isinstance(details, Exception):
-        #     return Response({'Detail': details.args}, status=status.HTTP_400_BAD_REQUEST)
-        # serializer = OrdersListSerializer(data=details)
-        # if not serializer.is_valid():
-        #     return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        # result = serializer.list_data(**cld)
-        # if isinstance(result, Exception):
-        #     return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
-        # return Response(result, status=status.HTTP_200_OK)
+        reports = self.get_reports_list(request)
+        if isinstance(reports, Exception):
+            return Response({'Detail': reports.args}, status=status.HTTP_400_BAD_REQUEST)
 
-
-class CommentDetail(generics.GenericAPIView):
-    """
-    点评详情
-    """
-    def get_comment_detail(self, request, orders_id):
-        kwargs = {'user_id': request.user.id,
-                  'orders_id': orders_id}
-        return Comment.get_comment_detail(**kwargs)
-
-    def post(self, request, *args, **kwargs):
-        form = CommentDetailForm(request.data)
-        if not form.is_valid():
-            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-        cld = form.cleaned_data
-        detail = self.get_comment_detail(request, cld['orders_id'])
-        if isinstance(detail, Exception):
-            return Response({'Detail': detail.args}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = CommentDetailSerializer(data=detail)
+        serializer = ReportListSerializer(data=reports)
         if not serializer.is_valid():
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data_list = serializer.list_data(**cld)
+        if isinstance(data_list, Exception):
+            return Response({'Detail': data_list.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data_list, status=status.HTTP_200_OK)
+
+
+# class CommentDetail(generics.GenericAPIView):
+#     """
+#     点评详情
+#     """
+#     def get_comment_detail(self, request, orders_id):
+#         kwargs = {'user_id': request.user.id,
+#                   'orders_id': orders_id}
+#         return Comment.get_comment_detail(**kwargs)
+#
+#     def post(self, request, *args, **kwargs):
+#         form = CommentDetailForm(request.data)
+#         if not form.is_valid():
+#             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         cld = form.cleaned_data
+#         detail = self.get_comment_detail(request, cld['orders_id'])
+#         if isinstance(detail, Exception):
+#             return Response({'Detail': detail.args}, status=status.HTTP_400_BAD_REQUEST)
+#         serializer = CommentDetailSerializer(data=detail)
+#         if not serializer.is_valid():
+#             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
