@@ -27,14 +27,14 @@ class CommentSerializer(BaseModelSerializer):
 
 class CommentDetailSerializer(BaseSerializer):
     user_id = serializers.IntegerField()
-    orders_id = serializers.CharField(max_length=32)
-    business_id = serializers.IntegerField()
-    business_name = serializers.CharField(max_length=100)
-    business_comment = serializers.ListField()
-    dishes_comment = serializers.ListField()
+    source_type = serializers.IntegerField()
+    source_id = serializers.IntegerField()
 
-    messaged = serializers.CharField(max_length=2048,
-                                     allow_null=True, allow_blank=True)
+    content = serializers.CharField()
+    like = serializers.IntegerField()
+    dislike = serializers.IntegerField()
+    is_recommend = serializers.IntegerField()
+
     created = serializers.DateTimeField()
 
 

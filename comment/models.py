@@ -50,6 +50,12 @@ class Comment(models.Model):
     def __unicode__(self):
         return '%s:%s:%s' % (self.user_id, self.source_type, self.source_id)
 
+    @property
+    def is_recommend(self):
+        if self.reply_id:
+            return True
+        return False
+
     @classmethod
     def get_object(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
@@ -66,6 +72,22 @@ class Comment(models.Model):
         except Exception as e:
             return e
 
+    @classmethod
+    def filter_details(cls, **kwargs):
+        instances = cls.filter_objects(**kwargs)
+        details = []
+        for ins in instances:
+            is_recommend = ins.is_recommend
+            reply_content = ''
+            if is_recommend:
+                reply = ReplyComment.get_object(comment_id=ins.pk)
+                reply_content = reply.message
+            item_dict = model_to_dict(ins)
+            item_dict['is_recommend'] = is_recommend
+            item_dict['reply_content'] = reply_content
+            details.append(item_dict)
+        return details
+
 
 class ReplyComment(models.Model):
     """
@@ -74,7 +96,7 @@ class ReplyComment(models.Model):
     comment_id = models.IntegerField(u'被回复点评的记录ID', unique=True)
     user_id = models.IntegerField('管理员用户ID')
 
-    messaged = models.TextField('评价留言', null=True, blank=True)
+    message = models.TextField('点评回复', null=True, blank=True)
     created = models.DateTimeField('创建时间', default=now)
 
     class Meta:

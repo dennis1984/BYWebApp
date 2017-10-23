@@ -3,7 +3,8 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from comment.serializers import (CommentSerializer,
-                                 CommentDetailSerializer,)
+                                 CommentDetailSerializer,
+                                 CommentListSerializer)
 from comment.permissions import IsOwnerOrReadOnly
 from comment.models import (Comment, SOURCE_TYPE_DB)
 from comment.forms import (CommentInputForm,
@@ -20,7 +21,7 @@ class CommentAction(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly, )
 
     def is_request_data_valid(self, request, **kwargs):
-        instance = SOURCE_TYPE_DB[kwargs['source_type']].get_object(kwargs['source_id'])
+        instance = SOURCE_TYPE_DB[kwargs['source_type']].get_object(pk=kwargs['source_id'])
         if isinstance(instance, Exception):
             return False, 'The source of %s does not exist.' % kwargs['source_id']
 
@@ -45,6 +46,10 @@ class CommentAction(generics.GenericAPIView):
         serializer = CommentSerializer(request, data=cld)
         if not serializer.is_valid():
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer.save()
+        except Exception as e:
+            return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -55,8 +60,8 @@ class CommentList(generics.GenericAPIView):
     """
     permission_classes = (IsOwnerOrReadOnly, )
 
-    def get_consume_orders_list(self, request):
-        return None
+    def get_comment_detail_list(self, request):
+        return Comment.filter_details(user_id=request.user.id)
 
     def post(self, request, *args, **kwargs):
         form = CommentListForm(request.data)
@@ -64,16 +69,14 @@ class CommentList(generics.GenericAPIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        # details = self.get_consume_orders_list(request)
-        # if isinstance(details, Exception):
-        #     return Response({'Detail': details.args}, status=status.HTTP_400_BAD_REQUEST)
-        # serializer = OrdersListSerializer(data=details)
-        # if not serializer.is_valid():
-        #     return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        # result = serializer.list_data(**cld)
-        # if isinstance(result, Exception):
-        #     return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
-        # return Response(result, status=status.HTTP_200_OK)
+        details = self.get_comment_detail_list(request)
+        serializer = CommentListSerializer(data=details)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        data_list = serializer.list_data(**cld)
+        if isinstance(data_list, Exception):
+            return Response({'Detail': data_list.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data_list, status=status.HTTP_200_OK)
 
 
 class CommentDetail(generics.GenericAPIView):
