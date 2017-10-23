@@ -9,7 +9,8 @@ from comment.permissions import IsOwnerOrReadOnly
 from comment.models import (Comment, SOURCE_TYPE_DB)
 from comment.forms import (CommentInputForm,
                            CommentListForm,
-                           CommentDetailForm)
+                           CommentDetailForm,
+                           CommentDeleteForm)
 
 import json
 
@@ -29,6 +30,9 @@ class CommentAction(generics.GenericAPIView):
         if isinstance(instance, Comment):
             return False, 'Can not repeat commenting.'
         return True, None
+
+    def get_comment_object(self, request, comment_id):
+        return Comment.get_object(pk=comment_id, user_id=request)
 
     def post(self, request, *args, **kwargs):
         """
@@ -52,6 +56,26 @@ class CommentAction(generics.GenericAPIView):
             return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, *args, **kwargs):
+        """
+        删除评论
+        """
+        form = CommentDeleteForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        instance = self.get_comment_object(request, cld['comment_id'])
+        if isinstance(instance, Exception):
+            return Response({'Detail': instance.args})
+
+        serializer = CommentSerializer(instance)
+        try:
+            serializer.delete(instance)
+        except Exception as e:
+            return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CommentList(generics.GenericAPIView):

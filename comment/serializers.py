@@ -24,6 +24,10 @@ class CommentSerializer(BaseModelSerializer):
         model = Comment
         fields = '__all__'
 
+    def delete(self, instance):
+        validated_data = {'status': instance.id + 1}
+        return super(CommentSerializer, self).update(instance, validated_data)
+
 
 class CommentDetailSerializer(BaseSerializer):
     user_id = serializers.IntegerField()

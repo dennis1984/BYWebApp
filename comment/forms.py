@@ -20,3 +20,7 @@ class CommentListForm(forms.Form):
 
 class CommentDetailForm(forms.Form):
     orders_id = forms.CharField(min_length=10, max_length=32)
+
+
+class CommentDeleteForm(forms.Form):
+    comment_id = forms.IntegerField(min_value=1)
