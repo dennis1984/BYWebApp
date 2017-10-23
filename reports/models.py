@@ -72,7 +72,7 @@ class ReportDownloadRecord(models.Model):
     report_id = models.IntegerField('报告ID', db_index=True)
     user_id = models.IntegerField('用户ID')
 
-    created = models.DateTimeField('下载时间')
+    created = models.DateTimeField('下载时间', default=now)
 
     class Meta:
         db_table = 'by_report_download_record'
