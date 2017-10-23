@@ -5,7 +5,7 @@ from rest_framework import status
 from comment.serializers import (CommentSerializer,
                                  CommentDetailSerializer,)
 from comment.permissions import IsOwnerOrReadOnly
-from comment.models import (Comment, )
+from comment.models import (Comment, SOURCE_TYPE_DB)
 from comment.forms import (CommentInputForm,
                            CommentListForm,
                            CommentDetailForm)
@@ -19,78 +19,34 @@ class CommentAction(generics.GenericAPIView):
     """
     permission_classes = (IsOwnerOrReadOnly, )
 
-    def is_orders_valid(self, request, orders_id):
-        # orders = ConsumeOrders.get_object(orders_id=orders_id)
-        orders = Exception
-        if isinstance(orders, Exception):
-            return False, orders
-        if orders.user_id != request.user.id:
-            return False, Exception('Cannot perform this action')
-        if orders.is_commented:
-            return False, Exception('Cannot perform this action')
-        return True, orders
+    def is_request_data_valid(self, request, **kwargs):
+        instance = SOURCE_TYPE_DB[kwargs['source_type']].get_object(kwargs['source_id'])
+        if isinstance(instance, Exception):
+            return False, 'The source of %s does not exist.' % kwargs['source_id']
 
-    def is_request_data_valid(self, request):
-        form = CommentInputForm(request.data)
-        if not form.is_valid():
-            return False, Exception(form.errors)
-        cld = form.cleaned_data
-        try:
-            bz_comment = json.loads(cld['business_comment'])
-            dishes_comment = json.loads(cld['dishes_comment'])
-        except Exception as e:
-            return False, e
-        bz_comment_format = {'id': int,
-                             'star': int}
-        dishes_comment_format = {'dishes_id': int,
-                                 'star': int}
-        if not (isinstance(bz_comment, (list, tuple)) and
-                isinstance(dishes_comment, (list, tuple))):
-            return False, TypeError('The fields business_comment and dishes_comment '
-                                    'type must be list')
-
-        format_error = 'The fields %s data format is incorrect'
-        date_error = 'The fields %s data is incorrect'
-        for item in bz_comment:
-            if not isinstance(item, dict):
-                return False, TypeError(format_error % 'business_comment')
-            if sorted(item.keys()) != sorted(bz_comment_format.keys()):
-                return False, ValueError(date_error % 'business_comment')
-            for key, value in item.items():
-                if not isinstance(value, bz_comment_format[key]):
-                    return False, TypeError(format_error % 'business_comment')
-        for item in dishes_comment:
-            if not isinstance(item, dict):
-                return False, TypeError(format_error % 'dishes_comment')
-            if sorted(item.keys()) != sorted(dishes_comment_format.keys()):
-                return False, ValueError(date_error % 'dishes_comment')
-            for key, value in item.items():
-                if not isinstance(value, dishes_comment_format[key]):
-                    return False, TypeError(format_error % 'dishes_comment')
-
-        return True, cld
+        instance = Comment.get_object(user_id=request.user.id, **kwargs)
+        if isinstance(instance, Comment):
+            return False, 'Can not repeat commenting.'
+        return True, None
 
     def post(self, request, *args, **kwargs):
         """
-        用户点评订单(订单为消费订单，即子订单)
+        用户点评资源（资源、案例及资讯）
         """
-        result, data = self.is_request_data_valid(request)
-        if not result:
-            return Response({'Detail': data.args}, status=status.HTTP_400_BAD_REQUEST)
+        form = CommentInputForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        cld = data
-        # result, orders = self.is_orders_valid(request, cld['orders_id'])
-        # if not result:
-        #     return Response({'Detail': orders.args}, status=status.HTTP_400_BAD_REQUEST)
-        # serializer = CommentSerializer(data={'orders': orders, 'cld': cld},
-        #                                request=request)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     # 标志订单状态为已评论
-        #     orders_serializer = ConsumeOrdersSerializer()
-        #     orders_serializer.set_commented(orders)
-        #     return Response(serializer.data, status=status.HTTP_200_OK)
-        # return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        cld = form.cleaned_data
+        is_valid, error_message = self.is_request_data_valid(request, **cld)
+        if not is_valid:
+            return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = CommentSerializer(request, data=cld)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CommentList(generics.GenericAPIView):

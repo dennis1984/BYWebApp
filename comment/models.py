@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.timezone import now
 
+from media.models import Media
 from horizon.models import (model_to_dict,
                             get_perfect_filter_params,
                             BaseManager)
@@ -12,11 +13,17 @@ import json
 import datetime
 
 
+SOURCE_TYPE_DB = {1: Media,   # 资源
+                  2: Media,   # 案例
+                  3: Media,   # 资讯
+                  }
+
+
 class Comment(models.Model):
     """
     用户点评
     """
-    user_id = models.IntegerField('用户ID')
+    user_id = models.IntegerField('用户ID', db_index=True)
 
     # 点评资源类型： 1：资源 2：案例 3：资讯
     source_type = models.IntegerField('点评资源类型', default=1)

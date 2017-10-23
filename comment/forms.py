@@ -3,18 +3,14 @@ from horizon import forms
 
 
 class CommentInputForm(forms.Form):
-    orders_id = forms.CharField(min_length=12, max_length=32)
-    business_comment = forms.CharField(max_length=256)
-    # business_comment的数据格式为：
-    # [{'id': 1,
-    #   'star': 3},...
-    # ]
-    dishes_comment = forms.CharField(max_length=512)
-    # dishes_comment的数据格式为：
-    # [{'dishes_id':  1,
-    #    'star': 3}, ....
-    # ]
-    messaged = forms.CharField(max_length=512, required=False)
+    source_type = forms.ChoiceField(choices=((1, 1),
+                                             (2, 2),
+                                             (3, 3)),
+                                    error_messages={
+                                        'required': 'Source type must in [1, 2, 3]'
+                                    })
+    source_id = forms.IntegerField(min_value=1)
+    content = forms.CharField(max_length=170)
 
 
 class CommentListForm(forms.Form):
