@@ -21,6 +21,12 @@ class CollectAction(generics.GenericAPIView):
         kwargs.update({'user_id': request.user.id})
         return Collect.get_object(**kwargs)
 
+    def does_collect_exist(self, request, **kwargs):
+        instance = self.get_collect_object(request, **kwargs)
+        if isinstance(instance, Exception):
+            return False
+        return True
+
     def get_source_object(self, **kwargs):
         source_class = SOURCE_TYPE_DB.get(kwargs['source_type'])
         if not source_class:
@@ -36,9 +42,10 @@ class CollectAction(generics.GenericAPIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        collect_obj = self.get_collect_object(request, **cld)
-        if isinstance(collect_obj, Collect):
-            return Response('Can not repeat collection.', status=status.HTTP_400_BAD_REQUEST)
+        does_collect_exist = self.does_collect_exist(request, **cld)
+        if does_collect_exist:
+            return Response({'Detail': 'Can not repeat collection.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         source_ins = self.get_source_object(**cld)
         if isinstance(source_ins, Exception):

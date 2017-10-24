@@ -4,7 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from comment import views
 
 urlpatterns = [
-    url(r'^comment_action/$', views.CommentAction.as_view()),
+    url(r'^score_detail/$', views.ScoreDetail.as_view()),
     url(r'^comment_list/$', views.CommentList.as_view()),
     url(r'^comment_detail/$', views.CommentDetail.as_view()),
 ]

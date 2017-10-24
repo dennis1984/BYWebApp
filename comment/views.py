@@ -110,7 +110,7 @@ class CommentDetail(generics.GenericAPIView):
     def get_comment_detail(self, request, orders_id):
         kwargs = {'user_id': request.user.id,
                   'orders_id': orders_id}
-        return Comment.get_comment_detail(**kwargs)
+        return Comment.get_object(**kwargs)
 
     def post(self, request, *args, **kwargs):
         form = CommentDetailForm(request.data)

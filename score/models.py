@@ -4,7 +4,8 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.timezone import now
 
-from horizon.models import model_to_dict, get_perfect_detail_by_detail
+from horizon.models import (model_to_dict,
+                            get_perfect_filter_params)
 
 import json
 import datetime
@@ -28,6 +29,7 @@ class Score(models.Model):
 
     @classmethod
     def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.get(**kwargs)
         except Exception as e:
@@ -35,6 +37,7 @@ class Score(models.Model):
 
     @classmethod
     def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.filter(**kwargs)
         except Exception as e:
@@ -45,10 +48,12 @@ class ScoreRecord(models.Model):
     """
     积分记录
     """
-    user_id = models.IntegerField('用户ID')
+    user_id = models.IntegerField('用户ID', db_index=True)
 
     # 积分动作：0：未指定 1：获取积分（发表点评可获得积分）  2：消耗积分（下载报告需要消耗积分）
     action = models.IntegerField('消耗/获取积分', default=0)
+    # 消耗/获取积分数量
+    score_count = models.IntegerField('积分数量', default=0)
     created = models.DateTimeField('创建时间', default=now)
 
     class Meta:
@@ -60,7 +65,16 @@ class ScoreRecord(models.Model):
 
     @classmethod
     def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
