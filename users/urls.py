@@ -30,6 +30,7 @@ urlpatterns = [
     # 绑定手机号、邮箱及微博等
     url(r'^binding_action/$', users_view.UserBindingAction.as_view()),
 
+    url(r'^login/$', users_view.AuthLogin.as_view()),
     url(r'^logout/$', users_view.AuthLogout.as_view()),
 ]
 

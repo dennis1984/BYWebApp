@@ -3,6 +3,8 @@ from rest_framework import viewsets
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 
 from users.serializers import (UserSerializer,
                                UserInstanceSerializer,
@@ -422,6 +424,14 @@ class UserBindingAction(generics.GenericAPIView):
             return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class AuthLogin(APIView):
+    """
+    用户认证：登录
+    """
+    def post(self, request, *args, **kwargs):
+        return redirect(reverse('oauth2_provider.token'))
 
 
 class AuthLogout(generics.GenericAPIView):

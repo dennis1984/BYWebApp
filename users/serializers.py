@@ -158,7 +158,7 @@ class UserInstanceSerializer(BaseModelSerializer):
 
 
 class UserDetailSerializer(BaseSerializer):
-    pk = serializers.IntegerField()
+    id = serializers.IntegerField()
     phone = serializers.CharField(allow_blank=True, allow_null=True)
     email = serializers.EmailField(allow_blank=True, allow_null=True)
     nickname = serializers.CharField(allow_blank=True, allow_null=True)
@@ -172,9 +172,9 @@ class UserDetailSerializer(BaseSerializer):
     binding_wx = serializers.BooleanField()
 
     gender = serializers.IntegerField(allow_null=True)
-    birthday = serializers.DateField(required=False)
-    province = serializers.CharField(max_length=16)
-    city = serializers.CharField(max_length=32)
+    birthday = serializers.DateField(allow_null=True)
+    province = serializers.CharField(allow_blank=True, allow_null=True)
+    city = serializers.CharField(allow_blank=True, allow_null=True)
 
     last_login = serializers.DateTimeField()
     head_picture = serializers.ImageField()
