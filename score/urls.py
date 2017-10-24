@@ -1,12 +1,11 @@
 # -*- coding:utf8 -*-
 from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
-from comment import views
+from score import views
 
 urlpatterns = [
     url(r'^score_detail/$', views.ScoreDetail.as_view()),
-    url(r'^comment_list/$', views.CommentList.as_view()),
-    url(r'^comment_detail/$', views.CommentDetail.as_view()),
+    url(r'^score_record_list/$', views.ScoreRecordList.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

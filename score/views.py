@@ -55,8 +55,6 @@ class ScoreRecordList(generics.GenericAPIView):
         cld = form.cleaned_data
         instances = self.get_score_record_list(request)
         serializer = ScoreRecordListSerializer(instances)
-        if not serializer.is_valid():
-            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         data_list = serializer.list_data(**cld)
         if isinstance(data_list, Exception):
             return Response({'Detail': data_list.args}, status=status.HTTP_400_BAD_REQUEST)
