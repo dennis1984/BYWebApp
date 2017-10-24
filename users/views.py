@@ -3,8 +3,12 @@ from rest_framework import viewsets
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+from oauth2_provider.views.mixins import OAuthLibMixin
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
+from django.views.generic import View
 
 from users.serializers import (UserSerializer,
                                UserInstanceSerializer,
@@ -426,7 +430,8 @@ class UserBindingAction(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AuthLogin(APIView):
+@method_decorator(csrf_exempt, name="dispatch")
+class AuthLogin(OAuthLibMixin, View):
     """
     用户认证：登录
     """

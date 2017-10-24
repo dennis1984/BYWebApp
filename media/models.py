@@ -114,5 +114,40 @@ class Media(models.Model):
             return e
 
 
+class ResourceTags(models.Model):
+    """
+    资源标签
+    """
+    name = models.CharField('标签名字', max_length=64, unique=True, db_index=True)
+    description = models.CharField('描述', max_length=256)
 
+    # 数据状态：1：正常 非1：已删除
+    status = models.IntegerField('数据状态', default=1)
+    created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = BaseManager()
+
+    class Meta:
+        db_table = 'by_resource_tag'
+        ordering = ['-update']
+
+    def __unicode__(self):
+        return self.name
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e
 

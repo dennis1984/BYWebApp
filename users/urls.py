@@ -5,6 +5,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from users import views as users_view
 from users.wx_auth import views as wx_auth_views
 from users.wb_auth import views as wb_auth_views
+from oauth2_provider.views.base import TokenView
 
 urlpatterns = [
     url(r'^send_identifying_code/$', users_view.IdentifyingCodeAction.as_view()),
@@ -30,7 +31,7 @@ urlpatterns = [
     # 绑定手机号、邮箱及微博等
     url(r'^binding_action/$', users_view.UserBindingAction.as_view()),
 
-    url(r'^login/$', users_view.AuthLogin.as_view()),
+    url(r'^login/$', TokenView.as_view()),
     url(r'^logout/$', users_view.AuthLogout.as_view()),
 ]
 
