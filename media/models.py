@@ -39,6 +39,9 @@ class Media(models.Model):
     # 资源概要展示类型：1：电影、剧集  2：综艺、活动
     outline_type = models.IntegerField('资源概要展示类型', default=1)
 
+    # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
+    tags = models.CharField('资源标签', max_length=256)
+
     # 资源热度
     temperature = models.FloatField('热度')
     # 票房预测
