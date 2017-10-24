@@ -101,6 +101,6 @@ class CollectList(generics.GenericAPIView):
         if not serializer.is_valid():
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         data_list = serializer.list_data(**cld)
-        if isinstance(result, Exception):
+        if isinstance(data_list, Exception):
             return Response({'Detail': data_list.args}, status=status.HTTP_400_BAD_REQUEST)
         return Response(data_list, status=status.HTTP_200_OK)
