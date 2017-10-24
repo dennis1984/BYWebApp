@@ -136,10 +136,25 @@ class User(AbstractBaseUser):
         """
         return: ConsumerUser instance
         """
-        try:
-            return cls.objects.get(pk=request.user.id)
-        except Exception as e:
-            return e
+        user = cls.get_object(pk=request.user.id)
+        if isinstance(user, Exception):
+            return user
+
+        detail = model_to_dict(user)
+        if user.password:
+            detail['have_set_password'] = True
+        else:
+            detail['have_set_password'] = False
+        if user.wb_uid:
+            detail['binding_wb'] = True
+        else:
+            detail['binding_wb'] = False
+        if user.wx_out_open_id:
+            detail['binding_wx'] = True
+        else:
+            detail['binding_wx'] = False
+        detail.pop('password')
+        return detail
 
     @classmethod
     def get_objects_list(cls, request, **kwargs):

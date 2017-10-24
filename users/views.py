@@ -304,15 +304,18 @@ class UserAction(generics.GenericAPIView):
 class UserDetail(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly, )
 
-    def post(self, request, *args, **kwargs):
-        user = User.get_user_detail(request)
-        if isinstance(user, Exception):
-            return Response({'Error': user.args}, status=status.HTTP_400_BAD_REQUEST)
+    def get_user_object(self, request):
+        return User.get_user_detail(request)
 
-        serializer = UserDetailSerializer(user)
-        # if serializer.is_valid():
+    def post(self, request, *args, **kwargs):
+        user_detail = self.get_user_object(request)
+        if isinstance(user_detail, Exception):
+            return Response({'Detail': user_detail.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserDetailSerializer(data=user_detail)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class WXAuthAction(APIView):

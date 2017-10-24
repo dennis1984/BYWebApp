@@ -50,7 +50,8 @@ class WXUserSerializer(BaseModelSerializer):
 
     def save(self, **kwargs):
         kwargs['channel'] = 'WX'
-        kwargs['password'] = make_password(self.validated_data['wx_out_open_id'])
+        # kwargs['password'] = make_password(self.validated_data['wx_out_open_id'])
+        kwargs['password'] = ''
         kwargs['head_picture'] = self.initial_data['headimgurl']
         return super(WXUserSerializer, self).save(**kwargs)
 
@@ -116,7 +117,8 @@ class WBUserSerializer(BaseModelSerializer):
 
     def save(self, **kwargs):
         kwargs['channel'] = 'WB'
-        kwargs['password'] = make_password(self.validated_data['wb_uid'])
+        # kwargs['password'] = make_password(self.validated_data['wb_uid'])
+        kwargs['password'] = ''
         kwargs['head_picture'] = self.initial_data['avatar_large']
         return super(WBUserSerializer, self).save(**kwargs)
 
@@ -157,26 +159,25 @@ class UserInstanceSerializer(BaseModelSerializer):
 
 class UserDetailSerializer(BaseSerializer):
     pk = serializers.IntegerField()
-    phone = serializers.CharField(max_length=20, allow_blank=True,
-                                  allow_null=True)
-    nickname = serializers.CharField(max_length=100, required=False)
-    role = serializers.CharField()
-    gender = serializers.IntegerField(default=0)
+    phone = serializers.CharField(allow_blank=True, allow_null=True)
+    email = serializers.EmailField(allow_blank=True, allow_null=True)
+    nickname = serializers.CharField(allow_blank=True, allow_null=True)
+    role = serializers.CharField(allow_blank=True, allow_null=True)
+    channel = serializers.CharField()
+
+    wb_uid = serializers.IntegerField(allow_null=True)
+    wx_out_open_id = serializers.IntegerField(allow_null=True)
+    have_set_password = serializers.BooleanField()
+    binding_wb = serializers.BooleanField()
+    binding_wx = serializers.BooleanField()
+
+    gender = serializers.IntegerField(allow_null=True)
     birthday = serializers.DateField(required=False)
-    region = serializers.CharField(required=False)
-    channel = serializers.CharField(default='YS')
     province = serializers.CharField(max_length=16)
     city = serializers.CharField(max_length=32)
 
     last_login = serializers.DateTimeField()
     head_picture = serializers.ImageField()
-
-    @property
-    def data(self):
-        _data = super(UserDetailSerializer, self).data
-        # if _data.get('pk', None):
-        #     _data['member_id'] = 'NO.%06d' % _data['pk']
-        return _data
 
 
 class UserListSerializer(BaseListSerializer):
