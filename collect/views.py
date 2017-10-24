@@ -5,7 +5,7 @@ from rest_framework import status
 from collect.serializers import (CollectSerializer,
                                  CollectListSerializer,)
 from collect.permissions import IsOwnerOrReadOnly
-from collect.models import (Collect, )
+from collect.models import (Collect, SOURCE_TYPE_DB)
 from collect.forms import (CollectActionForm,
                            CollectListForm,
                            CollectDeleteForm)
@@ -17,16 +17,15 @@ class CollectAction(generics.GenericAPIView):
     """
     permission_classes = (IsOwnerOrReadOnly, )
 
-    def get_collect_detail(self, request, cld):
-        kwargs = {'user_id': request.user.id}
-        if cld.get('pk'):
-            kwargs['pk'] = cld['pk']
-        if cld.get('dishes_id'):
-            kwargs['dishes_id'] = cld['dishes_id']
+    def get_collect_object(self, request, **kwargs):
+        kwargs.update({'user_id': request.user.id})
         return Collect.get_object(**kwargs)
 
-    def does_dishes_exist(self, dishes_id):
-        return True
+    def get_source_object(self, **kwargs):
+        source_class = SOURCE_TYPE_DB.get(kwargs['source_type'])
+        if not source_class:
+            return Exception('Params is incorrect')
+        return source_class.get_object(pk=kwargs['source_id'])
 
     def post(self, request, *args, **kwargs):
         """
@@ -37,22 +36,22 @@ class CollectAction(generics.GenericAPIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        collect_obj = self.get_collect_detail(request, cld)
-        if not isinstance(collect_obj, Exception):
-            serializer = CollectSerializer(collect_obj)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        collect_obj = self.get_collect_object(request, **cld)
+        if isinstance(collect_obj, Collect):
+            return Response('Can not repeat collection.', status=status.HTTP_400_BAD_REQUEST)
 
-        if not self.does_dishes_exist(cld['dishes_id']):
-            return Response({'Detail': 'Dishes %s does not existed' % cld['dishes_id']},
-                            status=status.HTTP_400_BAD_REQUEST)
+        source_ins = self.get_source_object(**cld)
+        if isinstance(source_ins, Exception):
+            return Response({'Detail': source_ins.args}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = CollectSerializer(data=cld, request=request)
-        if serializer.is_valid():
-            result = serializer.save()
-            if isinstance(result, Exception):
-                return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = CollectSerializer(request, data=cld)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer.save()
+        except Exception as e:
+            return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
         """
@@ -63,13 +62,14 @@ class CollectAction(generics.GenericAPIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        collect_obj = self.get_collect_detail(request, cld)
+        collect_obj = self.get_collect_object(request, **cld)
         if isinstance(collect_obj, Exception):
             return Response({'Detail': collect_obj.args}, status=status.HTTP_400_BAD_REQUEST)
         serializer = CollectSerializer(collect_obj)
-        result = serializer.delete(request, collect_obj)
-        if isinstance(result, Exception):
-            return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer.delete(collect_obj)
+        except Exception as e:
+            return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -79,17 +79,14 @@ class CollectList(generics.GenericAPIView):
     """
     permission_classes = (IsOwnerOrReadOnly, )
 
-    def get_collects_list(self, request):
-        collects = Collect.get_collect_list_with_user(request)
-        if isinstance(collects, Exception):
-            return collects
-        collect_details = []
-        for item in collects:
-            dishes_detail = Exception
-            if isinstance(dishes_detail, Exception):
-                continue
-            collect_details.append(dishes_detail)
-        return collect_details
+    def get_collects_list(self, request, source_type):
+        kwargs = {'user_id': request.user.id}
+        if source_type == 0:
+            kwargs['source_type__in'] = SOURCE_TYPE_DB.keys()
+        else:
+            kwargs['source_type'] = source_type
+
+        return Collect.filter_details(**kwargs)
 
     def post(self, request, *args, **kwargs):
         form = CollectListForm(request.data)
@@ -97,14 +94,13 @@ class CollectList(generics.GenericAPIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        _instances = self.get_collects_list(request)
-        if isinstance(_instances, Exception):
-            return Response({'Detail': _instances.args}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = CollectListSerializer(data=_instances)
+        collects = self.get_collects_list(request, cld['source_type'])
+        if isinstance(collects, Exception):
+            return Response({'Detail': collects.args}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = CollectListSerializer(data=collects)
         if not serializer.is_valid():
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        result = serializer.list_data(**cld)
+        data_list = serializer.list_data(**cld)
         if isinstance(result, Exception):
-            return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(result, status=status.HTTP_200_OK)
-
+            return Response({'Detail': data_list.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data_list, status=status.HTTP_200_OK)

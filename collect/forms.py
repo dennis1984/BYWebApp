@@ -3,14 +3,27 @@ from horizon import forms
 
 
 class CollectActionForm(forms.Form):
-    dishes_id = forms.IntegerField(min_value=1)
+    source_type = forms.ChoiceField(choices=((1, 1),
+                                             (2, 2),
+                                             (3, 3)),
+                                    error_messages={
+                                        'required': 'Source type must in [1, 2, 3]'
+                                    })
+    source_id = forms.IntegerField(min_value=1)
 
 
 class CollectDeleteForm(forms.Form):
-    dishes_id = forms.IntegerField(min_value=1)
+    collect_id = forms.IntegerField(min_value=1)
 
 
 class CollectListForm(forms.Form):
+    source_type = forms.ChoiceField(choices=((0, 1),
+                                             (1, 2),
+                                             (2, 3),
+                                             (3, 4)),
+                                    error_messages={
+                                        'required': 'Source type must in [0, 1, 2, 3]'
+                                    })
     page_index = forms.IntegerField(min_value=1, required=False)
     page_size = forms.IntegerField(min_value=1, required=False)
 

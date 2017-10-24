@@ -6,6 +6,8 @@ from django.utils.timezone import now
 from django.db import transaction
 from decimal import Decimal
 
+from comment.models import SOURCE_TYPE_DB
+from media.models import Media
 from horizon.models import (model_to_dict,
                             BaseManager,
                             get_perfect_filter_params)
@@ -54,3 +56,28 @@ class Collect(models.Model):
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+    @classmethod
+    def get_source_object(cls, source_type, source_id):
+        source_class = SOURCE_TYPE_DB.get(source_type)
+        if not source_class:
+            return Exception('Params is incorrect')
+
+        return source_class.get_object(pk=source_id)
+
+    @classmethod
+    def filter_details(cls, **kwargs):
+        instances = cls.filter_objects(**kwargs)
+        details = []
+        for ins in instances:
+            source_ins = cls.get_source_object(source_type=ins.source_type,
+                                               source_id=ins.source_id)
+            if isinstance(source_ins, Exception):
+                pass
+            item_dict = model_to_dict(ins)
+            item_dict['source_title'] = source_ins.title
+            item_dict['source_description'] = source_ins.description
+            item_dict['updated'] = source_ins.created
+            item_dict['tags'] = json.loads(source_ins.tags)
+            details.append(item_dict)
+        return details

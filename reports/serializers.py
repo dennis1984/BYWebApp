@@ -37,7 +37,7 @@ class ReportDetailSerializer(BaseSerializer):
     description = serializers.CharField(allow_blank=True, allow_null=True)
     media_id = serializers.IntegerField()
     tags = serializers.ListField()
-    report_file_url = serializers.CharField()
+    report_file = serializers.FileField()
     created = serializers.DateTimeField()
 
 
