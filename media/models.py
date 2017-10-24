@@ -130,7 +130,7 @@ class ResourceTags(models.Model):
 
     class Meta:
         db_table = 'by_resource_tag'
-        ordering = ['-update']
+        ordering = ['-updated']
 
     def __unicode__(self):
         return self.name
