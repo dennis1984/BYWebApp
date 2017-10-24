@@ -23,7 +23,7 @@ class Media(models.Model):
     """
     媒体资源
     """
-    title = models.CharField('资源标题', max_length=32, db_index=True)
+    title = models.CharField('资源标题', max_length=128, db_index=True)
     subtitle = models.CharField('资源副标题', max_length=128, null=True, blank=True)
     description = models.TextField('资源描述/介绍', null=True, blank=True)
 
@@ -151,3 +151,106 @@ class ResourceTags(models.Model):
         except Exception as e:
             return e
 
+
+INFORMATION_FILE_PATH = settings.PICTURE_DIRS['web']['information']
+
+
+class Information(models.Model):
+    """
+    资讯
+    """
+    title = models.CharField('标题', max_length=128, db_index=True)
+    subtitle = models.CharField('副标题', max_length=128, null=True, blank=True)
+    description = models.TextField('描述/介绍', null=True, blank=True)
+
+    content = models.FileField('正文', max_length=200,
+                               upload_to=INFORMATION_FILE_PATH,
+                               default=os.path.join(INFORMATION_FILE_PATH, 'noImage.png'))
+
+    # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
+    tags = models.CharField('标签', max_length=256)
+    # 浏览数
+    read_count = models.IntegerField('浏览数', default=0)
+    # 点赞数量
+    like = models.IntegerField('点赞数量', default=0)
+    # 数据状态：1：正常 非1：已删除
+    status = models.IntegerField('数据状态', default=1)
+
+    created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = BaseManager()
+
+    class Meta:
+        db_table = 'by_information'
+
+    def __unicode__(self):
+        return self.title
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e
+
+
+CASE_FILE_PATH = settings.PICTURE_DIRS['web']['case']
+
+
+class Case(models.Model):
+    """
+    案例
+    """
+    title = models.CharField('标题', max_length=128, db_index=True)
+    subtitle = models.CharField('副标题', max_length=128, null=True, blank=True)
+    description = models.TextField('描述/介绍', null=True, blank=True)
+
+    content = models.FileField('正文', max_length=200,
+                               upload_to=CASE_FILE_PATH,
+                               default=os.path.join(CASE_FILE_PATH, 'noImage.png'))
+
+    # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
+    tags = models.CharField('标签', max_length=256)
+    # 浏览数
+    read_count = models.IntegerField('浏览数', default=0)
+    # 点赞数量
+    like = models.IntegerField('点赞数量', default=0)
+    # 数据状态：1：正常 非1：已删除
+    status = models.IntegerField('数据状态', default=1)
+
+    created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = BaseManager()
+
+    class Meta:
+        db_table = 'by_case'
+
+    def __unicode__(self):
+        return self.title
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e

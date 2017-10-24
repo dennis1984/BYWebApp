@@ -235,13 +235,16 @@ WEB_URL_FIX = os.path.join('http://', DOMAIN_NAME)
 # 图片根目录
 BUSINESS_PICTURE_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static', 'business', 'picture')
 WEB_PICTURE_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static', 'web', 'picture')
+WEB_FILE_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static', 'web', 'file')
 
 PICTURE_DIRS = {
     'web': {
         'head_picture': os.path.join(WEB_PICTURE_ROOT, 'head_picture'),   # 用户头像图片目录
         'media': os.path.join(WEB_PICTURE_ROOT, 'media'),                 # 资源图片目录
         'tag': os.path.join(WEB_PICTURE_ROOT, 'tag'),                     # 标签图片目录
-        'report': os.path.join(WEB_PICTURE_ROOT, 'report'),               # 报告文件目录
+        'report': os.path.join(WEB_FILE_ROOT, 'report'),                  # 报告文件目录
+        'information': os.path.join(WEB_FILE_ROOT, 'information'),        # 资讯文件目录
+        'case': os.path.join(WEB_FILE_ROOT, 'case'),                      # 案例文件目录
     },
     'admin': {
         'dishes': os.path.join(BUSINESS_PICTURE_ROOT, 'dishes'),               # 菜品图片目录
