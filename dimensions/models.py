@@ -57,9 +57,23 @@ class Dimension(models.Model):
     def filter_objects(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
-            return cls.objects.filter(**kwargs)
+            instances = cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+        # 排序
+        sort_instances = sorted(instances, key=lambda x: x.sort_order)
+        key = -1
+        for index, item in enumerate(sort_instances):
+            if item.sort_order != 0:
+                break
+            key = index
+        if key == -1:
+            return sort_instances
+        else:
+            new_sort_list = sort_instances[key+1:]
+            new_sort_list.extend(sort_instances[:key+1])
+            return new_sort_list
 
 
 class Attribute(models.Model):
