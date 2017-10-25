@@ -16,6 +16,9 @@ import datetime
 import os
 
 
+IMAGE_PICTURE_PATH = settings.PICTURE_DIRS['web']['tag']
+
+
 class Dimension(models.Model):
     """
     维度
@@ -23,6 +26,9 @@ class Dimension(models.Model):
     name = models.CharField('维度名称', max_length=32, unique=True, db_index=True)
     description = models.CharField('维度描述', max_length=256, null=True, blank=True)
 
+    picture = models.ImageField('维度矢量图片', max_length=200,
+                                upload_to=IMAGE_PICTURE_PATH,
+                                default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
     # 资源状态：1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
@@ -63,6 +69,9 @@ class Attribute(models.Model):
     description = models.CharField('描述', max_length=256, null=True, blank=True)
     dimension_id = models.IntegerField('所属维度ID')
 
+    picture = models.ImageField('属性矢量图片', max_length=200,
+                                upload_to=IMAGE_PICTURE_PATH,
+                                default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
     # 资源状态：1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
@@ -105,11 +114,11 @@ class Tag(models.Model):
     description = models.CharField('描述', max_length=256, null=True, blank=True)
 
     picture_profile = models.ImageField('简介图片', max_length=200,
-                                        upload_to=TAG_PICTURE_PATH,
-                                        default=os.path.join(TAG_PICTURE_PATH, 'noImage.png'))
+                                        upload_to=IMAGE_PICTURE_PATH,
+                                        default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
     picture_detail = models.ImageField('详情图片', max_length=200,
-                                       upload_to=TAG_PICTURE_PATH,
-                                       default=os.path.join(TAG_PICTURE_PATH, 'noImage.png'))
+                                       upload_to=IMAGE_PICTURE_PATH,
+                                       default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
 
     # 数据状态：1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
