@@ -33,11 +33,14 @@ urlpatterns = [
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 
     url(r'^auth/', include('users.urls', namespace='user')),
+
     url(r'^collect/', include('collect.urls', namespace='collect')),
     url(r'^comment/', include('comment.urls', namespace='comment')),
     url(r'^report/', include('reports.urls', namespace='reports')),
     url(r'^score/', include('score.urls', namespace='score')),
     url(r'^media/', include('media.urls', namespace='media')),
+
+    url(r'^dimension/', include('dimensions.urls', namespace='dimensions')),
 
     # 设置
     url(r'^setup/', include('setup.urls', namespace='setup')),

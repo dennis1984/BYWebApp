@@ -26,6 +26,7 @@ class Dimension(models.Model):
     name = models.CharField('维度名称', max_length=32, unique=True, db_index=True)
     description = models.CharField('维度描述', max_length=256, null=True, blank=True)
 
+    sort_order = models.IntegerField('排序顺序', default=0)
     picture = models.ImageField('维度矢量图片', max_length=200,
                                 upload_to=IMAGE_PICTURE_PATH,
                                 default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
