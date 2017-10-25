@@ -349,3 +349,21 @@ def send_email(to, subject, text, files=()):
     return True
 
 
+def select_random_element_from_array(source_list, count):
+    """
+    从列表中随机取出一定数量的元素
+    """
+    if not isinstance(source_list, (list, tuple)):
+        return ValueError('Params "source_list" type incorrect')
+    if len(source_list) <= count:
+        return source_list
+
+    range_list = [i for i in range(len(source_list))]
+    random_index_list = []
+    for i in range(count):
+        pop_index = random.choice(range_list)
+        random_index_list.append(pop_index)
+        range_list.remove(pop_index)
+    new_list = [source_list[index] for index in random_index_list]
+    return new_list
+

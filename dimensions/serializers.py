@@ -25,3 +25,13 @@ class DimensionSerializer(BaseModelSerializer):
 
 class DimensionListSerializer(BaseListSerializer):
     child = DimensionSerializer()
+
+
+class TagSerializer(BaseModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+
+class TagListSerializer(BaseListSerializer):
+    child = TagSerializer()

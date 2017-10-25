@@ -24,6 +24,7 @@ class Dimension(models.Model):
     维度
     """
     name = models.CharField('维度名称', max_length=32, unique=True, db_index=True)
+    subtitle = models.CharField('维度副标题', max_length=32, null=True, blank=True)
     description = models.CharField('维度描述', max_length=256, null=True, blank=True)
 
     sort_order = models.IntegerField('排序顺序', default=0)
@@ -165,6 +166,15 @@ class Tag(models.Model):
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+    @classmethod
+    def filter_objects_by_dimension_id(cls, dimension_id):
+        attribute_instances = Attribute.filter_objects(dimension_id=dimension_id)
+        attribute_ids = [ins.id for ins in attribute_instances]
+        tag_config_instances = TagConfigure.filter_objects(attribute_id__in=attribute_ids)
+        tag_ids = [ins.tag_id for ins in tag_config_instances]
+        tag_instances = cls.filter_objects(id__in=list(set(tag_ids)))
+        return tag_instances
 
 
 class TagConfigure(models.Model):
