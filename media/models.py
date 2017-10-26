@@ -50,7 +50,7 @@ class Media(models.Model):
     public_praise_forecast = models.FloatField('口碑预测')
 
     # 资源属性：数据格式为JSON字符串，如：[1, 3, 5] （数字为属性ID）
-    attributes = models.CharField('资源属性', max_length=256, )
+    # attributes = models.CharField('资源属性', max_length=256, )
 
     # 导演：数据格式为JSON字符串，如：['斯皮尔伯格', '冯小刚']
     director = models.CharField('导演', max_length=256)
@@ -96,6 +96,45 @@ class Media(models.Model):
 
     def __unicode__(self):
         return self.title
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e
+
+
+class MediaConfigure(models.Model):
+    """
+    媒体资源属性配置
+    """
+    media_id = models.IntegerField('媒体资源ID')
+
+    dimension_id = models.IntegerField('所属维度ID', db_index=True)
+    attribute_id = models.IntegerField('所属属性ID')
+
+    # 数据状态：1：正常，非1：已删除
+    status = models.IntegerField('状态', default=1)
+    created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = BaseManager()
+
+    class Meta:
+        db_table = 'by_media_configure'
+
+    def __unicode__(self):
+        return '%s:%s:%s' % (self.media_id, self.dimension_id, self.attribute_id)
 
     @classmethod
     def get_object(cls, **kwargs):
