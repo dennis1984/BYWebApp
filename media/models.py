@@ -132,6 +132,7 @@ class MediaConfigure(models.Model):
 
     class Meta:
         db_table = 'by_media_configure'
+        index_together = ['dimension_id', 'attribute_id']
 
     def __unicode__(self):
         return '%s:%s:%s' % (self.media_id, self.dimension_id, self.attribute_id)

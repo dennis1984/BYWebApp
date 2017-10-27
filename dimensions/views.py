@@ -10,6 +10,7 @@ from dimensions.models import (Dimension, Attribute, Tag, TagConfigure)
 from dimensions.forms import (DimensionListForm,
                               TagsListForm,
                               ResourceMatchActionForm)
+from media.models import Media, MediaConfigure
 from horizon.main import select_random_element_from_array
 
 import json
@@ -103,7 +104,47 @@ class ResourceMatchAction(generics.GenericAPIView):
                         return False, error_message_for_tags_list
         return True, None
 
-    def match_action(self, first_dimension_id, tag_ids_dict):
+    def match_action(self, first_dimension_id, tags_list):
+        dimension_dict = {}
+        media_match_dict = {}
+        # 查找属性ID
+        for item in tags_list:
+            if item['is_default_tag']:
+                dimension_dict[item['dimension_id']] = {}
+                continue
+
+            tag_config_instances = TagConfigure.filter_objects(tag_id__in=item['tag_ids'])
+            attribute_dict = {}
+            media_instances = []
+            for item2 in tag_config_instances:
+                attr_dict = attribute_dict.get(item2.attribute_id, {})
+                tag_config_list = attr_dict.get('tag_config', [])
+                tag_config_list.append({'tag_id': item2.tag_id,
+                                        'match_value': item2.match_value})
+                attr_dict['tag_config'] = tag_config_list
+
+                media_ids = attr_dict.get('media_ids', [])
+                if not media_ids:
+                    media_ins = MediaConfigure.filter_objects(dimension_id=item['dimension_id'],
+                                                              attribute_id=item2.attribute_id)
+                    media_ids = [item3.media_id for item3 in media_ins]
+                    attr_dict['media_ids'] = media_ids
+                attribute_dict[item2.attribute_id] = attr_dict
+            dimension_dict[item['dimension_id']] = {'attribute': attribute_dict,
+                                                    'media_ids': media_instances}
+        # 生成匹配数据
+        for dimension_id, item_dict in dimension_dict.items():
+            for attribute_id, attr_conf_item in item_dict:
+                for media_id in attr_conf_item['media_ids']:
+                    media_dict_item = media_match_dict.get(media_id, {})
+                    media_dime_dict_item = media_dict_item.get(dimension_id, {})
+                    match_value_list = [item2['match_value']
+                                        for item2 in attr_conf_item['tag_config']]
+                    media_dime_dict_item[attribute_id] = match_value_list
+                    media_dict_item[dimension_id] = media_dime_dict_item
+                    media_match_dict[media_id] = media_dict_item
+
+        # 匹配计算
         pass
 
     def post(self, request, *args, **kwargs):
@@ -115,3 +156,4 @@ class ResourceMatchAction(generics.GenericAPIView):
         is_valid, error_message = self.is_request_data_valid(**cld)
         if not is_valid:
             return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_200_OK)

@@ -6,6 +6,7 @@ from dimensions import views
 urlpatterns = [
     url(r'^dimension_list/$', views.DimensionList.as_view()),
     url(r'^tag_list/$', views.TagList.as_view()),
+    url(r'^resource_match_action/$', views.ResourceMatchAction.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

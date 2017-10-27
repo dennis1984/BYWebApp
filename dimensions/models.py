@@ -97,6 +97,7 @@ class Attribute(models.Model):
 
     class Meta:
         db_table = 'by_attribute'
+        unique_together = ['name', 'dimension_id']
         ordering = ['-updated']
 
     def __unicode__(self):
