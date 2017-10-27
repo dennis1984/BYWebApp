@@ -145,11 +145,11 @@ class ResourceMatchAction(generics.GenericAPIView):
 
         # 匹配计算
         dimension_instances = Dimension.filter_objects()
-        dimension_ids = [ins.id for ins in dimension_instances]
-        compute_result = {}
+        dimension_ids_dict = {ins.id: ins.template for ins in dimension_instances}
+        media_value_result = {}
         for media_id, dime_dict_item in media_match_dict.items():
             media_compute_dict_item = {}
-            for dime_id in dimension_ids:
+            for dime_id in dimension_ids_dict.keys():
                 if dime_id in dime_dict_item:
                     dime_value = 0
                     for attr_id, values_list in dime_dict_item[dime_id].items():
@@ -167,11 +167,17 @@ class ResourceMatchAction(generics.GenericAPIView):
                 else:
                     dime_value = 3
                 media_compute_dict_item[dime_id] = dime_value
-            compute_result[media_id] = media_compute_dict_item
+            media_value_result[media_id] = media_compute_dict_item
 
-        # 对计算结果进行优化、排序
+        # 对计算结果进行调整优化
+        media_sum_result = {}
+        for media_id, value_dict in media_value_result.items():
+            sum_value = 0
+            for key, value in value_dict.items():
+                sum_value += value
+            media_sum_result[media_id] = sum_value + dimension_ids_dict[media_id]
 
-        return compute_result
+        return media_sum_result
 
     def post(self, request, *args, **kwargs):
         form = ResourceMatchActionForm(request.data)
