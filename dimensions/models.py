@@ -61,7 +61,6 @@ class Dimension(models.Model):
             instances = cls.objects.filter(**kwargs)
         except Exception as e:
             return e
-
         # 排序
         sort_instances = sorted(instances, key=lambda x: x.sort_order)
         key = -1

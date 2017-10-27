@@ -115,7 +115,6 @@ class ResourceMatchAction(generics.GenericAPIView):
 
             tag_config_instances = TagConfigure.filter_objects(tag_id__in=item['tag_ids'])
             attribute_dict = {}
-            media_instances = []
             for item2 in tag_config_instances:
                 attr_dict = attribute_dict.get(item2.attribute_id, {})
                 tag_config_list = attr_dict.get('tag_config', [])
@@ -130,11 +129,11 @@ class ResourceMatchAction(generics.GenericAPIView):
                     media_ids = [item3.media_id for item3 in media_ins]
                     attr_dict['media_ids'] = media_ids
                 attribute_dict[item2.attribute_id] = attr_dict
-            dimension_dict[item['dimension_id']] = {'attribute': attribute_dict,
-                                                    'media_ids': media_instances}
+            dimension_dict[item['dimension_id']] = attribute_dict
+
         # 生成匹配数据
         for dimension_id, item_dict in dimension_dict.items():
-            for attribute_id, attr_conf_item in item_dict:
+            for attribute_id, attr_conf_item in item_dict.items():
                 for media_id in attr_conf_item['media_ids']:
                     media_dict_item = media_match_dict.get(media_id, {})
                     media_dime_dict_item = media_dict_item.get(dimension_id, {})
@@ -145,7 +144,34 @@ class ResourceMatchAction(generics.GenericAPIView):
                     media_match_dict[media_id] = media_dict_item
 
         # 匹配计算
-        pass
+        dimension_instances = Dimension.filter_objects()
+        dimension_ids = [ins.id for ins in dimension_instances]
+        compute_result = {}
+        for media_id, dime_dict_item in media_match_dict.items():
+            media_compute_dict_item = {}
+            for dime_id in dimension_ids:
+                if dime_id in dime_dict_item:
+                    dime_value = 0
+                    for attr_id, values_list in dime_dict_item[dime_id].items():
+                        values_list = sorted(values_list)
+                        max_value = values_list[-1]
+                        offset_value = 0
+                        for item in values_list[:-1]:
+                            offset_value += item
+                        offset_value = offset_value / 10
+                        attr_value = max_value + offset_value
+                        if attr_value > 5:
+                            attr_value = 5
+                        dime_value += attr_value
+                    dime_value = dime_value / (len(dime_dict_item[dime_id]))
+                else:
+                    dime_value = 3
+                media_compute_dict_item[dime_id] = dime_value
+            compute_result[media_id] = media_compute_dict_item
+
+        # 对计算结果进行优化、排序
+
+        return compute_result
 
     def post(self, request, *args, **kwargs):
         form = ResourceMatchActionForm(request.data)
@@ -156,4 +182,9 @@ class ResourceMatchAction(generics.GenericAPIView):
         is_valid, error_message = self.is_request_data_valid(**cld)
         if not is_valid:
             return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+        first_dimension_id = cld['first_dimension_id']
+        tags_list = json.loads(cld['tags_list'])
+        match_result = self.match_action(first_dimension_id, tags_list)
+
         return Response(status=status.HTTP_200_OK)
