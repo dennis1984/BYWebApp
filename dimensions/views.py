@@ -145,11 +145,11 @@ class ResourceMatchAction(generics.GenericAPIView):
 
         # 匹配计算
         dimension_instances = Dimension.filter_objects()
-        dimension_ids_dict = {ins.id: ins.template for ins in dimension_instances}
+        dimension_ids = [ins.id for ins in dimension_instances]
         media_value_result = {}
         for media_id, dime_dict_item in media_match_dict.items():
             media_compute_dict_item = {}
-            for dime_id in dimension_ids_dict.keys():
+            for dime_id in dimension_ids:
                 if dime_id in dime_dict_item:
                     dime_value = 0
                     for attr_id, values_list in dime_dict_item[dime_id].items():
@@ -170,12 +170,14 @@ class ResourceMatchAction(generics.GenericAPIView):
             media_value_result[media_id] = media_compute_dict_item
 
         # 对计算结果进行调整优化
+        media_instances = Media.filter_objects(media_id__in=media_value_result.keys())
+        media_instances_dict = {ins.id: ins for ins in media_instances}
         media_sum_result = {}
         for media_id, value_dict in media_value_result.items():
             sum_value = 0
             for key, value in value_dict.items():
                 sum_value += value
-            media_sum_result[media_id] = sum_value + dimension_ids_dict[media_id]
+            media_sum_result[media_id] = sum_value + media_instances_dict[media_id].template
 
         return media_sum_result
 
