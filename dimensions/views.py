@@ -169,17 +169,35 @@ class ResourceMatchAction(generics.GenericAPIView):
                 media_compute_dict_item[dime_id] = dime_value
             media_value_result[media_id] = media_compute_dict_item
 
-        # 对计算结果进行调整优化
+        # 对计算结果进行"阿尔法"调整优化
         media_instances = Media.filter_objects(media_id__in=media_value_result.keys())
         media_instances_dict = {ins.id: ins for ins in media_instances}
-        media_sum_result = {}
+        media_sum_result = []
         for media_id, value_dict in media_value_result.items():
             sum_value = 0
             for key, value in value_dict.items():
                 sum_value += value
-            media_sum_result[media_id] = sum_value + media_instances_dict[media_id].template
+            # 假设"阿尔法"值为1（后期从配置中读取）
+            alpha = 1
+            total = (sum_value + media_instances_dict[media_id].temperature) * alpha
+            media_sum_result.append(
+                {'media_id': media_id,
+                 'data': {'total': total,
+                          'first_dimension_value': value_dict[first_dimension_id]}
+                 })
 
-        return media_sum_result
+        # 对计算结果进行"贝塔"调整优化
+        media_result = []
+        media_tmp = sorted(media_sum_result, key=lambda x: x['data']['total'], reverse=True)[:10]
+        media_tmp = sorted(media_tmp,
+                           key=lambda x: x['data']['first_dimension_value'], reverse=True)
+        # 假设"贝塔"值为1（后期从配置中读取）
+        beta = 1
+        for tmp_item in media_tmp[:3]:
+            tmp_item['data']['total'] = (tmp_item['data']['total'] * beta) / 78.75 * 100
+        media_result = sorted(media_tmp, key=lambda x: x['data']['total'], reverse=True)[:3]
+
+        return media_result
 
     def post(self, request, *args, **kwargs):
         form = ResourceMatchActionForm(request.data)
