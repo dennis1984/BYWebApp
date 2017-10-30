@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from dimensions.models import (Dimension, Attribute, Tag, TagConfigure)
+from media.models import MediaConfigure, Media
 from horizon.decorators import has_permission_to_update
 from horizon.serializers import (BaseSerializer,
                                  BaseModelSerializer,
@@ -35,3 +36,23 @@ class TagSerializer(BaseModelSerializer):
 
 class TagListSerializer(BaseListSerializer):
     child = TagSerializer()
+
+
+class MediaSerializer(BaseModelSerializer):
+    class Meta:
+        model = Media
+        fields = '__all__'
+
+
+class MediaListSerializer(BaseListSerializer):
+    child = MediaSerializer()
+
+
+class MatchActionSerializer(BaseSerializer):
+    match_degree = serializers.FloatField()
+    data = serializers.DictField()
+
+
+class MatchActionListSerializer(BaseListSerializer):
+    child = MatchActionSerializer()
+

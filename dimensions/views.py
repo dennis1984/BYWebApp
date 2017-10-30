@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from dimensions.serializers import (DimensionListSerializer,
-                                    TagListSerializer)
+                                    TagListSerializer,
+                                    MediaSerializer,
+                                    MatchActionListSerializer)
 from dimensions.permissions import IsOwnerOrReadOnly
 from dimensions.models import (Dimension, Attribute, Tag, TagConfigure)
 from dimensions.forms import (DimensionListForm,
@@ -199,6 +201,19 @@ class ResourceMatchAction(generics.GenericAPIView):
 
         return media_result
 
+    def get_media_list(self, **kwargs):
+        return Media.get_object(**kwargs)
+
+    def get_perfect_media_result(self, match_result, media_list):
+        media_dict = {item.id: item for item in media_list}
+        perfect_result = []
+        for item in match_result:
+            serializer = MediaSerializer(media_dict[item['media_id']])
+            item_dict = {'match_degree': item['data']['total'],
+                         'data': serializer.data}
+            perfect_result.append(item_dict)
+        return perfect_result
+
     def post(self, request, *args, **kwargs):
         form = ResourceMatchActionForm(request.data)
         if not form.is_valid():
@@ -212,5 +227,14 @@ class ResourceMatchAction(generics.GenericAPIView):
         first_dimension_id = cld['first_dimension_id']
         tags_list = json.loads(cld['tags_list'])
         match_result = self.match_action(first_dimension_id, tags_list)
+        media_ids = [item['media_id'] for item in match_result]
+        media_list = self.get_media_list(id__in=media_ids)
+        media_result = self.get_perfect_media_result(match_result, media_list)
 
-        return Response(status=status.HTTP_200_OK)
+        serializer = MatchActionListSerializer(data=media_result)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        list_data = serializer.list_data()
+        if isinstance(list_data, Exception):
+            return Response(list_data.args, status=status.HTTP_400_BAD_REQUEST)
+        return Response(list_data, status=status.HTTP_200_OK)
