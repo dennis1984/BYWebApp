@@ -202,7 +202,7 @@ class ResourceMatchAction(generics.GenericAPIView):
         return media_result
 
     def get_media_list(self, **kwargs):
-        return Media.get_object(**kwargs)
+        return Media.filter_objects(**kwargs)
 
     def get_perfect_media_result(self, match_result, media_list):
         media_dict = {item.id: item for item in media_list}

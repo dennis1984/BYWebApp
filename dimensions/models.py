@@ -80,7 +80,7 @@ class Attribute(models.Model):
     """
     属性
     """
-    name = models.CharField('属性名称', max_length=64, unique=True, db_index=True)
+    name = models.CharField('属性名称', max_length=64, db_index=True)
     description = models.CharField('描述', max_length=256, null=True, blank=True)
     dimension_id = models.IntegerField('所属维度ID')
 
@@ -96,7 +96,7 @@ class Attribute(models.Model):
 
     class Meta:
         db_table = 'by_attribute'
-        unique_together = ['name', 'dimension_id']
+        unique_together = ['name', 'status']
         ordering = ['-updated']
 
     def __unicode__(self):
@@ -126,7 +126,7 @@ class Tag(models.Model):
     """
     标签
     """
-    name = models.CharField('标签名称', max_length=64, unique=True, db_index=True)
+    name = models.CharField('标签名称', max_length=64, db_index=True)
     description = models.CharField('描述', max_length=256, null=True, blank=True)
 
     picture_profile = models.ImageField('简介图片', max_length=200,
@@ -145,7 +145,7 @@ class Tag(models.Model):
 
     class Meta:
         db_table = 'by_tag'
-        # unique_together = ['name', 'attribute_id']
+        unique_together = ['name', 'status']
         ordering = ['-updated']
 
     def __unicode__(self):
@@ -195,7 +195,7 @@ class TagConfigure(models.Model):
 
     class Meta:
         db_table = 'by_tag_configure'
-        unique_together = ['tag_id', 'attribute_id']
+        unique_together = ['tag_id', 'attribute_id', 'status']
         ordering = ['-updated']
 
     def __unicode__(self):
