@@ -133,9 +133,122 @@ class MediaConfigure(models.Model):
     class Meta:
         db_table = 'by_media_configure'
         index_together = ['dimension_id', 'attribute_id']
+        unique_together = ['media_id', 'attribute_id', 'status']
 
     def __unicode__(self):
         return '%s:%s:%s' % (self.media_id, self.dimension_id, self.attribute_id)
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e
+
+
+class MediaType(models.Model):
+    """
+    资源类型
+    """
+    name = models.CharField('资源类型名称', max_length=64, unique=True, db_index=True)
+
+    # 数据状态 1：正常 非1：已删除
+    status = models.IntegerField('数据状态', default=1)
+    created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = BaseManager()
+
+    class Meta:
+        db_table = 'by_media_type'
+        unique_together = ['name', 'status']
+
+    def __unicode__(self):
+        return '%s' % self.name
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e
+
+
+class ThemeType(models.Model):
+    """
+    题材类别
+    """
+    name = models.CharField('题材类别名称', max_length=64)
+    media_type_id = models.IntegerField('所属资源类型ID', db_index=True)
+
+    # 数据状态 1：正常 非1：已删除
+    status = models.IntegerField('数据状态', default=1)
+    created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = BaseManager()
+
+    class Meta:
+        db_table = 'by_theme_type'
+        unique_together = ['name', 'media_type_id', 'status']
+
+    def __unicode__(self):
+        return '%s' % self.name
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e
+
+
+class ProjectProgress(models.Model):
+    """
+    项目进度
+    """
+    name = models.CharField('项目进度名称', max_length=64, db_index=True)
+
+    # 数据状态 1：正常 非1：已删除
+    status = models.IntegerField('数据状态', default=1)
+    created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = BaseManager()
+
+    class Meta:
+        db_table = 'by_project_progress'
+        unique_together = ['name', 'status']
+
+    def __unicode__(self):
+        return '%s' % self.name
 
     @classmethod
     def get_object(cls, **kwargs):

@@ -104,14 +104,20 @@ class ReplyComment(models.Model):
     """
     管理员回复点评
     """
-    comment_id = models.IntegerField(u'被回复点评的记录ID', unique=True)
+    comment_id = models.IntegerField(u'被回复点评的记录ID', db_index=True)
     user_id = models.IntegerField('管理员用户ID')
-
     message = models.TextField('点评回复', null=True, blank=True)
+
+    # 数据状态 1：正常 非1：已删除
+    status = models.IntegerField('数据状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = BaseManager()
 
     class Meta:
         db_table = 'by_reply_comment'
+        unique_together = ['comment_id', 'status']
 
     def __unicode__(self):
         return str(self.comment_id)
