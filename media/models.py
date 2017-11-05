@@ -52,23 +52,29 @@ class Media(models.Model):
     # 资源属性：数据格式为JSON字符串，如：[1, 3, 5] （数字为属性ID）
     # attributes = models.CharField('资源属性', max_length=256, )
 
-    # 导演：数据格式为JSON字符串，如：['斯皮尔伯格', '冯小刚']
-    director = models.CharField('导演', max_length=256)
-    # 主演：数据格式为JSON字符串，如：['汤姆克鲁斯', '威尔史密斯', '皮尔斯布鲁斯南']
-    stars = models.CharField('主演', max_length=256)
-    # 演员：数据格式为JSON字符串，如：['王晓霞', '詹姆斯', '韦德']
-    actors = models.CharField('演员', max_length=256)
-    # 监制：数据格式为JSON字符串，如：['欧文']
-    producer = models.CharField('监制', max_length=256)
-    # 出品公司：数据格式为JSON字符串，如：['华文映像', '福星传媒']
-    production_company = models.CharField('出品公司', max_length=256)
+    # # 导演：数据格式为JSON字符串，如：['斯皮尔伯格', '冯小刚']
+    # director = models.CharField('导演', max_length=256)
+    # # 主演：数据格式为JSON字符串，如：['汤姆克鲁斯', '威尔史密斯', '皮尔斯布鲁斯南']
+    # stars = models.CharField('主演', max_length=256)
+    # # 演员：数据格式为JSON字符串，如：['王晓霞', '詹姆斯', '韦德']
+    # actors = models.CharField('演员', max_length=256)
+    # # 监制：数据格式为JSON字符串，如：['欧文']
+    # producer = models.CharField('监制', max_length=256)
+    # # 出品公司：数据格式为JSON字符串，如：['华文映像', '福星传媒']
+    # production_company = models.CharField('出品公司', max_length=256)
+    #
+    # # 预计开机/录制时间
+    # recorded_time = models.DateTimeField('开机时间')
 
-    # 预计开机/录制时间
-    recorded_time = models.DateTimeField('开机时间')
+    # 资源概述 数据格式为字典形式的JSON字符串，如：{"导演": ["冯小刚", "吴宇森"],
+    #                                        "主演": ["成龙", "李连杰"],
+    #                                        "出演": ["巩俐", "章子怡"], ......}
+    media_outline = models.TextField('资源概述')
+
     # 预计上映/播出时间
     air_time = models.DateTimeField('播出时间')
-    # 预计播出平台：数据格式为JSON字符串，如：['一线卫视', '视频网络渠道']
-    play_platform = models.CharField('播出平台', max_length=256)
+    # # 预计播出平台：数据格式为JSON字符串，如：['一线卫视', '视频网络渠道']
+    # play_platform = models.CharField('播出平台', max_length=256)
 
     # 运营标记 0: 未设定 1：热门
     mark = models.IntegerField('运营标记', default=0)
