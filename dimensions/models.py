@@ -23,7 +23,7 @@ class Dimension(models.Model):
     """
     维度
     """
-    name = models.CharField('维度名称', max_length=32, unique=True, db_index=True)
+    name = models.CharField('维度名称', max_length=32, db_index=True)
     subtitle = models.CharField('维度副标题', max_length=32, null=True, blank=True)
     description = models.CharField('维度描述', max_length=256, null=True, blank=True)
 
@@ -40,7 +40,7 @@ class Dimension(models.Model):
 
     class Meta:
         db_table = 'by_dimension'
-        # unique_together = ('user_id', 'dishes_id', 'status')
+        unique_together = ('name', 'status')
         ordering = ['-updated']
 
     def __unicode__(self):

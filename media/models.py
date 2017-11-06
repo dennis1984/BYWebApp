@@ -85,9 +85,9 @@ class Media(models.Model):
     picture_detail = models.ImageField('详情图片', max_length=200,
                                        upload_to=MEDIA_PICTURE_PATH,
                                        default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
-    picture_hd = models.ImageField('高清图片', max_length=200,
-                                   upload_to=MEDIA_PICTURE_PATH,
-                                   default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
+    # picture_hd = models.ImageField('高清图片', max_length=200,
+    #                                upload_to=MEDIA_PICTURE_PATH,
+    #                                default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
     # 资源状态：1：正常 非1：已删除
     status = models.IntegerField('资源状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
@@ -97,7 +97,6 @@ class Media(models.Model):
 
     class Meta:
         db_table = 'by_media'
-        # unique_together = ('user_id', 'dishes_id', 'status')
         ordering = ['-updated']
 
     def __unicode__(self):
