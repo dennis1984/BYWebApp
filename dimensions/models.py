@@ -84,9 +84,9 @@ class Attribute(models.Model):
     description = models.CharField('描述', max_length=256, null=True, blank=True)
     dimension_id = models.IntegerField('所属维度ID')
 
-    picture = models.ImageField('属性矢量图片', max_length=200,
-                                upload_to=IMAGE_PICTURE_PATH,
-                                default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
+    # picture = models.ImageField('属性矢量图片', max_length=200,
+    #                             upload_to=IMAGE_PICTURE_PATH,
+    #                             default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
     # 资源状态：1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
@@ -97,7 +97,7 @@ class Attribute(models.Model):
     class Meta:
         db_table = 'by_attribute'
         unique_together = ['name', 'status']
-        ordering = ['-updated']
+        ordering = ['dimension_id', '-updated']
 
     def __unicode__(self):
         return self.name
