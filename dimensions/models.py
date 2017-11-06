@@ -129,12 +129,12 @@ class Tag(models.Model):
     name = models.CharField('标签名称', max_length=64, db_index=True)
     description = models.CharField('描述', max_length=256, null=True, blank=True)
 
-    picture_profile = models.ImageField('简介图片', max_length=200,
-                                        upload_to=IMAGE_PICTURE_PATH,
-                                        default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
-    picture_detail = models.ImageField('详情图片', max_length=200,
-                                       upload_to=IMAGE_PICTURE_PATH,
-                                       default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
+    picture = models.ImageField('简介图片', max_length=200,
+                                upload_to=IMAGE_PICTURE_PATH,
+                                default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
+    # picture_detail = models.ImageField('详情图片', max_length=200,
+    #                                    upload_to=IMAGE_PICTURE_PATH,
+    #                                    default=os.path.join(IMAGE_PICTURE_PATH, 'noImage.png'))
 
     # 数据状态：1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
