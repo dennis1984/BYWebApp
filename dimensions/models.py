@@ -146,7 +146,7 @@ class Tag(models.Model):
     class Meta:
         db_table = 'by_tag'
         unique_together = ['name', 'status']
-        ordering = ['-updated']
+        ordering = ['tag_id', 'attribute_id', '-updated']
 
     def __unicode__(self):
         return self.name
