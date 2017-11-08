@@ -278,7 +278,7 @@ class ResourceTags(models.Model):
     """
     资源标签
     """
-    name = models.CharField('标签名字', max_length=64, unique=True, db_index=True)
+    name = models.CharField('标签名字', max_length=64, db_index=True)
     description = models.CharField('描述', max_length=256, null=True, blank=True)
 
     # 数据状态：1：正常 非1：已删除
@@ -291,6 +291,7 @@ class ResourceTags(models.Model):
     class Meta:
         db_table = 'by_resource_tag'
         ordering = ['-updated']
+        unique_together = ['name', 'status']
 
     def __unicode__(self):
         return self.name
