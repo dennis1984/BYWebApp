@@ -176,6 +176,7 @@ class MediaType(models.Model):
     class Meta:
         db_table = 'by_media_type'
         unique_together = ['name', 'status']
+        ordering = ['-updated']
 
     def __unicode__(self):
         return '%s' % self.name
@@ -214,6 +215,7 @@ class ThemeType(models.Model):
     class Meta:
         db_table = 'by_theme_type'
         unique_together = ['name', 'media_type_id', 'status']
+        ordering_together = ['media_type_id', '-update']
 
     def __unicode__(self):
         return '%s' % self.name
@@ -277,7 +279,7 @@ class ResourceTags(models.Model):
     资源标签
     """
     name = models.CharField('标签名字', max_length=64, unique=True, db_index=True)
-    description = models.CharField('描述', max_length=256)
+    description = models.CharField('描述', max_length=256, null=True, blank=True)
 
     # 数据状态：1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
