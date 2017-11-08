@@ -215,7 +215,7 @@ class ThemeType(models.Model):
     class Meta:
         db_table = 'by_theme_type'
         unique_together = ['name', 'media_type_id', 'status']
-        ordering = ['media_type_id', '-update']
+        ordering = ['media_type_id', '-updated']
 
     def __unicode__(self):
         return '%s' % self.name
