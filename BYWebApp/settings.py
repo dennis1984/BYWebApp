@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     'reports',
 
     # 允许跨域请求
-    # 'corsheaders',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -66,7 +66,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
 
     # 允许跨域请求中间件
-    # 'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -78,9 +78,9 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'BYWebApp.urls'
 
 # # 跨域请求配置
-# CORS_ORIGIN_WHITELIST = (
-#     'yinshi.weixin.city23.com',
-# )
+CORS_ORIGIN_WHITELIST = (
+    'yinglianke.city23.com',
+)
 
 CORS_ALLOW_METHODS = (
     'DELETE',
