@@ -79,15 +79,18 @@ class Media(models.Model):
     # 运营标记 0: 未设定 1：热门
     mark = models.IntegerField('运营标记', default=0)
 
-    picture_profile = models.ImageField('简介图片', max_length=200,
-                                        upload_to=MEDIA_PICTURE_PATH,
-                                        default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
-    picture_detail = models.ImageField('详情图片', max_length=200,
-                                       upload_to=MEDIA_PICTURE_PATH,
+    # picture_profile = models.ImageField('简介图片', max_length=200,
+    #                                     upload_to=MEDIA_PICTURE_PATH,
+    #                                     default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
+    # picture_detail = models.ImageField('详情图片', max_length=200,
+    #                                    upload_to=MEDIA_PICTURE_PATH,
+    #                                    default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
+    picture_profile = models.CharField('简介图片',
+                                       max_length=200,
                                        default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
-    # picture_hd = models.ImageField('高清图片', max_length=200,
-    #                                upload_to=MEDIA_PICTURE_PATH,
-    #                                default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
+    picture_detail = models.CharField('详情图片',
+                                      max_length=200,
+                                      default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
     # 资源状态：1：正常 非1：已删除
     status = models.IntegerField('资源状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
