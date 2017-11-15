@@ -168,6 +168,7 @@ class MediaType(models.Model):
     资源类型
     """
     name = models.CharField('资源类型名称', max_length=64, db_index=True)
+    sort_order = models.IntegerField('排序顺序', default=0)
 
     # 数据状态 1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
@@ -196,9 +197,22 @@ class MediaType(models.Model):
     def filter_objects(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
-            return cls.objects.filter(**kwargs)
+            instances = cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+        # 排序
+        sort_instances = sorted(instances, key=lambda x: x.sort_order)
+        key = -1
+        for index, item in enumerate(sort_instances):
+            if item.sort_order != 0:
+                break
+            key = index
+        if key == -1:
+            return sort_instances
+        else:
+            new_sort_list = sort_instances[key + 1:]
+            new_sort_list.extend(sort_instances[:key + 1])
+            return new_sort_list
 
 
 class ThemeType(models.Model):
@@ -207,6 +221,7 @@ class ThemeType(models.Model):
     """
     name = models.CharField('题材类别名称', max_length=64)
     media_type_id = models.IntegerField('所属资源类型ID', db_index=True)
+    sort_order = models.IntegerField('排序顺序', default=0)
 
     # 数据状态 1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
@@ -235,9 +250,22 @@ class ThemeType(models.Model):
     def filter_objects(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
-            return cls.objects.filter(**kwargs)
+            instances = cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+        # 排序
+        sort_instances = sorted(instances, key=lambda x: x.sort_order)
+        key = -1
+        for index, item in enumerate(sort_instances):
+            if item.sort_order != 0:
+                break
+            key = index
+        if key == -1:
+            return sort_instances
+        else:
+            new_sort_list = sort_instances[key + 1:]
+            new_sort_list.extend(sort_instances[:key + 1])
+            return new_sort_list
 
 
 class ProjectProgress(models.Model):
@@ -245,6 +273,7 @@ class ProjectProgress(models.Model):
     项目进度
     """
     name = models.CharField('项目进度名称', max_length=64, db_index=True)
+    sort_order = models.IntegerField('排序顺序', default=0)
 
     # 数据状态 1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
@@ -272,9 +301,22 @@ class ProjectProgress(models.Model):
     def filter_objects(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
-            return cls.objects.filter(**kwargs)
+            instances = cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+        # 排序
+        sort_instances = sorted(instances, key=lambda x: x.sort_order)
+        key = -1
+        for index, item in enumerate(sort_instances):
+            if item.sort_order != 0:
+                break
+            key = index
+        if key == -1:
+            return sort_instances
+        else:
+            new_sort_list = sort_instances[key + 1:]
+            new_sort_list.extend(sort_instances[:key + 1])
+            return new_sort_list
 
 
 class ResourceTags(models.Model):
