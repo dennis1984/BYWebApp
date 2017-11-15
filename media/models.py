@@ -167,7 +167,7 @@ class MediaType(models.Model):
     """
     资源类型
     """
-    name = models.CharField('资源类型名称', max_length=64, unique=True, db_index=True)
+    name = models.CharField('资源类型名称', max_length=64, db_index=True)
 
     # 数据状态 1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
