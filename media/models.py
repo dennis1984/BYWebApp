@@ -104,6 +104,7 @@ class Media(models.Model):
     class Meta:
         db_table = 'by_media'
         ordering = ['-updated']
+        unique_together = ['title', 'subtitle']
 
     def __unicode__(self):
         return self.title
