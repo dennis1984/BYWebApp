@@ -153,6 +153,10 @@ class User(AbstractBaseUser):
             detail['binding_wx'] = True
         else:
             detail['binding_wx'] = False
+        if user.role:
+            role = Role.get_object(pk=user.role)
+            if not isinstance(role, Exception):
+                detail['role'] = role.name
         detail.pop('password')
         return detail
 
