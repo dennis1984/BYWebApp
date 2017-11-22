@@ -48,10 +48,11 @@ class SendIdentifyingCodeWithLoginForm(forms.Form):
     username = forms.CharField(max_length=200, required=False)
 
 
-class VerifyIdentifyingCodeForm(PhoneForm):
+class VerifyIdentifyingCodeForm(forms.Form):
     """
     验证手机验证码
     """
+    username = forms.CharField(max_length=200)
     identifying_code = forms.CharField(max_length=10,
                                        error_messages={'required': u'验证码不能为空'})
 

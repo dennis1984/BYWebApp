@@ -50,9 +50,9 @@ def verify_identifying_code(params_dict):
 
     instance = IdentifyingCode.get_object_by_phone_or_email(username)
     if not instance:
-        return Exception(('Identifying code is not existed or expired.',))
+        return Exception('Identifying code is not existed or expired.',)
     if instance.identifying_code != identifying_code:
-        return Exception(('Identifying code is incorrect.',))
+        return Exception('Identifying code is incorrect.',)
     return True
 
 
@@ -210,8 +210,13 @@ class UserNotLoggedAction(APIView):
     """
     create user API
     """
-    def get_object_by_username(self, phone):
-        return User.get_object(**{'phone': phone})
+    def get_object_by_username(self, username_type, username):
+        if username_type == 'phone':
+            return User.get_object(**{'phone': username})
+        elif username_type == 'email':
+            return User.get_object(**{'email': username})
+        else:
+            return Exception('Params is incorrect.')
 
     def is_request_data_valid(self, **kwargs):
         if kwargs['username_type'] == 'phone':
@@ -259,7 +264,7 @@ class UserNotLoggedAction(APIView):
         result = verify_identifying_code(cld)
         if isinstance(result, Exception):
             return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
-        instance = self.get_object_by_username(cld['phone'])
+        instance = self.get_object_by_username(cld['username_type'], cld['username'])
         if isinstance(instance, Exception):
             return Response({'Detail': instance.args}, status=status.HTTP_400_BAD_REQUEST)
         serializer = UserSerializer(instance)

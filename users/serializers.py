@@ -154,7 +154,7 @@ class UserSerializer(BaseModelSerializer):
 class UserInstanceSerializer(BaseModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'phone', 'nickname', 'head_picture',)
+        fields = ('id', 'phone', 'email', 'nickname', 'head_picture',)
 
 
 class UserDetailSerializer(BaseSerializer):

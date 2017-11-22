@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.timezone import now
 
-from media.models import Media
+from media.models import Media, Information, Case
 from horizon.models import (model_to_dict,
                             get_perfect_filter_params,
                             BaseManager)
@@ -13,9 +13,9 @@ import json
 import datetime
 
 
-SOURCE_TYPE_DB = {1: Media,   # 资源
-                  2: Media,   # 案例
-                  3: Media,   # 资讯
+SOURCE_TYPE_DB = {1: Media,         # 资源
+                  2: Case,          # 案例
+                  3: Information,   # 资讯
                   }
 
 
