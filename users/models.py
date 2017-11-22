@@ -63,7 +63,7 @@ class User(AbstractBaseUser):
     nickname = models.CharField(u'昵称', max_length=100, null=True, blank=True)
 
     # 角色
-    role = models.CharField(u'我的角色', max_length=32, null=True, blank=True)
+    role = models.IntegerField(u'我的角色', null=True)
 
     # 性别，0：未设定，1：男，2：女
     gender = models.IntegerField(u'性别', default=0)

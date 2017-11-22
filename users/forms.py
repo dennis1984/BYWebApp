@@ -61,7 +61,7 @@ class UpdateUserInfoForm(forms.Form):
     """
     更改用户信息
     """
-    password = forms.CharField(min_length=6, max_length=50, required=False)
+    # password = forms.CharField(min_length=6, max_length=50, required=False)
     nickname = forms.CharField(max_length=100, required=False)
     gender = forms.IntegerField(min_value=1, max_value=2, required=False)
     birthday = forms.DateField(required=False)
@@ -69,6 +69,11 @@ class UpdateUserInfoForm(forms.Form):
     city = forms.CharField(max_length=32, required=False)
     head_picture = forms.ImageField(required=False)
     role_id = forms.IntegerField(required=False)
+
+
+class UpdateUserPasswordWithLoginForm(forms.Form):
+    password = forms.CharField(min_length=6, max_length=50)
+    identifying_code = forms.CharField(min_length=6)
 
 
 class CreateUserForm(PasswordForm):

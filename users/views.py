@@ -26,6 +26,7 @@ from users.forms import (CreateUserForm,
                          SendIdentifyingCodeWithLoginForm,
                          VerifyIdentifyingCodeForm,
                          UpdateUserInfoForm,
+                         UpdateUserPasswordWithLoginForm,
                          SetPasswordForm,
                          BindingActionForm,
                          WXAuthLoginForm,
@@ -50,10 +51,10 @@ def verify_identifying_code(params_dict):
 
     instance = IdentifyingCode.get_object_by_phone_or_email(username)
     if not instance:
-        return Exception('Identifying code is not existed or expired.',)
+        return False, 'Identifying code is not existed or expired.'
     if instance.identifying_code != identifying_code:
-        return Exception('Identifying code is incorrect.',)
-    return True
+        return False, 'Identifying code is incorrect.'
+    return True, None
 
 
 class IdentifyingCodeAction(APIView):
@@ -200,10 +201,10 @@ class IdentifyingCodeVerify(APIView):
         if not form.is_valid():
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
         cld = form.cleaned_data
-        result = verify_identifying_code(cld)
-        if isinstance(result, Exception):
-            return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'Result': result}, status=status.HTTP_200_OK)
+        is_valid, error_message = verify_identifying_code(cld)
+        if not is_valid:
+            return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'Result': is_valid}, status=status.HTTP_200_OK)
 
 
 class UserNotLoggedAction(APIView):
@@ -241,9 +242,9 @@ class UserNotLoggedAction(APIView):
         is_valid, error_message = self.is_request_data_valid(**cld)
         if not is_valid:
             return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
-        result = verify_identifying_code(cld)
-        if isinstance(result, Exception):
-            return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
+        is_valid, error_message = verify_identifying_code(cld)
+        if not is_valid:
+            return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
         try:
             user = User.objects.create_user(**cld)
         except Exception as e:
@@ -261,9 +262,9 @@ class UserNotLoggedAction(APIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        result = verify_identifying_code(cld)
-        if isinstance(result, Exception):
-            return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
+        is_valid, error_message = verify_identifying_code(cld)
+        if not is_valid:
+            return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
         instance = self.get_object_by_username(cld['username_type'], cld['username'])
         if isinstance(instance, Exception):
             return Response({'Detail': instance.args}, status=status.HTTP_400_BAD_REQUEST)
@@ -282,9 +283,6 @@ class UserAction(generics.GenericAPIView):
     update user API
     """
     permission_classes = (IsOwnerOrReadOnly, )
-
-    def get_object_of_user(self, request):
-        return User.get_object(**{'pk': request.user.id})
 
     def get_perfect_validate_data(self, **cleaned_data):
         if 'role_id' in cleaned_data:
@@ -308,7 +306,34 @@ class UserAction(generics.GenericAPIView):
             serializer.update_userinfo(request, request.user, cld)
         except Exception as e:
             return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_206_PARTIAL_CONTENT)
 
+    def patch(self, request, *args, **kwargs):
+        """
+        更改用户密码
+        """
+        form = UpdateUserPasswordWithLoginForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        result = False
+        error_message = None
+        for username in [request.user.phone, request.user.email]:
+            params_dict = {'username': username,
+                           'identifying_code': cld['identifying_code']}
+            is_valid, error_message = verify_identifying_code(params_dict)
+            if is_valid:
+                result = is_valid
+                break
+        if not result:
+            return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserSerializer(request.user)
+        try:
+            serializer.update_password(request, request.user, cld)
+        except Exception as e:
+            return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data, status=status.HTTP_206_PARTIAL_CONTENT)
 
 
