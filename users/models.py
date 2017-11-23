@@ -222,7 +222,7 @@ class Role(models.Model):
     """
     用户角色
     """
-    name = models.CharField('角色名称', max_length=32, db_index=True, unique=True)
+    name = models.CharField('角色名称', max_length=32, db_index=True)
     # 数据状态：1：正常  非1：已删除
     status = models.IntegerField('数据状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
@@ -232,6 +232,7 @@ class Role(models.Model):
 
     class Meta:
         db_table = 'by_user_role'
+        unique_together = ['name', 'status']
 
     def __unicode__(self):
         return self.name
