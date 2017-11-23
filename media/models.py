@@ -374,6 +374,9 @@ class Information(models.Model):
     description = models.TextField('描述/介绍', null=True, blank=True)
 
     content = models.TextField('正文')
+    picture = models.ImageField('封面图', max_length=200,
+                                upload_to=MEDIA_PICTURE_PATH,
+                                default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
 
     # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
     tags = models.CharField('标签', max_length=256)
@@ -424,6 +427,9 @@ class Case(models.Model):
     description = models.TextField('描述/介绍', null=True, blank=True)
 
     content = models.TextField('正文')
+    picture = models.ImageField('封面图', max_length=200,
+                                upload_to=MEDIA_PICTURE_PATH,
+                                default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
 
     # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
     tags = models.CharField('标签', max_length=256)
