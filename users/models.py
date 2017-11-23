@@ -222,8 +222,13 @@ class Role(models.Model):
     """
     用户角色
     """
-    name = models.CharField('角色名称', max_length=32)
+    name = models.CharField('角色名称', max_length=32, db_index=True, unique=True)
+    # 数据状态：1：正常  非1：已删除
+    status = models.IntegerField('数据状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = BaseManager()
 
     class Meta:
         db_table = 'by_user_role'
