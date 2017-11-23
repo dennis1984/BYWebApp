@@ -233,6 +233,7 @@ class Role(models.Model):
     class Meta:
         db_table = 'by_user_role'
         unique_together = ['name', 'status']
+        ordering = ['-updated']
 
     def __unicode__(self):
         return self.name
