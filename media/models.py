@@ -106,8 +106,54 @@ class Media(models.Model):
         ordering = ['-updated']
         unique_together = ['title', 'subtitle', 'status']
 
+    class AdminMeta:
+        json_fields = ['tags', 'media_outline']
+
     def __unicode__(self):
         return self.title
+
+    def get_perfect_tags(self, tag_ids):
+        tag_details = []
+        for tag_id in tag_ids:
+            tag = ResourceTags.get_object(pk=tag_id)
+            if isinstance(tag, Exception):
+                continue
+            tag_details.append(tag.name)
+        return tag_details
+
+    @property
+    def perfect_detail(self):
+        detail = model_to_dict(self)
+        for key in detail.keys():
+            if key in self.AdminMeta.json_fields:
+                if key == 'tags':
+                    tag_ids = json.loads(detail[key])
+                    detail[key] = self.get_perfect_tags(tag_ids)
+                else:
+                    detail[key] = json.loads(detail[key])
+
+        media_type_dict = getattr(self, '_media_type_dict', {})
+        theme_type_dict = getattr(self, '_theme_type_dict', {})
+        progress_dict = getattr(self, '_progress_dict', {})
+        media_type_ins = media_type_dict.get(self.media_type)
+        if not media_type_ins:
+            media_type_ins = MediaType.get_object(pk=self.media_type)
+            media_type_dict[self.media_type] = media_type_ins
+            setattr(self, '_media_type_dict', media_type_dict)
+        theme_type_ins = theme_type_dict.get(self.theme_type)
+        if not theme_type_ins:
+            theme_type_ins = ThemeType.get_object(pk=self.theme_type)
+            theme_type_dict[self.theme_type] = theme_type_ins
+            setattr(self, '_theme_type_dict', theme_type_dict)
+        progress_ins = progress_dict.get(self.progress)
+        if not progress_ins:
+            progress_ins = ProjectProgress.get_object(pk=self.progress)
+            progress_dict[self.progress] = progress_ins
+            setattr(self, '_progress_dict', progress_dict)
+        detail['media_type_name'] = getattr(media_type_ins, 'name', None)
+        detail['theme_type_name'] = getattr(theme_type_ins, 'name', None)
+        detail['progress_name'] = getattr(progress_ins, 'name', None)
+        return detail
 
     @classmethod
     def get_object(cls, **kwargs):
@@ -118,12 +164,30 @@ class Media(models.Model):
             return e
 
     @classmethod
+    def get_detail(cls, **kwargs):
+        instance = cls.get_object(**kwargs)
+        if isinstance(instance, Exception):
+            return instance
+        return instance.perfect_detail
+
+    @classmethod
     def filter_objects(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+    @classmethod
+    def filter_details(cls, **kwargs):
+        instances = cls.filter_objects(**kwargs)
+        if isinstance(instances, Exception):
+            return instances
+
+        details = []
+        for ins in instances:
+            details.append(ins.perfect_detail)
+        return details
 
 
 class MediaConfigure(models.Model):
