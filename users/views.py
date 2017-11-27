@@ -231,6 +231,10 @@ class UserNotLoggedAction(APIView):
                 return False, form.errors
         return True, None
 
+    def get_perfect_request_data(self, **kwargs):
+        kwargs['nickname'] = kwargs['username']
+        return kwargs
+
     def post(self, request, *args, **kwargs):
         """
         用户注册
@@ -246,6 +250,8 @@ class UserNotLoggedAction(APIView):
         is_valid, error_message = verify_identifying_code(cld)
         if not is_valid:
             return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = self.get_perfect_request_data(**cld)
         try:
             user = User.objects.create_user(**cld)
         except Exception as e:

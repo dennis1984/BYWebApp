@@ -141,6 +141,14 @@ class Oauth2AccessToken(object):
         except Exception as e:
             return e
 
+    def mark_user_login(self, user):
+        """
+        标记用户已经登录
+        """
+        user.last_login = now()
+        user.save()
+        return user
+
     def get_token(self, user):
         token_dict = {"access_token": generate_token(),
                       "token_type": "Bearer",
@@ -167,4 +175,7 @@ class Oauth2AccessToken(object):
                               'user': user}
         _refresh_token = Oauth2_RefreshToken(**refresh_token_data)
         _refresh_token.save()
+
+        # 标记用户已经登录
+        self.mark_user_login(user)
         return token_dict

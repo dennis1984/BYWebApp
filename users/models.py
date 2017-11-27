@@ -35,7 +35,7 @@ class UserManager(BaseUserManager):
 
         # user = self.model(phone=username)
         user.set_password(password)
-        user.save(using=self._db)
+        user.save(using=self._db, **kwargs)
         return user
 
     def create_superuser(self, username, password, **kwargs):
