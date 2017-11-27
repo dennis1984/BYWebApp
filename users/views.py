@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.views.generic import View
+from django.conf import settings
 
 from users.serializers import (UserSerializer,
                                UserInstanceSerializer,
@@ -250,8 +251,9 @@ class UserNotLoggedAction(APIView):
         except Exception as e:
             return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = UserInstanceSerializer(user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # 置用户为登录状态
+        _token = Oauth2AccessToken().get_token(user)
+        return Response(_token, status=status.HTTP_201_CREATED)
 
     def put(self, request, *args, **kwargs):
         """

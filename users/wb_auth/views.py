@@ -147,7 +147,8 @@ class Oauth2AccessToken(object):
                       "expires_in": settings.OAUTH2_PROVIDER['ACCESS_TOKEN_EXPIRE_SECONDS'],
                       "refresh_token": generate_token(),
                       "scope": ' '.join(settings.OAUTH2_PROVIDER['SCOPES'].keys()),
-                      'out_open_id': user.out_open_id}
+                      'wx_out_open_id': user.wx_out_open_id,
+                      'wb_uid': user.wb_uid}
         if isinstance(self.application, Exception):
             return self.application
 
