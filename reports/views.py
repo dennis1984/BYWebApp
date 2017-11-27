@@ -41,26 +41,3 @@ class ReportList(generics.GenericAPIView):
             return Response({'Detail': data_list.args}, status=status.HTTP_400_BAD_REQUEST)
         return Response(data_list, status=status.HTTP_200_OK)
 
-
-# class CommentDetail(generics.GenericAPIView):
-#     """
-#     点评详情
-#     """
-#     def get_comment_detail(self, request, orders_id):
-#         kwargs = {'user_id': request.user.id,
-#                   'orders_id': orders_id}
-#         return Comment.get_comment_detail(**kwargs)
-#
-#     def post(self, request, *args, **kwargs):
-#         form = CommentDetailForm(request.data)
-#         if not form.is_valid():
-#             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
-#
-#         cld = form.cleaned_data
-#         detail = self.get_comment_detail(request, cld['orders_id'])
-#         if isinstance(detail, Exception):
-#             return Response({'Detail': detail.args}, status=status.HTTP_400_BAD_REQUEST)
-#         serializer = CommentDetailSerializer(data=detail)
-#         if not serializer.is_valid():
-#             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-#         return Response(serializer.data, status=status.HTTP_200_OK)

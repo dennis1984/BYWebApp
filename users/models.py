@@ -35,7 +35,10 @@ class UserManager(BaseUserManager):
 
         # user = self.model(phone=username)
         user.set_password(password)
-        user.save(using=self._db, **kwargs)
+        for attr, value in kwargs.items():
+            setattr(user, attr, value)
+
+        user.save(using=self._db)
         return user
 
     def create_superuser(self, username, password, **kwargs):
@@ -92,7 +95,10 @@ class User(AbstractBaseUser):
         # unique_together = ('nickname', 'food_court_id')
 
     def __unicode__(self):
-        return self.phone
+        if self.phone:
+            return self.phone
+        else:
+            return self.email
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

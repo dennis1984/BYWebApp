@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.timezone import now
 from django.conf import settings
 
-from media.models import Media
+from media.models import Media, ResourceTags
 from horizon.models import (model_to_dict,
                             BaseManager,
                             get_perfect_filter_params)
@@ -45,6 +45,9 @@ class Report(models.Model):
         unique_together = ('media_id', 'status')
         ordering = ['-updated']
 
+    class AdminMeta:
+        json_fields = ['tags']
+
     def __unicode__(self):
         return self.title
 
@@ -57,12 +60,52 @@ class Report(models.Model):
             return e
 
     @classmethod
+    def get_detail(cls, **kwargs):
+        instance = cls.get_object(**kwargs)
+        if isinstance(instance, Exception):
+            return instance
+        return instance.perfect_detail
+
+    @classmethod
     def filter_objects(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+    @classmethod
+    def filter_details(cls, **kwargs):
+        instances = cls.filter_objects(**kwargs)
+        if isinstance(instances, Exception):
+            return instances
+
+        details = []
+        for ins in instances:
+            details.append(ins.perfect_detail)
+        return details
+
+    @property
+    def perfect_detail(self):
+        detail = model_to_dict(self)
+        if hasattr(self, 'AdminMeta'):
+            if hasattr(self.AdminMeta, 'json_fields'):
+                for field in self.AdminMeta.json_fields:
+                    if field == 'tags':
+                        tag_ids = json.loads(field)
+                        detail[field] = self.get_perfect_tags(tag_ids)
+                    else:
+                        detail[field] = json.loads(field)
+        return detail
+
+    def get_perfect_tags(self, tag_ids):
+        tag_names = []
+        for tag_id in tag_ids:
+            tag = ResourceTags.get_object(pk=tag_id)
+            if isinstance(tag, Exception):
+                continue
+            tag_names.append(tag.name)
+        return tag_names
 
 
 class ReportDownloadRecord(models.Model):
