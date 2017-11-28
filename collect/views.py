@@ -88,7 +88,7 @@ class CollectList(generics.GenericAPIView):
 
     def get_collects_list(self, request, source_type):
         kwargs = {'user_id': request.user.id}
-        if source_type == 0:
+        if not source_type:
             kwargs['source_type__in'] = SOURCE_TYPE_DB.keys()
         else:
             kwargs['source_type'] = source_type

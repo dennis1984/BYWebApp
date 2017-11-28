@@ -23,7 +23,8 @@ class CollectListForm(forms.Form):
                                              (3, 4)),
                                     error_messages={
                                         'required': 'Source type must in [0, 1, 2, 3]'
-                                    })
+                                    },
+                                    required=False)
     page_index = forms.IntegerField(min_value=1, required=False)
     page_size = forms.IntegerField(min_value=1, required=False)
 
