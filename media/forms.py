@@ -40,3 +40,20 @@ class MediaListForm(forms.Form):
 class MediaDetailForm(forms.Form):
     id = forms.IntegerField(min_value=1)
 
+
+class InformationDetailForm(forms.Form):
+    id = forms.IntegerField(min_value=1)
+
+
+class InformationListForm(forms.Form):
+    page_index = forms.IntegerField(min_value=1, required=False)
+    page_size = forms.IntegerField(min_value=1, required=False)
+
+
+class CaseDetailForm(forms.Form):
+    id = forms.IntegerField(min_value=1)
+
+
+class CaseListForm(forms.Form):
+    page_index = forms.IntegerField(min_value=1, required=False)
+    page_size = forms.IntegerField(min_value=1, required=False)

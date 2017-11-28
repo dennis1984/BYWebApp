@@ -2,14 +2,10 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from reports.serializers import (CommentSerializer,
-                                 ReportDetailSerializer,
-                                 ReportListSerializer)
+from reports.serializers import (ReportListSerializer,)
 from reports.permissions import IsOwnerOrReadOnly
 from reports.models import (Report, ReportDownloadRecord)
-from reports.forms import (CommentInputForm,
-                           ReportListForm,
-                           CommentDetailForm)
+from reports.forms import (ReportListForm,)
 
 import json
 

@@ -6,17 +6,27 @@ from media.permissions import IsOwnerOrReadOnly
 from media.models import (Media, ResourceTags,
                           ThemeType,
                           MediaType,
-                          ProjectProgress)
+                          ProjectProgress,
+                          Information,
+                          Case)
 from media.forms import (MediaTypeListForm,
                          ThemeTypeListForm,
                          ProgressListForm,
                          MediaListForm,
-                         MediaDetailForm)
+                         MediaDetailForm,
+                         InformationDetailForm,
+                         InformationListForm,
+                         CaseDetailForm,
+                         CaseListForm)
 from media.serializers import (MediaTypeListSerailizer,
                                ThemeTypeListSerializer,
                                ProgressListSerializer,
                                MediaDetailSerializer,
-                               MediaListSerializer,)
+                               MediaListSerializer,
+                               InformationDetailSerializer,
+                               InformationListSerializer,
+                               CaseDetailSerializer,
+                               CaseListSerializer)
 
 
 class MediaTypeList(generics.GenericAPIView):
@@ -158,6 +168,124 @@ class MediaList(generics.GenericAPIView):
             return Response({'Detail': details.args}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = MediaListSerializer(data=details)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+        list_data = serializer.list_data(**cld)
+        if isinstance(list_data, Exception):
+            return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(list_data, status=status.HTTP_200_OK)
+
+
+class InformationDetail(generics.GenericAPIView):
+    """
+    资讯详情
+    """
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_information_detail(self, information_id):
+        return Information.get_detail(pk=information_id)
+
+    def post(self, request, *args, **kwargs):
+        """
+        获取详情
+        """
+        form = InformationDetailForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        detail = self.get_information_detail(cld['id'])
+        if isinstance(detail, Exception):
+            return Response({'Detail': detail.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = InformationDetailSerializer(data=detail)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class InformationList(generics.GenericAPIView):
+    """
+    资讯列表
+    """
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_information_detail_list(self, **kwargs):
+        return Information.filter_details(**kwargs)
+
+    def post(self, request, *args, **kwargs):
+        """
+        获取列表
+        """
+        form = InformationListForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        details = self.get_information_detail_list(**cld)
+        if isinstance(details, Exception):
+            return Response({'Detail': details.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = InformationListSerializer(data=details)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+        list_data = serializer.list_data(**cld)
+        if isinstance(list_data, Exception):
+            return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(list_data, status=status.HTTP_200_OK)
+
+
+class CaseDetail(generics.GenericAPIView):
+    """
+    案例详情
+    """
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_case_detail(self, case_id):
+        return Case.get_detail(pk=case_id)
+
+    def post(self, request, *args, **kwargs):
+        """
+        获取详情
+        """
+        form = CaseDetailForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        detail = self.get_case_detail(cld['id'])
+        if isinstance(detail, Exception):
+            return Response({'Detail': detail.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = CaseDetailSerializer(data=detail)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CaseList(generics.GenericAPIView):
+    """
+    案例列表
+    """
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_case_detail_list(self, **kwargs):
+        return Case.filter_details(**kwargs)
+
+    def post(self, request, *args, **kwargs):
+        """
+        获取列表
+        """
+        form = CaseListForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        details = self.get_case_detail_list(**cld)
+        if isinstance(details, Exception):
+            return Response({'Detail': details.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = CaseListSerializer(data=details)
         if not serializer.is_valid():
             return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
         list_data = serializer.list_data(**cld)

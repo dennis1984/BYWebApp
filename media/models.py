@@ -459,8 +459,32 @@ class Information(models.Model):
     class Meta:
         db_table = 'by_information'
 
+    class AdminMeta:
+        json_fields = ['tags']
+
     def __unicode__(self):
         return self.title
+
+    def get_perfect_tags(self, tag_ids):
+        tag_details = []
+        for tag_id in tag_ids:
+            tag = ResourceTags.get_object(pk=tag_id)
+            if isinstance(tag, Exception):
+                continue
+            tag_details.append(tag.name)
+        return tag_details
+
+    @property
+    def perfect_detail(self):
+        detail = model_to_dict(self)
+        for key in detail.keys():
+            if key in self.AdminMeta.json_fields:
+                if key == 'tags':
+                    tag_ids = json.loads(detail[key])
+                    detail[key] = self.get_perfect_tags(tag_ids)
+                else:
+                    detail[key] = json.loads(detail[key])
+        return detail
 
     @classmethod
     def get_object(cls, **kwargs):
@@ -471,12 +495,30 @@ class Information(models.Model):
             return e
 
     @classmethod
+    def get_detail(cls, **kwargs):
+        instance = cls.get_object(**kwargs)
+        if isinstance(instance, Exception):
+            return instance
+        return instance.perfect_detail
+
+    @classmethod
     def filter_objects(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+    @classmethod
+    def filter_details(cls, **kwargs):
+        instances = cls.filter_objects(**kwargs)
+        if isinstance(instances, Exception):
+            return instances
+
+        details = []
+        for ins in instances:
+            details.append(ins.perfect_detail)
+        return details
 
 
 CASE_FILE_PATH = settings.PICTURE_DIRS['web']['case']
@@ -512,8 +554,32 @@ class Case(models.Model):
     class Meta:
         db_table = 'by_case'
 
+    class AdminMeta:
+        json_fields = ['tags']
+
     def __unicode__(self):
         return self.title
+
+    def get_perfect_tags(self, tag_ids):
+        tag_details = []
+        for tag_id in tag_ids:
+            tag = ResourceTags.get_object(pk=tag_id)
+            if isinstance(tag, Exception):
+                continue
+            tag_details.append(tag.name)
+        return tag_details
+
+    @property
+    def perfect_detail(self):
+        detail = model_to_dict(self)
+        for key in detail.keys():
+            if key in self.AdminMeta.json_fields:
+                if key == 'tags':
+                    tag_ids = json.loads(detail[key])
+                    detail[key] = self.get_perfect_tags(tag_ids)
+                else:
+                    detail[key] = json.loads(detail[key])
+        return detail
 
     @classmethod
     def get_object(cls, **kwargs):
@@ -524,9 +590,27 @@ class Case(models.Model):
             return e
 
     @classmethod
+    def get_detail(cls, **kwargs):
+        instance = cls.get_object(**kwargs)
+        if isinstance(instance, Exception):
+            return instance
+        return instance.perfect_detail
+
+    @classmethod
     def filter_objects(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+    @classmethod
+    def filter_details(cls, **kwargs):
+        instances = cls.filter_objects(**kwargs)
+        if isinstance(instances, Exception):
+            return instances
+
+        details = []
+        for ins in instances:
+            details.append(ins.perfect_detail)
+        return details

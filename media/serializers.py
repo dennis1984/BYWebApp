@@ -83,6 +83,9 @@ class MediaDetailSerializer(BaseSerializer):
     # 运营标记 0: 未设定 1：热门
     mark = serializers.IntegerField()
 
+    # 资源类型  1: 媒体资源  2：案例   3：资讯
+    source_type = serializers.IntegerField(default=1)
+
     picture_profile = serializers.ImageField()
     picture_detail = serializers.ImageField()
     created = serializers.DateTimeField()
@@ -92,3 +95,56 @@ class MediaDetailSerializer(BaseSerializer):
 class MediaListSerializer(BaseListSerializer):
     child = MediaDetailSerializer()
 
+
+class InformationDetailSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    subtitle = serializers.CharField()
+    description = serializers.CharField()
+
+    # 资讯正文
+    content = serializers.CharField()
+    # 封面图
+    picture = serializers.ImageField()
+    # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
+    tags = serializers.ListField()
+    # 浏览数
+    read_count = serializers.IntegerField()
+    # 点赞数
+    like = serializers.IntegerField()
+    # 资源类型  1: 媒体资源  2：案例   3：资讯
+    source_type = serializers.IntegerField(default=3)
+
+    created = serializers.DateTimeField()
+    updated = serializers.DateTimeField()
+
+
+class InformationListSerializer(BaseListSerializer):
+    child = InformationDetailSerializer()
+
+
+class CaseDetailSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    subtitle = serializers.CharField()
+    description = serializers.CharField()
+
+    # 案例正文
+    content = serializers.CharField()
+    # 封面图
+    picture = serializers.ImageField()
+    # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
+    tags = serializers.ListField()
+    # 浏览数
+    read_count = serializers.IntegerField()
+    # 点赞数
+    like = serializers.IntegerField()
+    # 资源类型  1: 媒体资源  2：案例   3：资讯
+    source_type = serializers.IntegerField(default=3)
+
+    created = serializers.DateTimeField()
+    updated = serializers.DateTimeField()
+
+
+class CaseListSerializer(BaseListSerializer):
+    child = CaseDetailSerializer()

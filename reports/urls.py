@@ -5,7 +5,6 @@ from reports import views
 
 urlpatterns = [
     url(r'^report_list/$', views.ReportList.as_view()),
-    # url(r'^comment_detail/$', views.CommentDetail.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
