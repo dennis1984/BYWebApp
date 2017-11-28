@@ -52,6 +52,26 @@ class Comment(models.Model):
     def __unicode__(self):
         return '%s:%s:%s' % (self.user_id, self.source_type, self.source_id)
 
+    @property
+    def perfect_detail(self):
+        is_recommend = self.is_recommend
+        reply_message = ''
+        if is_recommend:
+            reply = ReplyComment.get_object(comment_id=self.pk)
+            reply_message = reply.message
+
+        source_ins = self.get_source_object(source_type=self.source_type,
+                                            source_id=self.source_id)
+        if isinstance(source_ins, Exception):
+            source_title = ''
+        else:
+            source_title = source_ins.title
+        detail = model_to_dict(self)
+        detail['is_recommend'] = is_recommend
+        detail['reply_message'] = reply_message
+        detail['source_title'] = source_title
+        return detail
+
     @classmethod
     def get_object(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
@@ -59,6 +79,13 @@ class Comment(models.Model):
             return cls.objects.get(**kwargs)
         except Exception as e:
             return e
+
+    @classmethod
+    def get_detail(cls, **kwargs):
+        instance = cls.get_object(**kwargs)
+        if isinstance(instance, Exception):
+            return instance
+        return instance.perfect_detail
 
     @classmethod
     def filter_objects(cls, **kwargs):
@@ -73,23 +100,7 @@ class Comment(models.Model):
         instances = cls.filter_objects(**kwargs)
         details = []
         for ins in instances:
-            is_recommend = ins.is_recommend
-            reply_message = ''
-            if is_recommend:
-                reply = ReplyComment.get_object(comment_id=ins.pk)
-                reply_message = reply.message
-
-            source_ins = cls.get_source_object(source_type=ins.source_type,
-                                               source_id=ins.source_id)
-            if isinstance(source_ins, Exception):
-                source_title = ''
-            else:
-                source_title = source_ins.title
-            item_dict = model_to_dict(ins)
-            item_dict['is_recommend'] = is_recommend
-            item_dict['reply_message'] = reply_message
-            item_dict['source_title'] = source_title
-            details.append(item_dict)
+            details.append(ins.perfect_detail)
         return details
 
     @classmethod
