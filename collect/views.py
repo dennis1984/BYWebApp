@@ -86,7 +86,7 @@ class CollectList(generics.GenericAPIView):
     """
     permission_classes = (IsOwnerOrReadOnly, )
 
-    def get_collects_list(self, request, source_type):
+    def get_collects_list(self, request, source_type=None):
         kwargs = {'user_id': request.user.id}
         if not source_type:
             kwargs['source_type__in'] = SOURCE_TYPE_DB.keys()
@@ -101,7 +101,7 @@ class CollectList(generics.GenericAPIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        collects = self.get_collects_list(request, cld['source_type'])
+        collects = self.get_collects_list(request, cld.get('source_type'))
         if isinstance(collects, Exception):
             return Response({'Detail': collects.args}, status=status.HTTP_400_BAD_REQUEST)
         serializer = CollectListSerializer(data=collects)
