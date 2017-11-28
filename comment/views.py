@@ -11,6 +11,7 @@ from comment.forms import (CommentInputForm,
                            CommentListForm,
                            CommentDetailForm,
                            CommentDeleteForm)
+from score.models import ScoreAction
 
 import json
 
@@ -34,6 +35,12 @@ class CommentAction(generics.GenericAPIView):
     def get_comment_object(self, request, comment_id):
         return Comment.get_object(pk=comment_id, user_id=request.user.id)
 
+    def score_action(self, request):
+        """
+        增加积分及添加积分记录
+        """
+        return ScoreAction.score_action(request, action='comment')
+
     def post(self, request, *args, **kwargs):
         """
         用户点评资源（资源、案例及资讯）
@@ -54,7 +61,9 @@ class CommentAction(generics.GenericAPIView):
             serializer.save()
         except Exception as e:
             return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
-
+        result = self.score_action(request)
+        if isinstance(result, Exception):
+            return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):

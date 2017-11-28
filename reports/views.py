@@ -8,6 +8,7 @@ from reports.permissions import IsOwnerOrReadOnly
 from reports.models import (Report, ReportDownloadRecord)
 from reports.forms import (ReportListForm,
                            ReportFileDownloadForm)
+from score.models import SCORE_ACTION_DICT, Score, ScoreAction
 
 import json
 import os
@@ -59,15 +60,36 @@ class ReportFileDownload(generics.GenericAPIView):
                 else:
                     break
 
+    def get_score_of_user(self, request):
+        score = Score.get_object(user_id=request.user.id)
+        if isinstance(score, Exception):
+            return 0
+        return score.score
+
+    def score_action(self, request):
+        """
+        扣除积分并添加积分消耗记录
+        """
+        return ScoreAction.score_action(request, action='download')
+
     def post(self, request, *args, **kwargs):
         form = ReportFileDownloadForm(request.data)
         if not form.is_valid():
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
+        score_count = self.get_score_of_user(request)
+        if score_count < SCORE_ACTION_DICT['download']['score']:
+            return Response({'Detail': 'Score count is not enough.'}, status=status.HTTP_400_BAD_REQUEST)
+
         instance = self.get_report_object(cld['media_id'])
         if isinstance(instance, Exception):
             return Response({'Detail': instance.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 扣除积分及添加积分记录
+        result = self.score_action(request)
+        if isinstance(result, Exception):
+            return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
 
         file_name = instance.report_file.name
         base_file_name = os.path.basename(file_name)

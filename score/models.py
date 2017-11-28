@@ -10,6 +10,11 @@ from horizon.models import (model_to_dict,
 import json
 import datetime
 
+SCORE_ACTION_DICT = {'comment': {'score': 20,
+                                 'action': 1},
+                     'download': {'score': 10,
+                                  'action': 2}}
+
 
 class Score(models.Model):
     """
@@ -78,3 +83,53 @@ class ScoreRecord(models.Model):
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+
+class ScoreAction(object):
+    """
+    积分操作
+       : 增加或减少积分，并添加积分记录
+    """
+    @classmethod
+    def update_score(cls, request, action='comment'):
+        score = Score.get_object(user_id=request)
+        if isinstance(score, Exception):
+            init_data = {'user_id': request.user.id}
+            score = Score(**init_data)
+            score.save()
+        # 评论资源，获得积分
+        if action == 'comment':
+            score.score += SCORE_ACTION_DICT[action]['score']
+        # 下载报告，消耗积分
+        elif action == 'download':
+            if score.score < SCORE_ACTION_DICT[action]['score']:
+                return Exception('Score count is not enough.')
+            score.score -= SCORE_ACTION_DICT[action]['score']
+        else:
+            return Exception('Params [action] is incorrect.')
+
+        score.save()
+        return score
+
+    @classmethod
+    def create_score_record(cls, request, action='comment'):
+        if action not in SCORE_ACTION_DICT:
+            return Exception('Params [action] is incorrect.')
+
+        init_data = {'user_id': request.user.id,
+                     'action': SCORE_ACTION_DICT[action]['action'],
+                     'score_count': SCORE_ACTION_DICT[action]['score']}
+        record = ScoreRecord(**init_data)
+        record.save()
+        return record
+
+    @classmethod
+    def score_action(cls, request, action='comment'):
+        score = cls.update_score(request, action=action)
+        if isinstance(score, Exception):
+            return score
+        record = cls.create_score_record(request, action=action)
+        if isinstance(record, Exception):
+            return record
+        return score, record
+
