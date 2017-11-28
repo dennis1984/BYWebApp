@@ -47,7 +47,7 @@ class CommentAction(generics.GenericAPIView):
         if not is_valid:
             return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = CommentSerializer(request, data=cld)
+        serializer = CommentSerializer(data=cld, request=request)
         if not serializer.is_valid():
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         try:

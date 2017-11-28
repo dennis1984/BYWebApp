@@ -13,7 +13,7 @@ import os
 
 
 class CommentSerializer(BaseModelSerializer):
-    def __init__(self, request, instance=None, data=None, **kwargs):
+    def __init__(self, instance=None, data=None, request=None, **kwargs):
         if data:
             data['user_id'] = request.user.id
             super(CommentSerializer, self).__init__(data=data, **kwargs)
