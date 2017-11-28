@@ -21,7 +21,7 @@ class Collect(models.Model):
     用户收藏
     """
     user_id = models.IntegerField('用户ID', db_index=True)
-    # 资源类型:  1：案例  2：资源  3：资讯
+    # 媒体资源类型:  1：资源  2：案例  3：资讯
     source_type = models.IntegerField('收藏类型', default=1)
     # 资源ID
     source_id = models.IntegerField('资源ID')
@@ -73,7 +73,7 @@ class Collect(models.Model):
             source_ins = cls.get_source_object(source_type=ins.source_type,
                                                source_id=ins.source_id)
             if isinstance(source_ins, Exception):
-                pass
+                continue
             item_dict = model_to_dict(ins)
             item_dict['source_title'] = source_ins.title
             item_dict['source_description'] = source_ins.description

@@ -31,6 +31,8 @@ class CollectSerializer(BaseModelSerializer):
 
 class CollectDetailSerializer(BaseSerializer):
     id = serializers.IntegerField()
+    source_type = serializers.IntegerField()
+    source_id = serializers.IntegerField()
     source_title = serializers.CharField()
     source_description = serializers.CharField(allow_blank=True, allow_null=True)
     tags = serializers.ListField()
