@@ -63,21 +63,21 @@ class Collect(models.Model):
         if not source_class:
             return Exception('Params is incorrect')
 
-        return source_class.get_object(pk=source_id)
+        return source_class.get_detail(pk=source_id)
 
     @classmethod
     def filter_details(cls, **kwargs):
         instances = cls.filter_objects(**kwargs)
         details = []
         for ins in instances:
-            source_ins = cls.get_source_object(source_type=ins.source_type,
-                                               source_id=ins.source_id)
-            if isinstance(source_ins, Exception):
+            source_detail = cls.get_source_object(source_type=ins.source_type,
+                                                  source_id=ins.source_id)
+            if isinstance(source_detail, Exception):
                 continue
             item_dict = model_to_dict(ins)
-            item_dict['source_title'] = source_ins.title
-            item_dict['source_description'] = source_ins.description
-            item_dict['updated'] = source_ins.created
-            item_dict['tags'] = json.loads(source_ins.tags)
+            item_dict['source_title'] = source_detail['title']
+            item_dict['source_description'] = source_detail['description']
+            item_dict['updated'] = source_detail['created']
+            item_dict['tags'] = source_detail['tags']
             details.append(item_dict)
         return details
