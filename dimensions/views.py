@@ -13,6 +13,7 @@ from dimensions.forms import (DimensionListForm,
                               TagsListForm,
                               ResourceMatchActionForm)
 from media.models import Media, MediaConfigure
+from media.serializers import MediaDetailSerializer
 from horizon.main import select_random_element_from_array
 
 import json
@@ -205,10 +206,10 @@ class ResourceMatchAction(generics.GenericAPIView):
         return Media.filter_details(**kwargs)
 
     def get_perfect_media_result(self, match_result, media_list):
-        media_dict = {item.id: item for item in media_list}
+        media_dict = {item['id']: item for item in media_list}
         perfect_result = []
         for item in match_result:
-            serializer = MediaSerializer(media_dict[item['media_id']])
+            serializer = MediaDetailSerializer(media_dict[item['media_id']])
             item_dict = {'match_degree': '%.2f' % item['data']['total'],
                          'data': serializer.data}
             perfect_result.append(item_dict)
