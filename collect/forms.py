@@ -13,7 +13,7 @@ class CollectActionForm(forms.Form):
 
 
 class CollectDeleteForm(forms.Form):
-    collect_id = forms.IntegerField(min_value=1)
+    id = forms.IntegerField(min_value=1)
 
 
 class CollectListForm(forms.Form):

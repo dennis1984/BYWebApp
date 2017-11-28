@@ -13,7 +13,7 @@ from collect.forms import (CollectActionForm,
 
 class CollectAction(generics.GenericAPIView):
     """
-    钱包相关功能
+    收藏相关功能
     """
     permission_classes = (IsOwnerOrReadOnly, )
 
@@ -35,7 +35,7 @@ class CollectAction(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         """
-        用户收藏商品
+        用户收藏资源
         """
         form = CollectActionForm(request.data)
         if not form.is_valid():
@@ -62,7 +62,7 @@ class CollectAction(generics.GenericAPIView):
 
     def delete(self, request, *args, **kwargs):
         """
-        删除收藏的商品
+        删除收藏的资源
         """
         form = CollectDeleteForm(request.data)
         if not form.is_valid():
