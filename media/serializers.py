@@ -47,8 +47,8 @@ class ProgressListSerializer(BaseListSerializer):
 class MediaDetailSerializer(BaseSerializer):
     id = serializers.IntegerField()
     title = serializers.CharField()
-    subtitle = serializers.CharField()
-    description = serializers.CharField()
+    subtitle = serializers.CharField(allow_blank=True, allow_null=True)
+    description = serializers.CharField(allow_blank=True, allow_null=True)
 
     # 资源类型：10：电影 20：电视剧 30：综艺节目
     media_type = serializers.IntegerField()
@@ -83,7 +83,7 @@ class MediaDetailSerializer(BaseSerializer):
     # 运营标记 0: 未设定 1：热门
     mark = serializers.IntegerField()
 
-    # 资源类型  1: 媒体资源  2：案例   3：资讯
+    # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=1)
 
     picture_profile = serializers.ImageField()
@@ -99,20 +99,20 @@ class MediaListSerializer(BaseListSerializer):
 class InformationDetailSerializer(BaseSerializer):
     id = serializers.IntegerField()
     title = serializers.CharField()
-    subtitle = serializers.CharField()
-    description = serializers.CharField()
+    subtitle = serializers.CharField(allow_blank=True, allow_null=True)
+    description = serializers.CharField(allow_blank=True, allow_null=True)
 
     # 资讯正文
     content = serializers.CharField()
     # 封面图
     picture = serializers.ImageField()
     # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
-    tags = serializers.ListField()
+    tags = serializers.ListField(allow_null=True)
     # 浏览数
     read_count = serializers.IntegerField()
     # 点赞数
     like = serializers.IntegerField()
-    # 资源类型  1: 媒体资源  2：案例   3：资讯
+    # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=3)
 
     created = serializers.DateTimeField()
@@ -126,21 +126,21 @@ class InformationListSerializer(BaseListSerializer):
 class CaseDetailSerializer(BaseSerializer):
     id = serializers.IntegerField()
     title = serializers.CharField()
-    subtitle = serializers.CharField()
-    description = serializers.CharField()
+    subtitle = serializers.CharField(allow_blank=True, allow_null=True)
+    description = serializers.CharField(allow_blank=True, allow_null=True)
 
     # 案例正文
     content = serializers.CharField()
     # 封面图
     picture = serializers.ImageField()
     # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
-    tags = serializers.ListField()
+    tags = serializers.ListField(allow_null=True)
     # 浏览数
     read_count = serializers.IntegerField()
     # 点赞数
     like = serializers.IntegerField()
-    # 资源类型  1: 媒体资源  2：案例   3：资讯
-    source_type = serializers.IntegerField(default=3)
+    # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
+    source_type = serializers.IntegerField(default=2)
 
     created = serializers.DateTimeField()
     updated = serializers.DateTimeField()

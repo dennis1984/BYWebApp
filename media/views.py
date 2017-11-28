@@ -169,7 +169,7 @@ class MediaList(generics.GenericAPIView):
 
         serializer = MediaListSerializer(data=details)
         if not serializer.is_valid():
-            return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         list_data = serializer.list_data(**cld)
         if isinstance(list_data, Exception):
             return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
@@ -228,7 +228,7 @@ class InformationList(generics.GenericAPIView):
 
         serializer = InformationListSerializer(data=details)
         if not serializer.is_valid():
-            return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         list_data = serializer.list_data(**cld)
         if isinstance(list_data, Exception):
             return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
@@ -287,7 +287,7 @@ class CaseList(generics.GenericAPIView):
 
         serializer = CaseListSerializer(data=details)
         if not serializer.is_valid():
-            return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         list_data = serializer.list_data(**cld)
         if isinstance(list_data, Exception):
             return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
