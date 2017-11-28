@@ -10,6 +10,7 @@ from reports.forms import (ReportListForm,
                            ReportFileDownloadForm)
 
 import json
+import os
 
 
 class ReportList(generics.GenericAPIView):
@@ -68,7 +69,7 @@ class ReportFileDownload(generics.GenericAPIView):
         if isinstance(instance, Exception):
             return Response({'Detail': instance.args}, status=status.HTTP_400_BAD_REQUEST)
 
-        file_name = instance.report_file.name
+        file_name = os.path.basename(instance.report_file.name)
         response = StreamingHttpResponse(self.download_file(file_name))
         response['Content-Type'] = 'application/octet-stream'
         response['Content-Disposition'] = 'attachment;filename=%s' % file_name
