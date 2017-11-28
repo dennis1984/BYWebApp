@@ -92,10 +92,10 @@ class Report(models.Model):
             if hasattr(self.AdminMeta, 'json_fields'):
                 for field in self.AdminMeta.json_fields:
                     if field == 'tags':
-                        tag_ids = json.loads(field)
+                        tag_ids = json.loads(detail[field])
                         detail[field] = self.get_perfect_tags(tag_ids)
                     else:
-                        detail[field] = json.loads(field)
+                        detail[field] = json.loads(detail[field])
         return detail
 
     def get_perfect_tags(self, tag_ids):
@@ -149,15 +149,12 @@ class ReportDownloadRecord(models.Model):
 
         details = []
         for ins in instances:
-            report = Report.get_object(pk=ins.report_id)
-            if isinstance(report, Exception):
+            report_detail = Report.get_detail(pk=ins.report_id)
+            if isinstance(report_detail, Exception):
                 continue
             item_detail = model_to_dict(ins)
-            report_detail = model_to_dict(report)
-            report_detail['tags'] = json.loads(report.tags)
             for pop_key in ['created', 'updated']:
                 report_detail.pop(pop_key)
-
             item_detail.update(**report_detail)
             details.append(item_detail)
         return details
