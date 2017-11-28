@@ -69,8 +69,9 @@ class ReportFileDownload(generics.GenericAPIView):
         if isinstance(instance, Exception):
             return Response({'Detail': instance.args}, status=status.HTTP_400_BAD_REQUEST)
 
-        file_name = os.path.basename(instance.report_file.name)
+        file_name = instance.report_file.name
+        base_file_name = os.path.basename(file_name)
         response = StreamingHttpResponse(self.download_file(file_name))
         response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = 'attachment;filename=%s' % file_name
+        response['Content-Disposition'] = 'attachment;filename="%s"' % base_file_name.encode('utf8')
         return response
