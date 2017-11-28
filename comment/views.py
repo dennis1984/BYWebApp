@@ -66,7 +66,7 @@ class CommentAction(generics.GenericAPIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        instance = self.get_comment_object(request, cld['comment_id'])
+        instance = self.get_comment_object(request, cld['id'])
         if isinstance(instance, Exception):
             return Response({'Detail': instance.args}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -107,9 +107,9 @@ class CommentDetail(generics.GenericAPIView):
     """
     点评详情
     """
-    def get_comment_detail(self, request, orders_id):
+    def get_comment_detail(self, request, comment_id):
         kwargs = {'user_id': request.user.id,
-                  'orders_id': orders_id}
+                  'id': comment_id}
         return Comment.get_object(**kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -118,7 +118,7 @@ class CommentDetail(generics.GenericAPIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        detail = self.get_comment_detail(request, cld['orders_id'])
+        detail = self.get_comment_detail(request, cld['id'])
         if isinstance(detail, Exception):
             return Response({'Detail': detail.args}, status=status.HTTP_400_BAD_REQUEST)
         serializer = CommentDetailSerializer(data=detail)

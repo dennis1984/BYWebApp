@@ -39,7 +39,7 @@ class CommentDetailSerializer(BaseSerializer):
     content = serializers.CharField()
     like = serializers.IntegerField()
     dislike = serializers.IntegerField()
-    is_recommend = serializers.BooleanField()
+    is_recommend = serializers.IntegerField()
     reply_message = serializers.CharField(allow_null=True, allow_blank=True)
 
     created = serializers.DateTimeField()
