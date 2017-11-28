@@ -94,7 +94,7 @@ class ResourceMatchAction(generics.GenericAPIView):
             tag_ids_dict[dimension_id] = [ins.id for ins in item_tags]
 
         item_keys = ['tag_ids', 'dimension_id', 'is_default_tag']
-        error_message_for_tags_list = 'Params "tags_list" is incorrect.'
+        error_message_for_tags_list = 'Params [tags_list] is incorrect.'
         for item in tags_list:
             if sorted(item.keys()) != sorted(item_keys):
                 return False, error_message_for_tags_list
@@ -202,14 +202,14 @@ class ResourceMatchAction(generics.GenericAPIView):
         return media_result
 
     def get_media_list(self, **kwargs):
-        return Media.filter_objects(**kwargs)
+        return Media.filter_details(**kwargs)
 
     def get_perfect_media_result(self, match_result, media_list):
         media_dict = {item.id: item for item in media_list}
         perfect_result = []
         for item in match_result:
             serializer = MediaSerializer(media_dict[item['media_id']])
-            item_dict = {'match_degree': item['data']['total'],
+            item_dict = {'match_degree': '%.2f' % item['data']['total'],
                          'data': serializer.data}
             perfect_result.append(item_dict)
         return perfect_result
