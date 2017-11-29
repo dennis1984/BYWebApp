@@ -183,7 +183,7 @@ class CommentOpinionRecord(models.Model):
 
     # 对评论的操作：1：点赞  2：踩
     action = models.IntegerField('点赞/踩')
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=now)
 
     class Meta:
         db_table = 'by_comment_opinion_record'

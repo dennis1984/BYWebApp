@@ -662,7 +662,7 @@ class ResourceOpinionRecord(models.Model):
 
     # 资源文件操作：1：点赞  2：踩
     action = models.IntegerField('操作（点赞、踩）', default=1)
-    created = models.DateTimeField('创建时间')
+    created = models.DateTimeField('创建时间', default=now)
 
     class Meta:
         db_table = 'by_resource_opinion_record'

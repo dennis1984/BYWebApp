@@ -319,7 +319,7 @@ class SourceLikeAction(generics.GenericAPIView):
 
         cld = form.cleaned_data
         record = self.get_source_like_record(request, cld['source_type'], cld['source_id'])
-        if isinstance(record, Exception):
+        if not isinstance(record, Exception):
             return Response({'Detail': 'Can not repeat operate this action'},
                             status=status.HTTP_400_BAD_REQUEST)
 
