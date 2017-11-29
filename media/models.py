@@ -487,6 +487,24 @@ class Information(models.Model):
         return detail
 
     @classmethod
+    def plus_action(cls, information_id, attr='read_count'):
+        information = None
+        attr_keys = ['read_count', 'like']
+        if attr not in attr_keys:
+            return Exception('Params [attr] is incorrect.')
+        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+        with transaction.atomic():
+            _information = cls.get_object(pk=information_id)
+            if isinstance(_information, Exception):
+                return _information
+
+            opinion_value = getattr(_information, attr)
+            setattr(_information, attr, opinion_value + 1)
+            _information.save()
+            information = _information
+        return information
+
+    @classmethod
     def get_object(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
@@ -582,6 +600,24 @@ class Case(models.Model):
         return detail
 
     @classmethod
+    def plus_action(cls, case_id, attr='read_count'):
+        case = None
+        attr_keys = ['read_count', 'like']
+        if attr not in attr_keys:
+            return Exception('Params [attr] is incorrect.')
+        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+        with transaction.atomic():
+            _case = cls.get_object(pk=case_id)
+            if isinstance(_case, Exception):
+                return _case
+
+            opinion_value = getattr(_case, attr)
+            setattr(_case, attr, opinion_value + 1)
+            _case.save()
+            case = _case
+        return case
+
+    @classmethod
     def get_object(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
@@ -614,3 +650,102 @@ class Case(models.Model):
         for ins in instances:
             details.append(ins.perfect_detail)
         return details
+
+
+class ResourceOpinionRecord(models.Model):
+    """
+    资源文件点赞记录
+    """
+    user_id = models.IntegerField('用户ID')
+    resource_type = models.IntegerField('媒体资源类型')
+    resource_id = models.IntegerField('媒体资源ID')
+
+    # 资源文件操作：1：点赞  2：踩
+    action = models.IntegerField('操作（点赞、踩）', default=1)
+    created = models.DateTimeField('创建时间')
+
+    class Meta:
+        db_table = 'by_resource_opinion_record'
+        unique_together = ['user_id', 'resource_type', 'resource_id']
+        index_together = ('user_id', 'resource_type', 'resource_id')
+
+    def __unicode__(self):
+        return '%s:%s:%s' % (self.user_id, self.resource_type, self.resource_id)
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e
+
+
+SOURCE_TYPE_DB = {
+    1: Media,         # 资源
+    2: Case,          # 案例
+    3: Information,   # 资讯
+}
+
+
+class SourceModelAction(object):
+    """
+    资源点赞、增加浏览数等操作
+    """
+    @classmethod
+    def get_source_object(cls, source_type, source_id):
+        if source_type not in SOURCE_TYPE_DB:
+            return Exception('Params [resource_type] is incorrect.')
+
+        source_class = SOURCE_TYPE_DB[source_type]
+        return source_class.get_object(pk=source_id)
+
+    @classmethod
+    def update_read_count(cls, source_type, source_id):
+        if source_type not in SOURCE_TYPE_DB:
+            return Exception('Params [resource_type] is incorrect.')
+
+        source_class = SOURCE_TYPE_DB[source_type]
+        return source_class.plus_action(source_id, 'read_count')
+
+    @classmethod
+    def update_like_count(cls, source_type, source_id):
+        if source_type not in SOURCE_TYPE_DB:
+            return Exception('Params [resource_type] is incorrect.')
+
+        source_class = SOURCE_TYPE_DB[source_type]
+        return source_class.plus_action(source_id, 'like')
+
+    @classmethod
+    def create_like_record(cls, request, source_type, source_id):
+        # source_ins = cls.get_source_object(source_type, source_id)
+        # if isinstance(source_ins, Exception):
+        #     return source_ins
+        init_data = {'user_id': request.user.id,
+                     'source_type': source_type,
+                     'source_id': source_id}
+        record = ResourceOpinionRecord(**init_data)
+        try:
+            record.save()
+        except Exception as e:
+            return e
+        return record
+
+    @classmethod
+    def like_action(cls, request, source_type, source_id):
+        record = cls.create_like_record(request, source_type, source_id)
+        if isinstance(record, Exception):
+            return record
+        source_ins = cls.update_like_count(source_type, source_id)
+        if isinstance(source_ins, Exception):
+            return source_ins
+        return record, source_ins
+

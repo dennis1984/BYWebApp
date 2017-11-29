@@ -8,7 +8,9 @@ from media.models import (Media, ResourceTags,
                           MediaType,
                           ProjectProgress,
                           Information,
-                          Case)
+                          Case,
+                          ResourceOpinionRecord,
+                          SourceModelAction,)
 from media.forms import (MediaTypeListForm,
                          ThemeTypeListForm,
                          ProgressListForm,
@@ -17,7 +19,8 @@ from media.forms import (MediaTypeListForm,
                          InformationDetailForm,
                          InformationListForm,
                          CaseDetailForm,
-                         CaseListForm)
+                         CaseListForm,
+                         SourceLikeActionForm)
 from media.serializers import (MediaTypeListSerailizer,
                                ThemeTypeListSerializer,
                                ProgressListSerializer,
@@ -201,6 +204,9 @@ class InformationDetail(generics.GenericAPIView):
         serializer = InformationDetailSerializer(data=detail)
         if not serializer.is_valid():
             return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 增加浏览量
+        SourceModelAction.update_read_count(source_type=3, source_id=cld['id'])
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -260,6 +266,9 @@ class CaseDetail(generics.GenericAPIView):
         serializer = CaseDetailSerializer(data=detail)
         if not serializer.is_valid():
             return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 增加浏览量
+        SourceModelAction.update_read_count(source_type=2, source_id=cld['id'])
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -292,3 +301,30 @@ class CaseList(generics.GenericAPIView):
         if isinstance(list_data, Exception):
             return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
         return Response(list_data, status=status.HTTP_200_OK)
+
+
+class SourceLikeAction(generics.GenericAPIView):
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_source_like_record(self, request, source_type, source_id):
+        kwargs = {'user_id': request.user.id,
+                  'source_type': source_type,
+                  'source_id': source_id}
+        return ResourceOpinionRecord.get_object(**kwargs)
+
+    def post(self, request, *args, **kwargs):
+        form = SourceLikeActionForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        record = self.get_source_like_record(request, cld['source_type'], cld['source_id'])
+        if isinstance(record, Exception):
+            return Response({'Detail': 'Can not repeat operate this action'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        result = SourceModelAction.like_action(request, cld['source_type'], cld['source_id'])
+        if isinstance(result, Exception):
+            return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'Result': True}, status=status.HTTP_201_CREATED)
+

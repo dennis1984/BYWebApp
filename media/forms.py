@@ -57,3 +57,8 @@ class CaseDetailForm(forms.Form):
 class CaseListForm(forms.Form):
     page_index = forms.IntegerField(min_value=1, required=False)
     page_size = forms.IntegerField(min_value=1, required=False)
+
+
+class SourceLikeActionForm(forms.Form):
+    source_type = forms.IntegerField(min_value=1)
+    source_id = forms.IntegerField(min_value=1)
