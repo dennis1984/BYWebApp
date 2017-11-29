@@ -54,7 +54,7 @@ class Score(models.Model):
         # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
         with transaction.atomic():
             _score = cls.get_object(user_id=request.user.id)
-            if isinstance(score, Exception):
+            if isinstance(_score, Exception):
                 init_data = {'user_id': request.user.id}
                 _score = Score(**init_data)
                 _score.save()

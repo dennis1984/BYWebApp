@@ -1,7 +1,7 @@
 # -*- coding:utf8 -*-
 from __future__ import unicode_literals
 
-from django.db import models
+from django.db import models, transaction
 from django.utils.timezone import now
 
 from media.models import Media, Information, Case
@@ -14,10 +14,16 @@ import json
 import datetime
 
 
-SOURCE_TYPE_DB = {1: Media,         # 资源
-                  2: Case,          # 案例
-                  3: Information,   # 资讯
-                  }
+SOURCE_TYPE_DB = {
+    1: Media,         # 资源
+    2: Case,          # 案例
+    3: Information,   # 资讯
+}
+
+COMMENT_OPINION_ACTION = {
+    1: 'like',
+    2: 'dislike',
+}
 
 
 class Comment(models.Model):
@@ -79,6 +85,24 @@ class Comment(models.Model):
         detail['source_title'] = source_title
         detail['user_nickname'] = user_nickname
         return detail
+
+    @classmethod
+    def update_opinion_count(cls, comment_id, action=1):
+        comment = None
+        if action not in COMMENT_OPINION_ACTION:
+            return Exception('Params [action] is incorrect.')
+        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+        with transaction.atomic():
+            _comment = cls.get_object(pk=comment_id)
+            if isinstance(_comment, Exception):
+                return _comment
+
+            attr = COMMENT_OPINION_ACTION[action]
+            opinion_value = getattr(_comment, attr)
+            setattr(_comment, attr, opinion_value + 1)
+            _comment.save()
+            comment = _comment
+        return comment
 
     @classmethod
     def get_object(cls, **kwargs):
@@ -184,3 +208,35 @@ class CommentOpinionRecord(models.Model):
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+
+class CommentOpinionModelAction(object):
+    """
+    对评论的评价（点赞/踩）操作
+    """
+    @classmethod
+    def update_comment_opinion_count(cls, comment_id, action=1):
+        return Comment.update_opinion_count(comment_id, action=action)
+
+    @classmethod
+    def create_comment_opinion_record(cls, request, comment_id, action=1):
+        init_data = {'user_id': request.user.id,
+                     'comment_id': comment_id,
+                     'action': action}
+        record = CommentOpinionRecord(**init_data)
+        try:
+            record.save()
+        except Exception as e:
+            return e
+        return record
+
+    @classmethod
+    def comment_opinion_action(cls, request, comment_id, action=1):
+        comment = cls.update_comment_opinion_count(comment_id, action)
+        if isinstance(comment, Exception):
+            return comment
+        record = cls.create_comment_opinion_record(request, comment_id, action=action)
+        if isinstance(record, Exception):
+            return record
+        return comment, record
+

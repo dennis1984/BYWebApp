@@ -10,7 +10,8 @@ from comment.serializers import (CommentSerializer,
 from comment.permissions import IsOwnerOrReadOnly
 from comment.models import (Comment,
                             SOURCE_TYPE_DB,
-                            CommentOpinionRecord)
+                            CommentOpinionRecord,
+                            CommentOpinionModelAction)
 from comment.forms import (CommentInputForm,
                            CommentListForm,
                            CommentDetailForm,
@@ -190,8 +191,10 @@ class CommentOpinionAction(generics.GenericAPIView):
         if not isinstance(record, Exception):
             return Response({'Detail': 'Can not repeat operate.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = CommentOpinionRecordSerializer(data=cld, request=request)
-        if not serializer.is_valid():
-            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        result = CommentOpinionModelAction.comment_opinion_action(request,
+                                                                  comment_id=cld['comment_id'],
+                                                                  action=cld['action'])
+        if isinstance(result, Exception):
+            return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'Result': True}, status=status.HTTP_201_CREATED)
 
