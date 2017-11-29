@@ -7,6 +7,8 @@ urlpatterns = [
     url(r'^comment_action/$', views.CommentAction.as_view()),
     url(r'^comment_list/$', views.CommentList.as_view()),
     url(r'^comment_detail/$', views.CommentDetail.as_view()),
+
+    url(r'^comment_for_resource_list/$', views.CommentForResourceList.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

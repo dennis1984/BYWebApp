@@ -10,7 +10,8 @@ from comment.models import (Comment, SOURCE_TYPE_DB)
 from comment.forms import (CommentInputForm,
                            CommentListForm,
                            CommentDetailForm,
-                           CommentDeleteForm)
+                           CommentDeleteForm,
+                           CommentForResourceListForm)
 from score.models import ScoreAction
 
 import json
@@ -134,3 +135,30 @@ class CommentDetail(generics.GenericAPIView):
         if not serializer.is_valid():
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CommentForResourceList(generics.GenericAPIView):
+    """
+    获取媒体资源的用户评论列表
+    """
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_comment_list(self, source_type, source_id):
+        kwargs = {'source_type': source_type,
+                  'source_id': source_id}
+        return Comment.filter_details(**kwargs)
+
+    def post(self, request, *args, **kwargs):
+        form = CommentForResourceListForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        comment_list = self.get_comment_list(cld['source_type'], cld['source_id'])
+        serializer = CommentListSerializer(data=comment_list)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        list_data = serializer.list_data(**cld)
+        if isinstance(list_data, Exception):
+            return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(list_data, status=status.HTTP_200_OK)

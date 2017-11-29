@@ -24,3 +24,10 @@ class CommentDetailForm(forms.Form):
 
 class CommentDeleteForm(forms.Form):
     id = forms.IntegerField(min_value=1)
+
+
+class CommentForResourceListForm(forms.Form):
+    source_type = forms.IntegerField()
+    source_id = forms.IntegerField()
+    page_index = forms.IntegerField(min_value=1, required=False)
+    page_size = forms.IntegerField(min_value=1, required=False)
