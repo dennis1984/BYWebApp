@@ -657,8 +657,8 @@ class ResourceOpinionRecord(models.Model):
     资源文件点赞记录
     """
     user_id = models.IntegerField('用户ID')
-    resource_type = models.IntegerField('媒体资源类型')
-    resource_id = models.IntegerField('媒体资源ID')
+    source_type = models.IntegerField('媒体资源类型')
+    source_id = models.IntegerField('媒体资源ID')
 
     # 资源文件操作：1：点赞  2：踩
     action = models.IntegerField('操作（点赞、踩）', default=1)
@@ -670,7 +670,7 @@ class ResourceOpinionRecord(models.Model):
         index_together = ('user_id', 'resource_type', 'resource_id')
 
     def __unicode__(self):
-        return '%s:%s:%s' % (self.user_id, self.resource_type, self.resource_id)
+        return '%s:%s:%s' % (self.user_id, self.source_type, self.source_id)
 
     @classmethod
     def get_object(cls, **kwargs):
