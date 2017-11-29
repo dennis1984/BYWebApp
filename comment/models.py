@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.timezone import now
 
 from media.models import Media, Information, Case
+from users.models import User
 from horizon.models import (model_to_dict,
                             get_perfect_filter_params,
                             BaseManager)
@@ -66,10 +67,17 @@ class Comment(models.Model):
             source_title = ''
         else:
             source_title = source_ins.title
+
+        user = User.get_object(pk=self.user_id)
+        user_nickname = ''
+        if not isinstance(user, Exception):
+            user_nickname = user.nickname
+
         detail = model_to_dict(self)
         detail['is_recommend'] = is_recommend
         detail['reply_message'] = reply_message
         detail['source_title'] = source_title
+        detail['user_nickname'] = user_nickname
         return detail
 
     @classmethod
