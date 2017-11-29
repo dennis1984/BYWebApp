@@ -1,6 +1,8 @@
 # -*- coding:utf8 -*-
 from rest_framework import serializers
-from comment.models import Comment
+
+from comment.models import Comment, CommentOpinionRecord
+
 from horizon.decorators import has_permission_to_update
 from horizon.serializers import (BaseSerializer,
                                  BaseModelSerializer,
@@ -32,7 +34,7 @@ class CommentSerializer(BaseModelSerializer):
 class CommentDetailSerializer(BaseSerializer):
     id = serializers.IntegerField()
     user_id = serializers.IntegerField()
-    user_nickname = serializers.CharField()
+    user_nickname = serializers.CharField(allow_blank=True, allow_null=True)
     source_type = serializers.IntegerField()
     source_id = serializers.IntegerField()
     source_title = serializers.CharField()
@@ -48,3 +50,16 @@ class CommentDetailSerializer(BaseSerializer):
 
 class CommentListSerializer(BaseListSerializer):
     child = CommentDetailSerializer()
+
+
+class CommentOpinionRecordSerializer(BaseModelSerializer):
+    def __init__(self, instance=None, data=None, request=None, **kwargs):
+        if data:
+            data['user_id'] = request.user.id
+            super(CommentOpinionRecordSerializer, self).__init__(data=data, **kwargs)
+        else:
+            super(CommentOpinionRecordSerializer, self).__init__(instance, **kwargs)
+
+    class Meta:
+        model = CommentOpinionRecord
+        fields = '__all__'

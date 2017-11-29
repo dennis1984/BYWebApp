@@ -148,3 +148,39 @@ class ReplyComment(models.Model):
             return cls.objects.get(**kwargs)
         except Exception as e:
             return e
+
+
+class CommentOpinionRecord(models.Model):
+    """
+    对用户评论的评价（点赞、踩）的记录
+    """
+    user_id = models.IntegerField('用户ID', )
+    comment_id = models.IntegerField('评论ID')
+
+    # 对评论的操作：1：点赞  2：踩
+    action = models.IntegerField('点赞/踩')
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'by_comment_opinion_record'
+        unique_together = ['user_id', 'comment_id']
+        index_together = ['user_id', 'comment_id']
+
+    def __unicode__(self):
+        return '%s:%s' % (self.user_id, self.comment_id)
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e

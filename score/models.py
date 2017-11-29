@@ -1,7 +1,7 @@
 # -*- coding:utf8 -*-
 from __future__ import unicode_literals
 
-from django.db import models
+from django.db import models, transaction
 from django.utils.timezone import now
 
 from horizon.models import (model_to_dict,
@@ -48,6 +48,30 @@ class Score(models.Model):
         except Exception as e:
             return e
 
+    @classmethod
+    def update_score(cls, request, action=None):
+        score = None
+        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+        with transaction.atomic():
+            _score = cls.get_object(user_id=request.user.id)
+            if isinstance(score, Exception):
+                init_data = {'user_id': request.user.id}
+                _score = Score(**init_data)
+                _score.save()
+            # 评论资源，获得积分
+            if action == 'comment':
+                _score.score += SCORE_ACTION_DICT[action]['score']
+            # 下载报告，消耗积分
+            elif action == 'download':
+                if _score.score < SCORE_ACTION_DICT[action]['score']:
+                    return Exception('Score count is not enough.')
+                _score.score -= SCORE_ACTION_DICT[action]['score']
+            else:
+                return Exception('Params [action] is incorrect.')
+            _score.save()
+            score = _score
+        return score
+
 
 class ScoreRecord(models.Model):
     """
@@ -92,24 +116,7 @@ class ScoreAction(object):
     """
     @classmethod
     def update_score(cls, request, action='comment'):
-        score = Score.get_object(user_id=request)
-        if isinstance(score, Exception):
-            init_data = {'user_id': request.user.id}
-            score = Score(**init_data)
-            score.save()
-        # 评论资源，获得积分
-        if action == 'comment':
-            score.score += SCORE_ACTION_DICT[action]['score']
-        # 下载报告，消耗积分
-        elif action == 'download':
-            if score.score < SCORE_ACTION_DICT[action]['score']:
-                return Exception('Score count is not enough.')
-            score.score -= SCORE_ACTION_DICT[action]['score']
-        else:
-            return Exception('Params [action] is incorrect.')
-
-        score.save()
-        return score
+        return Score.update_score(request, action=action)
 
     @classmethod
     def create_score_record(cls, request, action='comment'):

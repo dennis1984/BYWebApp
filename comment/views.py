@@ -2,16 +2,21 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+
 from comment.serializers import (CommentSerializer,
                                  CommentDetailSerializer,
-                                 CommentListSerializer)
+                                 CommentListSerializer,
+                                 CommentOpinionRecordSerializer)
 from comment.permissions import IsOwnerOrReadOnly
-from comment.models import (Comment, SOURCE_TYPE_DB)
+from comment.models import (Comment,
+                            SOURCE_TYPE_DB,
+                            CommentOpinionRecord)
 from comment.forms import (CommentInputForm,
                            CommentListForm,
                            CommentDetailForm,
                            CommentDeleteForm,
-                           CommentForResourceListForm)
+                           CommentForResourceListForm,
+                           CommentOpinionActionForm)
 from score.models import ScoreAction
 
 import json
@@ -162,3 +167,31 @@ class CommentForResourceList(generics.GenericAPIView):
         if isinstance(list_data, Exception):
             return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
         return Response(list_data, status=status.HTTP_200_OK)
+
+
+class CommentOpinionAction(generics.GenericAPIView):
+    """
+    用户对评论的评价（点赞、踩）
+    """
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_comment_opinion_record(self, request, comment_id):
+        kwargs = {'user_id': request.user.id,
+                  'comment_id': comment_id}
+        return CommentOpinionRecord.get_object(**kwargs)
+
+    def post(self, request, *args, **kwargs):
+        form = CommentOpinionActionForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        record = self.get_comment_opinion_record(request, cld['comment_id'])
+        if not isinstance(record, Exception):
+            return Response({'Detail': 'Can not repeat operate.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = CommentOpinionRecordSerializer(data=cld, request=request)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'Result': True}, status=status.HTTP_201_CREATED)
+
