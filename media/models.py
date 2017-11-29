@@ -666,8 +666,8 @@ class ResourceOpinionRecord(models.Model):
 
     class Meta:
         db_table = 'by_resource_opinion_record'
-        unique_together = ['user_id', 'resource_type', 'resource_id']
-        index_together = ('user_id', 'resource_type', 'resource_id')
+        unique_together = ['user_id', 'source_type', 'source_id']
+        index_together = ('user_id', 'source_type', 'source_id')
 
     def __unicode__(self):
         return '%s:%s:%s' % (self.user_id, self.source_type, self.source_id)
