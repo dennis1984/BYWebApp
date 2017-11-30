@@ -48,6 +48,8 @@ class Media(models.Model):
     box_office_forecast = models.FloatField('票房预测')
     # 口碑预测
     public_praise_forecast = models.FloatField('口碑预测')
+    # ROI 投资回报比 例如：1：5 （1比5）
+    roi = models.CharField('投入回报比', max_length=10)
 
     # 资源属性：数据格式为JSON字符串，如：[1, 3, 5] （数字为属性ID）
     # attributes = models.CharField('资源属性', max_length=256, )
@@ -79,6 +81,13 @@ class Media(models.Model):
     # 运营标记 0: 未设定 1：热门
     mark = models.IntegerField('运营标记', default=0)
 
+    # 电影表现大数据分析 数据格式为字典形式的JSON字符串，如：{"导演号召力": 3.5,
+    #                                                "男主角号召力": 4.0,
+    #                                                "女主角号召力": 4.2,
+    #                                                "类型关注度": 3.8,
+    #                                                "片方指数": 3.7}
+    film_performance = models.CharField('电影表现大数据分析', max_length=512)
+
     picture = models.ImageField('媒体资源原始图片', max_length=200,
                                 upload_to=MEDIA_PICTURE_PATH,
                                 default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
@@ -107,7 +116,7 @@ class Media(models.Model):
         unique_together = ['title', 'subtitle', 'status']
 
     class AdminMeta:
-        json_fields = ['tags', 'media_outline']
+        json_fields = ['tags', 'media_outline', 'file_performance']
 
     def __unicode__(self):
         return self.title

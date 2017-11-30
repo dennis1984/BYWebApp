@@ -71,6 +71,8 @@ class MediaDetailSerializer(BaseSerializer):
     box_office_forecast = serializers.FloatField()
     # 口碑预测
     public_praise_forecast = serializers.FloatField()
+    # ROI 投资回报比 例如：1：5 （1比5）
+    roi = serializers.CharField()
 
     # 资源概述 数据格式为字典形式的JSON字符串，如：{"导演": ["冯小刚", "吴宇森"],
     #                                        "主演": ["成龙", "李连杰"],
@@ -82,6 +84,13 @@ class MediaDetailSerializer(BaseSerializer):
 
     # 运营标记 0: 未设定 1：热门
     mark = serializers.IntegerField()
+
+    # 电影表现大数据分析 数据格式为字典形式的JSON字符串，如：{"导演号召力": 3.5,
+    #                                                "男主角号召力": 4.0,
+    #                                                "女主角号召力": 4.2,
+    #                                                "类型关注度": 3.8,
+    #                                                "片方指数": 3.7}
+    film_performance = serializers.CharField()
 
     # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=1)
