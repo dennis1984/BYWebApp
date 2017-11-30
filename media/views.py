@@ -139,7 +139,7 @@ class MediaDetail(generics.GenericAPIView):
 
         serializer = MediaDetailSerializer(data=detail)
         if not serializer.is_valid():
-            return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -204,7 +204,7 @@ class InformationDetail(generics.GenericAPIView):
 
         serializer = InformationDetailSerializer(data=detail)
         if not serializer.is_valid():
-            return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         # 增加浏览量
         SourceModelAction.update_read_count(source_type=3, source_id=cld['id'])
@@ -266,7 +266,7 @@ class CaseDetail(generics.GenericAPIView):
 
         serializer = CaseDetailSerializer(data=detail)
         if not serializer.is_valid():
-            return Response({'Detail': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         # 增加浏览量
         SourceModelAction.update_read_count(source_type=2, source_id=cld['id'])
