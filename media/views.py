@@ -122,7 +122,7 @@ class MediaDetail(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_media_detail(self, media_id):
-        return MediaCache().get_media_by_id(media_id)
+        return MediaCache().get_media_detail_by_id(media_id)
 
     def post(self, request, *args, **kwargs):
         """
@@ -187,7 +187,7 @@ class InformationDetail(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_information_detail(self, information_id):
-        return MediaCache.get_information_by_id(information_id)
+        return MediaCache.get_information_detail_by_id(information_id)
 
     def post(self, request, *args, **kwargs):
         """
@@ -249,7 +249,7 @@ class CaseDetail(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_case_detail(self, case_id):
-        return MediaCache.get_case_by_id(case_id)
+        return MediaCache.get_case_detail_by_id(case_id)
 
     def post(self, request, *args, **kwargs):
         """

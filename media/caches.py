@@ -119,13 +119,13 @@ class MediaCache(object):
         return self.get_perfect_data(key, ResourceTags.get_object, **kwargs)
 
     # 获取资讯详情
-    def get_information_by_id(self, information_id):
+    def get_information_detail_by_id(self, information_id):
         key = self.get_information_id_key(information_id)
         kwargs = {'pk': information_id}
         return self.get_perfect_data(key, Information.get_detail, **kwargs)
 
     # 获取案例详情
-    def get_case_by_id(self, case_id):
+    def get_case_detail_by_id(self, case_id):
         key = self.get_case_id_key(case_id)
         kwargs = {'pk': case_id}
         return self.get_perfect_data(key, Case.get_detail, **kwargs)
