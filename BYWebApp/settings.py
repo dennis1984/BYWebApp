@@ -260,8 +260,8 @@ REDIS_SETTINGS = {
     'host': '127.0.0.1',
     'port': 6379,
     'db_set': {
-        'business': 0,
-        'consumer': 1,
+        'web': 10,
+        'admin': 11,
         }
 }
 
