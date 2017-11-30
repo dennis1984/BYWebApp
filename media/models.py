@@ -116,7 +116,7 @@ class Media(models.Model):
         unique_together = ['title', 'subtitle', 'status']
 
     class AdminMeta:
-        json_fields = ['tags', 'media_outline', 'file_performance']
+        json_fields = ['tags', 'media_outline', 'film_performance']
 
     def __unicode__(self):
         return self.title
