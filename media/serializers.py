@@ -90,7 +90,7 @@ class MediaDetailSerializer(BaseSerializer):
     #                                                "女主角号召力": 4.2,
     #                                                "类型关注度": 3.8,
     #                                                "片方指数": 3.7}
-    film_performance = serializers.CharField()
+    film_performance = serializers.DictField()
 
     # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=1)
