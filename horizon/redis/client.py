@@ -1,6 +1,8 @@
 # -*- coding:utf8 -*-
 import redis
 import pickle
+from horizon.storage import YSFileSystemStorage
+from django.db.models.fields.files import FieldFile
 
 
 class Redis(redis.Redis):
@@ -41,12 +43,26 @@ class Redis(redis.Redis):
         return pickle.dumps(value)
 
     def translate_str_to_ins_for_string(self, string):
-        return pickle.loads(string)
+        return self.get_perfect_object_data(string)
 
     def translate_instance_to_str(self, *values):
         return [pickle.dumps(arg) for arg in values]
 
     def translate_str_to_instance(self, *values):
-        return [pickle.loads(arg) for arg in values]
+        return [self.get_perfect_object_data(arg) for arg in values]
 
-
+    def get_perfect_object_data(self, value):
+        """
+        解决序列化数据后，文件的storage属性丢失的问题
+        """
+        object_data = pickle.loads(value)
+        if isinstance(object_data, dict):
+            for key, item in object_data.items():
+                if issubclass(type(item), FieldFile):
+                    if not hasattr(item, 'storage'):
+                        setattr(object_data[key], 'storage', YSFileSystemStorage)
+        elif isinstance(object_data, (list, tuple)):
+            for item in object_data:
+                if not hasattr(item, 'storage'):
+                    setattr(item, 'storage', YSFileSystemStorage)
+        return object_data
