@@ -1,7 +1,7 @@
 # -*- coding:utf8 -*-
 import redis
 import pickle
-from horizon.storage import YSFileSystemStorage
+from horizon.storage import yinshi_storage
 from django.db.models.fields.files import FieldFile
 
 
@@ -60,9 +60,9 @@ class Redis(redis.Redis):
             for key, item in object_data.items():
                 if issubclass(type(item), FieldFile):
                     if not hasattr(item, 'storage'):
-                        setattr(object_data[key], 'storage', YSFileSystemStorage)
+                        setattr(object_data[key], 'storage', yinshi_storage)
         elif isinstance(object_data, (list, tuple)):
             for item in object_data:
                 if not hasattr(item, 'storage'):
-                    setattr(item, 'storage', YSFileSystemStorage)
+                    setattr(item, 'storage', yinshi_storage)
         return object_data
