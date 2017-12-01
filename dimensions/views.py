@@ -8,7 +8,8 @@ from dimensions.serializers import (DimensionListSerializer,
                                     MediaSerializer,
                                     MatchActionListSerializer)
 from dimensions.permissions import IsOwnerOrReadOnly
-from dimensions.models import (Dimension, Attribute, Tag, TagConfigure)
+from dimensions.models import (Dimension, Attribute, Tag,
+                               TagConfigure, AdjustCoefficient)
 from dimensions.forms import (DimensionListForm,
                               TagsListForm,
                               ResourceMatchActionForm)
@@ -77,6 +78,13 @@ class ResourceMatchAction(generics.GenericAPIView):
     """
     def get_dimension_list(self):
         return Dimension.filter_objects()
+
+    def get_adjust_coefficient_value_by_name(self, name):
+        kwargs = {'name': name.lower()}
+        instance = AdjustCoefficient.get_object(**kwargs)
+        if isinstance(instance, Exception):
+            return 1
+        return instance.value
 
     def is_request_data_valid(self, **kwargs):
         dimension_instances = self.get_dimension_list()
@@ -180,8 +188,8 @@ class ResourceMatchAction(generics.GenericAPIView):
             sum_value = 0
             for key, value in value_dict.items():
                 sum_value += value
-            # 假设"阿尔法"值为1（后期从配置中读取）
-            alpha = 1
+            # 从数据中读取"阿尔法"值
+            alpha = self.get_adjust_coefficient_value_by_name(name='alpha')
             total = (sum_value + media_instances_dict[media_id].temperature) * alpha
             media_sum_result.append(
                 {'media_id': media_id,
@@ -194,8 +202,8 @@ class ResourceMatchAction(generics.GenericAPIView):
         media_tmp = sorted(media_sum_result, key=lambda x: x['data']['total'], reverse=True)[:10]
         media_tmp = sorted(media_tmp,
                            key=lambda x: x['data']['first_dimension_value'], reverse=True)
-        # 假设"贝塔"值为1（后期从配置中读取）
-        beta = 1
+        # 从数据中读取"贝塔"值
+        beta = self.get_adjust_coefficient_value_by_name(name='beta')
         for tmp_item in media_tmp[:3]:
             tmp_item['data']['total'] = (tmp_item['data']['total'] * beta) / 78.75 * 100
         media_result = sorted(media_tmp, key=lambda x: x['data']['total'], reverse=True)[:3]
