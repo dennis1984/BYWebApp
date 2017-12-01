@@ -53,7 +53,7 @@ class Redis(redis.Redis):
 
     def get_perfect_object_data(self, value):
         """
-        解决序列化数据后，文件的storage属性丢失的问题
+        解决反序列化数据后，文件的storage属性丢失的问题
         """
         object_data = pickle.loads(value)
         if isinstance(object_data, dict):

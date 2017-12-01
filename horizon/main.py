@@ -14,11 +14,15 @@ from barcode.writer import ImageWriter
 import base64
 import random
 import time
+import hashlib
+import urllib
 
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.utils import COMMASPACE, formatdate
+
+from horizon.http_requests import send_http_request
 
 
 def minutes_5_plus():
@@ -275,8 +279,6 @@ def send_message_to_phone(params, receive_phones, template_name=None):
     """
     使用阿里云的短信服务发送短信
     """
-    from horizon.http_requests import send_http_request
-    import urllib
     url = 'http://sms.market.alicloudapi.com/singleSendSms'
     AppCode = '2e8a1a8a3e22486b9be6ac46c3d2c6ec'
     sign_names = ('吟食',)
@@ -313,6 +315,28 @@ def send_message_to_phone(params, receive_phones, template_name=None):
     query_str = '%s&ParamString=%s' % (urllib.urlencode(query), params_query)
 
     return send_http_request(url, query_str, add_header={'Authorization': 'APPCODE %s' % AppCode})
+
+
+def send_phone_message_for_5_platform(identifying_code, receive_phones):
+    """
+    使用ippy(华信科技)的短信平台发送短信
+    """
+    gateway = 'https://dx.ipyy.net/smsJson.aspx'
+    if isinstance(receive_phones, (list, tuple)):
+        receive_phones = ','.join(receive_phones)
+
+    # 从数据库中获取
+    account = 'CD00088'
+    # 从数据库中获取
+    password = 'CD00088369'
+    content = u'您的验证码是%s，15分钟内有效【影联客】' % identifying_code
+    params_dict = {'account': account,
+                   'action': 'send',
+                   'content': content.encode('utf8'),
+                   'mobile': receive_phones,
+                   'password': hashlib.md5(password).hexdigest().upper(),
+                   'userid': ''}
+    return send_http_request(gateway, params_dict)
 
 
 def send_email(to, subject, text, files=()):

@@ -89,8 +89,7 @@ class IdentifyingCodeAction(APIView):
     def send_identifying_code(self, identifying_code, **kwargs):
         # 发送到短信平台
         if kwargs['username_type'] == 'phone':
-            main.send_message_to_phone({'code': identifying_code},
-                                       (kwargs['username'],))
+            main.send_phone_message_for_5_platform(identifying_code, kwargs['username'])
         elif kwargs['username_type'] == 'email':
             # 发送邮件
             _to = [kwargs['username']]
@@ -135,8 +134,7 @@ class IdentifyingCodeActionWithLogin(generics.GenericAPIView):
     def send_identifying_code(self, identifying_code, **kwargs):
         # 发送到短信平台
         if kwargs['username_type'] == 'phone':
-            main.send_message_to_phone({'code': identifying_code},
-                                       (kwargs['username'],))
+            main.send_phone_message_for_5_platform(identifying_code, kwargs['username'])
         elif kwargs['username_type'] == 'email':
             # 发送邮件
             _to = [kwargs['username']]
