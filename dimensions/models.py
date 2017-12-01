@@ -223,6 +223,7 @@ class AdjustCoefficient(models.Model):
     调整系数
     """
     name = models.CharField('调整系数名称', max_length=64)
+    description = models.CharField('字段描述', max_length=128)
     value = models.FloatField('调整值', default=0)
 
     # 数据状态：1：正常 非1：已删除
