@@ -10,7 +10,8 @@ from comment.serializers import (CommentSerializer,
 from comment.permissions import IsOwnerOrReadOnly
 from comment.models import (Comment,
                             SOURCE_TYPE_DB,
-                            CommentOpinionRecord,
+                            CommentOpinionRecord,)
+from comment.caches import (CommentCache,
                             CommentOpinionModelAction)
 from comment.forms import (CommentInputForm,
                            CommentListForm,
@@ -101,7 +102,8 @@ class CommentList(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly, )
 
     def get_comment_detail_list(self, request):
-        return Comment.filter_details(user_id=request.user.id)
+        return CommentCache().get_comment_list_by_user_id(request.user.id)
+        # return Comment.filter_details(user_id=request.user.id)
 
     def post(self, request, *args, **kwargs):
         form = CommentListForm(request.data)
@@ -152,7 +154,8 @@ class CommentForResourceList(generics.GenericAPIView):
     def get_comment_list(self, source_type, source_id):
         kwargs = {'source_type': source_type,
                   'source_id': source_id}
-        return Comment.filter_details(**kwargs)
+        return CommentCache().get_comment_list_by_source_id(**kwargs)
+        # return Comment.filter_details(**kwargs)
 
     def post(self, request, *args, **kwargs):
         form = CommentForResourceListForm(request.data)

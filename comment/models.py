@@ -209,34 +209,3 @@ class CommentOpinionRecord(models.Model):
         except Exception as e:
             return e
 
-
-class CommentOpinionModelAction(object):
-    """
-    对评论的评价（点赞/踩）操作
-    """
-    @classmethod
-    def update_comment_opinion_count(cls, comment_id, action=1):
-        return Comment.update_opinion_count(comment_id, action=action)
-
-    @classmethod
-    def create_comment_opinion_record(cls, request, comment_id, action=1):
-        init_data = {'user_id': request.user.id,
-                     'comment_id': comment_id,
-                     'action': action}
-        record = CommentOpinionRecord(**init_data)
-        try:
-            record.save()
-        except Exception as e:
-            return e
-        return record
-
-    @classmethod
-    def comment_opinion_action(cls, request, comment_id, action=1):
-        comment = cls.update_comment_opinion_count(comment_id, action)
-        if isinstance(comment, Exception):
-            return comment
-        record = cls.create_comment_opinion_record(request, comment_id, action=action)
-        if isinstance(record, Exception):
-            return record
-        return comment, record
-

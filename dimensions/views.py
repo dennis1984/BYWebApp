@@ -13,8 +13,11 @@ from dimensions.models import (Dimension, Attribute, Tag,
 from dimensions.forms import (DimensionListForm,
                               TagsListForm,
                               ResourceMatchActionForm)
+from dimensions.caches import DimensionCache
 from media.models import Media, MediaConfigure
 from media.serializers import MediaDetailSerializer
+
+
 from horizon.main import select_random_element_from_array
 
 import json
@@ -27,7 +30,8 @@ class DimensionList(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly, )
 
     def get_dimension_list(self):
-        return Dimension.filter_objects()
+        return DimensionCache().get_dimension_list()
+        # return Dimension.filter_objects()
 
     def post(self, request, *args, **kwargs):
         form = DimensionListForm(request.data)
@@ -53,7 +57,8 @@ class TagList(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_tags_list(self, **kwargs):
-        instances = Tag.filter_objects_by_dimension_id(dimension_id=kwargs['dimension_id'])
+        instances = DimensionCache().get_tag_list_by_dimension_id(dimension_id=kwargs['dimension_id'])
+        # instances = Tag.filter_objects_by_dimension_id(dimension_id=kwargs['dimension_id'])
         # 随机取出一定数量的元素
         new_instances = select_random_element_from_array(list(instances), kwargs['count'])
         return new_instances
@@ -77,11 +82,13 @@ class ResourceMatchAction(generics.GenericAPIView):
     资源匹配
     """
     def get_dimension_list(self):
-        return Dimension.filter_objects()
+        return DimensionCache().get_dimension_list()
+        # return Dimension.filter_objects()
 
     def get_adjust_coefficient_value_by_name(self, name):
-        kwargs = {'name': name.lower()}
-        instance = AdjustCoefficient.get_object(**kwargs)
+        # kwargs = {'name': name.lower()}
+        instance = DimensionCache().get_adjust_coefficient_by_name(adjust_coefficient_name=name.lower())
+        # instance = AdjustCoefficient.get_object(**kwargs)
         if isinstance(instance, Exception):
             return 1
         return instance.value
@@ -155,7 +162,7 @@ class ResourceMatchAction(generics.GenericAPIView):
                     media_match_dict[media_id] = media_dict_item
 
         # 匹配计算
-        dimension_instances = Dimension.filter_objects()
+        dimension_instances = self.get_dimension_list()
         dimension_ids = [ins.id for ins in dimension_instances]
         media_value_result = {}
         for media_id, dime_dict_item in media_match_dict.items():
