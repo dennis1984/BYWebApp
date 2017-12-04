@@ -3,11 +3,13 @@ from django.http import StreamingHttpResponse
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+
 from reports.serializers import (ReportListSerializer,)
 from reports.permissions import IsOwnerOrReadOnly
 from reports.models import (Report, ReportDownloadRecord)
 from reports.forms import (ReportListForm,
                            ReportFileDownloadForm)
+from reports.caches import ReportCache
 from score.models import SCORE_ACTION_DICT, Score
 from score.caches import ScoreAction
 
@@ -22,7 +24,7 @@ class ReportList(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly, )
 
     def get_reports_list(self, request):
-        return ReportDownloadRecord.filter_details(user_id=request.user.id)
+        return ReportCache().get_report_download_record_by_user_id(request.user.id)
 
     def post(self, request, *args, **kwargs):
         form = ReportListForm(request.data)

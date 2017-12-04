@@ -24,10 +24,10 @@ class ScoreCache(object):
         self.handle = redis.Redis(connection_pool=pool)
 
     def get_score_id_key(self, user_id):
-        return 'score_id:%s' % user_id
+        return 'score:user_id:%s' % user_id
 
     def get_score_record_id_key(self, user_id):
-        return 'score_record:%s' % user_id
+        return 'score_record:user_id:%s' % user_id
 
     def set_instance_to_cache(self, key, data):
         self.handle.set(key, data)
@@ -79,12 +79,7 @@ class ScoreCache(object):
     # 往积分记录列表里添加数据
     def insert_score_instance_to_score_record(self, user_id, instance):
         key = self.get_score_record_id_key(user_id)
-        data = self.get_score_record_by_user_id(user_id)
-        if isinstance(data, Exception):
-            return data
-        else:
-            self.handle.rpush(key, instance)
-        return True
+        return self.handle.rpush(key, instance)
 
 
 class ScoreAction(object):

@@ -37,25 +37,25 @@ class MediaCache(object):
     #     return 'tag_id:%s' % tag_id
 
     def get_media_id_key(self, media_id):
-        return 'media_id:%s' % media_id
+        return 'media:id:%s' % media_id
 
     def get_media_type_id_key(self, media_type_id):
-        return 'media_type_id:%s' % media_type_id
+        return 'media_type:id:%s' % media_type_id
 
     def get_theme_type_id_key(self, theme_type_id):
-        return 'theme_type_id:%s' % theme_type_id
+        return 'theme_type:id:%s' % theme_type_id
 
     def get_progress_id_key(self, progress_id):
-        return 'progress_id:%s' % progress_id
+        return 'progress:id:%s' % progress_id
 
     def get_resource_tag_id_key(self, resource_tag_id):
-        return 'resource_tag_id:%s' % resource_tag_id
+        return 'resource_tag:id:%s' % resource_tag_id
 
     def get_information_id_key(self, information_id):
-        return 'information_id:%s' % information_id
+        return 'information:id:%s' % information_id
 
     def get_case_id_key(self, case_id):
-        return 'case_id:%s' % case_id
+        return 'case:id:%s' % case_id
 
     def set_instance_to_cache(self, key, data):
         self.handle.set(key, data)
