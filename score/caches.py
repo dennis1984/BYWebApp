@@ -57,8 +57,7 @@ class ScoreCache(object):
                              'created': now(),
                              'updated': now()}
                 data = Score(**init_dict)
-                self.set_instance_to_cache(key, data)
-                return data
+            self.set_instance_to_cache(key, data)
         return data
 
     # 删除score model
@@ -69,13 +68,13 @@ class ScoreCache(object):
     # 获取积分记录列表
     def get_score_record_by_user_id(self, user_id):
         key = self.get_score_record_id_key(user_id)
-        data = self.handle.lrange(key)
-        if not data:
-            data = ScoreRecord.filter_objects(**{'user_id': user_id})
-            if isinstance(data, Exception):
-                return data
-            self.handle.rpush(key, data)
-        return data
+        list_data = self.handle.lrange(key)
+        if not list_data:
+            list_data = ScoreRecord.filter_objects(**{'user_id': user_id})
+            if isinstance(list_data, Exception):
+                return list_data
+            self.handle.rpush(key, *list_data)
+        return list_data
 
     # 往积分记录列表里添加数据
     def insert_score_instance_to_score_record(self, user_id, instance):

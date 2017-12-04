@@ -14,16 +14,16 @@ class Redis(redis.Redis):
         return super(Redis, self).rpush(name, *pk_values)
 
     def rpushx(self, name, value):
-        pk_values = self.translate_instance_to_str(value)[0]
-        return super(Redis, self).rpushx(name, *pk_values)
+        pk_value = self.translate_instance_to_str(value)[0]
+        return super(Redis, self).rpushx(name, pk_value)
 
     def lpush(self, name, *values):
         pk_values = self.translate_instance_to_str(*values)
         return super(Redis, self).lpush(name, *pk_values)
 
     def lpushx(self, name, value):
-        pk_values = self.translate_instance_to_str(value)[0]
-        return super(Redis, self).lpushx(name, *pk_values)
+        pk_value = self.translate_instance_to_str(value)[0]
+        return super(Redis, self).lpushx(name, pk_value)
 
     def lrange(self, name, start=0, end=-1):
         strings = super(Redis, self).lrange(name, start, end)
