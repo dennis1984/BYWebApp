@@ -8,7 +8,8 @@ from reports.permissions import IsOwnerOrReadOnly
 from reports.models import (Report, ReportDownloadRecord)
 from reports.forms import (ReportListForm,
                            ReportFileDownloadForm)
-from score.models import SCORE_ACTION_DICT, Score, ScoreAction
+from score.models import SCORE_ACTION_DICT, Score
+from score.caches import ScoreAction
 
 import json
 import os

@@ -9,6 +9,7 @@ from score.serializers import (ScoreSerializer,
 from score.permissions import IsOwnerOrReadOnly
 from score.models import (Score, ScoreRecord)
 from score.forms import (ScoreRecordListForm,)
+from score.caches import ScoreCache
 
 import json
 
@@ -20,14 +21,7 @@ class ScoreDetail(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly, )
 
     def get_score_object(self, request):
-        instance = Score.get_object(user_id=request.user.id)
-        if isinstance(instance, Exception):
-            init_dict = {'user_id': request.user.id,
-                         'score': 0,
-                         'created': now(),
-                         'updated': now()}
-            instance = Score(**init_dict)
-        return instance
+        return ScoreCache().get_score_instance_by_user_id(request.user.id)
 
     def post(self, request, *args, **kwargs):
         """
@@ -45,7 +39,7 @@ class ScoreRecordList(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly, )
 
     def get_score_record_list(self, request):
-        return ScoreRecord.filter_objects(user_id=request.user.id)
+        return ScoreCache().get_score_record_by_user_id(request.user.id)
 
     def post(self, request, *args, **kwargs):
         form = ScoreRecordListForm(request.data)

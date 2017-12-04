@@ -18,7 +18,7 @@ from comment.forms import (CommentInputForm,
                            CommentDeleteForm,
                            CommentForResourceListForm,
                            CommentOpinionActionForm)
-from score.models import ScoreAction
+from score.caches import ScoreAction
 
 import json
 

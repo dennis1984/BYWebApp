@@ -108,35 +108,3 @@ class ScoreRecord(models.Model):
         except Exception as e:
             return e
 
-
-class ScoreAction(object):
-    """
-    积分操作
-       : 增加或减少积分，并添加积分记录
-    """
-    @classmethod
-    def update_score(cls, request, action='comment'):
-        return Score.update_score(request, action=action)
-
-    @classmethod
-    def create_score_record(cls, request, action='comment'):
-        if action not in SCORE_ACTION_DICT:
-            return Exception('Params [action] is incorrect.')
-
-        init_data = {'user_id': request.user.id,
-                     'action': SCORE_ACTION_DICT[action]['action'],
-                     'score_count': SCORE_ACTION_DICT[action]['score']}
-        record = ScoreRecord(**init_data)
-        record.save()
-        return record
-
-    @classmethod
-    def score_action(cls, request, action='comment'):
-        score = cls.update_score(request, action=action)
-        if isinstance(score, Exception):
-            return score
-        record = cls.create_score_record(request, action=action)
-        if isinstance(record, Exception):
-            return record
-        return score, record
-
