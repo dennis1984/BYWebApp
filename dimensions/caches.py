@@ -75,7 +75,7 @@ class DimensionCache(object):
             list_data = model_function(**kwargs)
             if isinstance(list_data, Exception):
                 return list_data
-            self.set_list_to_cache(key, list_data)
+            self.set_list_to_cache(key, *list_data)
         return list_data
 
     # 获取维度Model Instance
