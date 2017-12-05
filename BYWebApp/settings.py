@@ -265,5 +265,13 @@ REDIS_SETTINGS = {
         }
 }
 
+# CELERY STUFF
+BROKER_URL = 'redis://%s:%d' % (REDIS_SETTINGS['host'], REDIS_SETTINGS['port'])
+CELERY_RESULT_BACKEND = 'redis://%s:%d' % (REDIS_SETTINGS['host'], REDIS_SETTINGS['port'])
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Africa/Nairobi'
+
 # 默认文件存储器
 DEFAULT_FILE_STORAGE = 'horizon.storage.YSFileSystemStorage'
