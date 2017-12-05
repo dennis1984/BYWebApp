@@ -34,6 +34,7 @@ from users.forms import (CreateUserForm,
                          WBAuthLoginForm,
                          PhoneForm,
                          EmailForm)
+from users.caches import UserCache
 from users.wx_auth.views import Oauth2AccessToken
 
 from horizon.views import APIView
@@ -492,7 +493,8 @@ class RoleList(generics.GenericAPIView):
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_role_list(self):
-        return Role.filter_objects()
+        return UserCache().get_user_role_list()
+        # return Role.filter_objects()
 
     def post(self, request, *args, **kwargs):
         role = self.get_role_list()

@@ -7,7 +7,7 @@ from django.conf import settings
 from horizon import redis
 from django.utils.timezone import now
 
-from users.models import User
+from users.models import User, Role
 
 
 # 过期时间（单位：秒）
@@ -15,7 +15,7 @@ EXPIRES_24_HOURS = 24 * 60 * 60
 EXPIRES_10_HOURS = 10 * 60 * 60
 
 
-class BusinessUserCache(object):
+class UserCache(object):
     def __init__(self):
         pool = redis.ConnectionPool(host=settings.REDIS_SETTINGS['host'],
                                     port=settings.REDIS_SETTINGS['port'],
@@ -27,6 +27,9 @@ class BusinessUserCache(object):
 
     def get_user_name_key(self, user_name):
         return 'user_instance_phone:%s' % user_name
+
+    def get_user_role_list_key(self):
+        return 'user_role_list'
 
     def set_user_to_cache(self, key, data):
         self.handle.set(key, data)
@@ -53,4 +56,14 @@ class BusinessUserCache(object):
                 return user_instance
             self.set_user_to_cache(key, user_instance)
         return user_instance
+
+    def get_user_role_list(self):
+        key = self.get_user_role_list_key()
+        list_data = self.handle.lrange(key)
+        if not list_data:
+            list_data = Role.filter_objects()
+            if isinstance(list_data, Exception):
+                return list_data
+            self.handle.rpush(key, *list_data)
+        return list_data
 
