@@ -19,7 +19,7 @@ class UserCache(object):
     def __init__(self):
         pool = redis.ConnectionPool(host=settings.REDIS_SETTINGS['host'],
                                     port=settings.REDIS_SETTINGS['port'],
-                                    db=settings.REDIS_SETTINGS['db_set']['consumer'])
+                                    db=settings.REDIS_SETTINGS['db_set']['web'])
         self.handle = redis.Redis(connection_pool=pool)
 
     def get_user_id_key(self, user_id):
