@@ -103,7 +103,7 @@ class DimensionCache(object):
 
     # 获取标签List
     def get_tag_list_by_dimension_id(self, dimension_id):
-        key = self.get_tag_list_by_dimension_id(dimension_id)
+        key = self.get_tag_list_key(dimension_id)
         kwargs = {'dimension_id': dimension_id}
         return self.get_perfect_list_data(key, Tag.filter_objects_by_dimension_id, **kwargs)
 

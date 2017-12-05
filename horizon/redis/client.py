@@ -2,7 +2,8 @@
 import redis
 import pickle
 from horizon.storage import yinshi_storage
-from django.db.models.fields.files import FieldFile
+from django.db.models.fields.files import FieldFile, FileField
+from django.db.models import Model
 
 
 class Redis(redis.Redis):
@@ -58,11 +59,11 @@ class Redis(redis.Redis):
         object_data = pickle.loads(value)
         if isinstance(object_data, dict):
             for key, item in object_data.items():
-                if issubclass(type(item), FieldFile):
+                if issubclass(type(item), (FieldFile, FileField)):
                     if not hasattr(item, 'storage'):
                         setattr(object_data[key], 'storage', yinshi_storage)
-        elif isinstance(object_data, (list, tuple)):
-            for item in object_data:
-                if not hasattr(item, 'storage'):
-                    setattr(item, 'storage', yinshi_storage)
+        elif issubclass(type(object_data), Model):
+            for field in object_data._meta.fields:
+                if issubclass(type(field), (FieldFile, FileField)):
+                    setattr(getattr(object_data, field.name), 'storage', yinshi_storage)
         return object_data
