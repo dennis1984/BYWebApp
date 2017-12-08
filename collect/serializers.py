@@ -8,6 +8,7 @@ from rest_framework import serializers
 
 from horizon.main import make_random_number_of_string
 from horizon.decorators import has_permission_to_update
+from media.models import SourceModelAction
 
 import os
 
@@ -24,7 +25,14 @@ class CollectSerializer(BaseModelSerializer):
         model = Collect
         fields = '__all__'
 
+    def save(self, **kwargs):
+        # 增加资源的收藏数量
+        SourceModelAction.update_collection_count(kwargs['source_type'], kwargs['source_id'])
+        return super(CollectSerializer, self).save(**kwargs)
+
     def delete(self, instance):
+        # 减少资源的收藏数量
+        SourceModelAction.update_collection_count(instance.source_type, instance.source_id)
         validated_data = {'status': instance.id + 1}
         return super(CollectSerializer, self).update(instance, validated_data)
 

@@ -12,7 +12,8 @@ from media.models import (Media, ResourceTags,
                           Information,
                           Case,
                           ResourceOpinionRecord,
-                          SourceModelAction,)
+                          SourceModelAction,
+                          AdvertResource)
 from media.forms import (MediaTypeListForm,
                          ThemeTypeListForm,
                          ProgressListForm,
@@ -22,7 +23,8 @@ from media.forms import (MediaTypeListForm,
                          InformationListForm,
                          CaseDetailForm,
                          CaseListForm,
-                         SourceLikeActionForm)
+                         SourceLikeActionForm,
+                         AdvertResourceListForm)
 from media.serializers import (MediaTypeListSerailizer,
                                ThemeTypeListSerializer,
                                ProgressListSerializer,
@@ -31,7 +33,8 @@ from media.serializers import (MediaTypeListSerailizer,
                                InformationDetailSerializer,
                                InformationListSerializer,
                                CaseDetailSerializer,
-                               CaseListSerializer)
+                               CaseListSerializer,
+                               AdvertResourceListSerializer)
 from media.caches import MediaCache
 
 
@@ -315,4 +318,29 @@ class SourceLikeAction(generics.GenericAPIView):
         if isinstance(result, Exception):
             return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'Result': True}, status=status.HTTP_201_CREATED)
+
+
+class AdvertResourceList(APIView):
+    """
+    广告资源列表
+    """
+    def get_advert_resource_list(self, source_type):
+        kwargs = {'source_type': source_type}
+        return AdvertResource.filter_objects(**kwargs)
+
+    def post(self, request, *args, **kwargs):
+        form = AdvertResourceListForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        instances = self.get_advert_resource_list(cld['source_type'])
+        if isinstance(instances, Exception):
+            return Response({'Detail': instances.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = AdvertResourceListSerializer(instances)
+        list_data = serializer.list_data(**cld)
+        if isinstance(list_data, Exception):
+            return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(list_data, status=status.HTTP_200_OK)
 

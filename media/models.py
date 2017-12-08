@@ -458,6 +458,8 @@ class Information(models.Model):
     read_count = models.IntegerField('浏览数', default=0)
     # 点赞数量
     like = models.IntegerField('点赞数量', default=0)
+    # 收藏数量
+    collection_count = models.IntegerField('收藏数量', default=0)
     # 数据状态：1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
 
@@ -499,7 +501,8 @@ class Information(models.Model):
     @classmethod
     def plus_action(cls, information_id, attr='read_count'):
         information = None
-        attr_keys = ['read_count', 'like']
+        attr_keys = ['read_count', 'like', 'collection_count']
+
         if attr not in attr_keys:
             return Exception('Params [attr] is incorrect.')
         # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
@@ -510,6 +513,25 @@ class Information(models.Model):
 
             opinion_value = getattr(_information, attr)
             setattr(_information, attr, opinion_value + 1)
+            _information.save()
+            information = _information
+        return information
+
+    @classmethod
+    def reduce_action(cls, information_id, attr='collection_count'):
+        information = None
+        attr_keys = ['like', 'collection_count']
+
+        if attr not in attr_keys:
+            return Exception('Params [attr] is incorrect.')
+        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+        with transaction.atomic():
+            _information = cls.get_object(pk=information_id)
+            if isinstance(_information, Exception):
+                return _information
+
+            opinion_value = getattr(_information, attr)
+            setattr(_information, attr, opinion_value - 1)
             _information.save()
             information = _information
         return information
@@ -571,6 +593,8 @@ class Case(models.Model):
     read_count = models.IntegerField('浏览数', default=0)
     # 点赞数量
     like = models.IntegerField('点赞数量', default=0)
+    # 收藏数量
+    collection_count = models.IntegerField('收藏数量', default=0)
     # 数据状态：1：正常 非1：已删除
     status = models.IntegerField('数据状态', default=1)
 
@@ -612,7 +636,8 @@ class Case(models.Model):
     @classmethod
     def plus_action(cls, case_id, attr='read_count'):
         case = None
-        attr_keys = ['read_count', 'like']
+        attr_keys = ['read_count', 'like', 'collection_count']
+
         if attr not in attr_keys:
             return Exception('Params [attr] is incorrect.')
         # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
@@ -626,6 +651,25 @@ class Case(models.Model):
             _case.save()
             case = _case
         return case
+
+    @classmethod
+    def reduce_action(cls, information_id, attr='collection_count'):
+        information = None
+        attr_keys = ['like', 'collection_count']
+
+        if attr not in attr_keys:
+            return Exception('Params [attr] is incorrect.')
+        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+        with transaction.atomic():
+            _information = cls.get_object(pk=information_id)
+            if isinstance(_information, Exception):
+                return _information
+
+            opinion_value = getattr(_information, attr)
+            setattr(_information, attr, opinion_value - 1)
+            _information.save()
+            information = _information
+        return information
 
     @classmethod
     def get_object(cls, **kwargs):
@@ -699,6 +743,52 @@ class ResourceOpinionRecord(models.Model):
             return e
 
 
+ADVERT_PICTURE_PATH = settings.PICTURE_DIRS['web']['advert']
+
+
+class AdvertResource(models.Model):
+    """
+    广告资源
+    """
+    title = models.CharField('广告标题', max_length=128)
+    subtitle = models.CharField('广告副标题', max_length=128, null=True, blank=True)
+    source_type = models.IntegerField('媒体资源类型')
+
+    link_url = models.TextField('链接地址', null=True, blank=True)
+    picture = models.ImageField(max_length=200,
+                                upload_to=ADVERT_PICTURE_PATH,
+                                default=os.path.join(ADVERT_PICTURE_PATH, 'noImage.png'))
+    # 数据状态：1：有效 非1：已删除
+    status = models.IntegerField('操作（点赞、踩）', default=1)
+    created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    object = BaseManager()
+
+    class Meta:
+        db_table = 'by_advert_resource'
+        index_together = ('title',)
+
+    def __unicode__(self):
+        return self.title
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e
+
+
 SOURCE_TYPE_DB = {
     1: Media,         # 资源
     2: Case,          # 案例
@@ -733,6 +823,19 @@ class SourceModelAction(object):
 
         source_class = SOURCE_TYPE_DB[source_type]
         return source_class.plus_action(source_id, 'like')
+
+    @classmethod
+    def update_collection_count(cls, source_type, source_id, method='plus'):
+        if source_type not in SOURCE_TYPE_DB:
+            return Exception('Params [resource_type] is incorrect.')
+        if method not in ['plus', 'reduce']:
+            return Exception('Params [resource_type] is incorrect.')
+
+        source_class = SOURCE_TYPE_DB[source_type]
+        if method == 'plus':
+            return source_class.plus_action(source_id, 'collection_count')
+        else:
+            return source_class.reduce_action(source_id, 'collection_count')
 
     @classmethod
     def create_like_record(cls, request, source_type, source_id):

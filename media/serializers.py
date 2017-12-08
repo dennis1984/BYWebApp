@@ -9,7 +9,8 @@ from horizon.decorators import has_permission_to_update
 from media.models import (MediaType,
                           ThemeType,
                           ProjectProgress,
-                          Media)
+                          Media,
+                          AdvertResource)
 
 import os
 
@@ -157,3 +158,14 @@ class CaseDetailSerializer(BaseSerializer):
 
 class CaseListSerializer(BaseListSerializer):
     child = CaseDetailSerializer()
+
+
+class AdvertResourceSerializer(BaseModelSerializer):
+    class Meta:
+        model = AdvertResource
+        fields = '__all__'
+
+
+class AdvertResourceListSerializer(BaseListSerializer):
+    child = AdvertResourceSerializer()
+

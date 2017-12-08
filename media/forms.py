@@ -62,3 +62,9 @@ class CaseListForm(forms.Form):
 class SourceLikeActionForm(forms.Form):
     source_type = forms.IntegerField(min_value=1)
     source_id = forms.IntegerField(min_value=1)
+
+
+class AdvertResourceListForm(forms.Form):
+    source_type = forms.IntegerField(min_value=1)
+    page_index = forms.IntegerField(min_value=1, required=False)
+    page_size = forms.IntegerField(min_value=1, required=False)
