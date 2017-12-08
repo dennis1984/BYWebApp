@@ -135,11 +135,12 @@ class Media(models.Model):
         detail = model_to_dict(self)
         for key in detail.keys():
             if key in self.AdminMeta.json_fields:
-                if key == 'tags':
-                    tag_ids = json.loads(detail[key])
-                    detail[key] = self.get_perfect_tags(tag_ids)
-                else:
-                    detail[key] = json.loads(detail[key])
+                if detail[key]:
+                    if key == 'tags':
+                        tag_ids = json.loads(detail[key])
+                        detail[key] = self.get_perfect_tags(tag_ids)
+                    else:
+                        detail[key] = json.loads(detail[key])
 
         media_type_dict = getattr(self, '_media_type_dict', {})
         theme_type_dict = getattr(self, '_theme_type_dict', {})
