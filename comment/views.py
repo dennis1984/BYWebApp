@@ -3,6 +3,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 
+from horizon.views import APIView
 from comment.serializers import (CommentSerializer,
                                  CommentDetailSerializer,
                                  CommentListSerializer,
@@ -125,6 +126,8 @@ class CommentDetail(generics.GenericAPIView):
     """
     点评详情
     """
+    permission_classes = (IsOwnerOrReadOnly,)
+
     def get_comment_detail(self, request, comment_id):
         kwargs = {'user_id': request.user.id,
                   'id': comment_id}
@@ -145,12 +148,10 @@ class CommentDetail(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CommentForResourceList(generics.GenericAPIView):
+class CommentForResourceList(APIView):
     """
     获取媒体资源的用户评论列表
     """
-    permission_classes = (IsOwnerOrReadOnly,)
-
     def get_comment_list(self, source_type, source_id):
         kwargs = {'source_type': source_type,
                   'source_id': source_id}

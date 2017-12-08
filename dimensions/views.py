@@ -3,6 +3,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 
+from horizon.views import APIView
 from dimensions.serializers import (DimensionListSerializer,
                                     TagListSerializer,
                                     MediaSerializer,
@@ -23,12 +24,10 @@ from horizon.main import select_random_element_from_array
 import json
 
 
-class DimensionList(generics.GenericAPIView):
+class DimensionList(APIView):
     """
     维度列表
     """
-    permission_classes = (IsOwnerOrReadOnly, )
-
     def get_dimension_list(self):
         return DimensionCache().get_dimension_list()
         # return Dimension.filter_objects()
@@ -50,12 +49,10 @@ class DimensionList(generics.GenericAPIView):
         return Response(data_list, status=status.HTTP_200_OK)
 
 
-class TagList(generics.GenericAPIView):
+class TagList(APIView):
     """
     标签列表
     """
-    permission_classes = (IsOwnerOrReadOnly,)
-
     def get_tags_list(self, **kwargs):
         instances = DimensionCache().get_tag_list_by_dimension_id(dimension_id=kwargs['dimension_id'])
         # instances = Tag.filter_objects_by_dimension_id(dimension_id=kwargs['dimension_id'])
@@ -77,7 +74,7 @@ class TagList(generics.GenericAPIView):
         return Response(list_data, status=status.HTTP_200_OK)
 
 
-class ResourceMatchAction(generics.GenericAPIView):
+class ResourceMatchAction(APIView):
     """
     资源匹配
     """

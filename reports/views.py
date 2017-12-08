@@ -81,18 +81,18 @@ class ReportFileDownload(generics.GenericAPIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        score_count = self.get_score_of_user(request)
-        if score_count < SCORE_ACTION_DICT['download']['score']:
-            return Response({'Detail': 'Score count is not enough.'}, status=status.HTTP_400_BAD_REQUEST)
+        # score_count = self.get_score_of_user(request)
+        # if score_count < SCORE_ACTION_DICT['download']['score']:
+        #     return Response({'Detail': 'Score count is not enough.'}, status=status.HTTP_400_BAD_REQUEST)
 
         instance = self.get_report_object(cld['media_id'])
         if isinstance(instance, Exception):
             return Response({'Detail': instance.args}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 扣除积分及添加积分记录
-        result = self.score_action(request)
-        if isinstance(result, Exception):
-            return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
+        # # 扣除积分及添加积分记录
+        # result = self.score_action(request)
+        # if isinstance(result, Exception):
+        #     return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
 
         file_name = instance.report_file.name
         base_file_name = os.path.basename(file_name)

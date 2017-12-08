@@ -2,6 +2,8 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+
+from horizon.views import APIView
 from media.permissions import IsOwnerOrReadOnly
 from media.models import (Media, ResourceTags,
                           ThemeType,
@@ -33,12 +35,10 @@ from media.serializers import (MediaTypeListSerailizer,
 from media.caches import MediaCache
 
 
-class MediaTypeList(generics.GenericAPIView):
+class MediaTypeList(APIView):
     """
     资源类型列表
     """
-    permission_classes = (IsOwnerOrReadOnly, )
-
     def get_media_type_list(self, **kwargs):
         return MediaType.filter_objects(**kwargs)
 
@@ -62,12 +62,10 @@ class MediaTypeList(generics.GenericAPIView):
         return Response(list_data, status=status.HTTP_200_OK)
 
 
-class ThemeTypeList(generics.GenericAPIView):
+class ThemeTypeList(APIView):
     """
     题材类别列表
     """
-    permission_classes = (IsOwnerOrReadOnly, )
-
     def get_theme_type_list (self, **kwargs):
         return ThemeType.filter_objects(**kwargs)
 
@@ -87,12 +85,10 @@ class ThemeTypeList(generics.GenericAPIView):
         return Response(data_list, status=status.HTTP_200_OK)
 
 
-class ProgressList(generics.GenericAPIView):
+class ProgressList(APIView):
     """
     项目进度列表
     """
-    permission_classes = (IsOwnerOrReadOnly,)
-
     def get_progress_list(self, **kwargs):
         return ProjectProgress.filter_objects(**kwargs)
 
@@ -115,12 +111,10 @@ class ProgressList(generics.GenericAPIView):
         return Response(data_list, status=status.HTTP_200_OK)
 
 
-class MediaDetail(generics.GenericAPIView):
+class MediaDetail(APIView):
     """
     媒体资源详情
     """
-    permission_classes = (IsOwnerOrReadOnly,)
-
     def get_media_detail(self, media_id):
         return MediaCache().get_media_detail_by_id(media_id)
 
@@ -143,12 +137,10 @@ class MediaDetail(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class MediaList(generics.GenericAPIView):
+class MediaList(APIView):
     """
     媒体资源列表
     """
-    permission_classes = (IsOwnerOrReadOnly,)
-
     def get_media_detail_list(self, **kwargs):
         if 'media_type_id' in kwargs:
             kwargs['media_type'] = kwargs.pop('media_type_id')
@@ -180,12 +172,10 @@ class MediaList(generics.GenericAPIView):
         return Response(list_data, status=status.HTTP_200_OK)
 
 
-class InformationDetail(generics.GenericAPIView):
+class InformationDetail(APIView):
     """
     资讯详情
     """
-    permission_classes = (IsOwnerOrReadOnly,)
-
     def get_information_detail(self, information_id):
         return MediaCache().get_information_detail_by_id(information_id)
 
@@ -211,12 +201,10 @@ class InformationDetail(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class InformationList(generics.GenericAPIView):
+class InformationList(APIView):
     """
     资讯列表
     """
-    permission_classes = (IsOwnerOrReadOnly,)
-
     def get_information_detail_list(self, **kwargs):
         return Information.filter_details(**kwargs)
 
@@ -242,12 +230,10 @@ class InformationList(generics.GenericAPIView):
         return Response(list_data, status=status.HTTP_200_OK)
 
 
-class CaseDetail(generics.GenericAPIView):
+class CaseDetail(APIView):
     """
     案例详情
     """
-    permission_classes = (IsOwnerOrReadOnly,)
-
     def get_case_detail(self, case_id):
         return MediaCache().get_case_detail_by_id(case_id)
 
@@ -273,12 +259,10 @@ class CaseDetail(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CaseList(generics.GenericAPIView):
+class CaseList(APIView):
     """
     案例列表
     """
-    permission_classes = (IsOwnerOrReadOnly,)
-
     def get_case_detail_list(self, **kwargs):
         return Case.filter_details(**kwargs)
 
@@ -305,6 +289,9 @@ class CaseList(generics.GenericAPIView):
 
 
 class SourceLikeAction(generics.GenericAPIView):
+    """
+    对资源点赞
+    """
     permission_classes = (IsOwnerOrReadOnly,)
 
     def get_source_like_record(self, request, source_type, source_id):
