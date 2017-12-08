@@ -71,7 +71,7 @@ class Media(models.Model):
     # 资源概述 数据格式为字典形式的JSON字符串，如：{"导演": ["冯小刚", "吴宇森"],
     #                                        "主演": ["成龙", "李连杰"],
     #                                        "出演": ["巩俐", "章子怡"], ......}
-    media_outline = models.TextField('资源概述')
+    media_outline = models.TextField('资源概述', null=True, blank=True)
 
     # 预计上映/播出时间
     air_time = models.DateTimeField('播出时间')
@@ -86,7 +86,7 @@ class Media(models.Model):
     #                                                "女主角号召力": 4.2,
     #                                                "类型关注度": 3.8,
     #                                                "片方指数": 3.7}
-    film_performance = models.CharField('电影表现大数据分析', max_length=512)
+    film_performance = models.CharField('电影表现大数据分析', max_length=512, null=True, blank=True)
 
     picture = models.ImageField('媒体资源原始图片', max_length=200,
                                 upload_to=MEDIA_PICTURE_PATH,
