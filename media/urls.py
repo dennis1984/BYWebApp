@@ -18,7 +18,7 @@ urlpatterns = [
 
     url(r'^like_action/$', views.SourceLikeAction.as_view()),
 
-    url(r'^advert_resource_list/$'),
+    url(r'^advert_resource_list/$', views.AdvertResourceList.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

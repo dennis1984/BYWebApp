@@ -752,6 +752,7 @@ class AdvertResource(models.Model):
     """
     title = models.CharField('广告标题', max_length=128)
     subtitle = models.CharField('广告副标题', max_length=128, null=True, blank=True)
+    # 点评资源类型： 1：资源 2：案例 3：资讯
     source_type = models.IntegerField('媒体资源类型')
 
     link_url = models.TextField('链接地址', null=True, blank=True)
@@ -759,7 +760,7 @@ class AdvertResource(models.Model):
                                 upload_to=ADVERT_PICTURE_PATH,
                                 default=os.path.join(ADVERT_PICTURE_PATH, 'noImage.png'))
     # 数据状态：1：有效 非1：已删除
-    status = models.IntegerField('操作（点赞、踩）', default=1)
+    status = models.IntegerField('数据状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
     updated = models.DateTimeField('更新时间', auto_now=True)
 
