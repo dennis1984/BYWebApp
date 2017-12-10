@@ -65,6 +65,11 @@ class SourceLikeActionForm(forms.Form):
 
 
 class AdvertResourceListForm(forms.Form):
-    source_type = forms.IntegerField(min_value=1)
+    source_type = forms.ChoiceField(choices=((1, 1),
+                                             (2, 2),
+                                             (3, 3)),
+                                    error_messages={
+                                        'required': 'Param source_type must in [1, 2, 3]'
+                                    })
     page_index = forms.IntegerField(min_value=1, required=False)
     page_size = forms.IntegerField(min_value=1, required=False)
