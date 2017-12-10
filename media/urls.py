@@ -10,7 +10,9 @@ urlpatterns = [
 
     url(r'^media_detail/$', views.MediaDetail.as_view()),
     url(r'^media_list/$', views.MediaList.as_view()),
+    # 相关案例
     url(r'^relevant_case_for_media/$', views.RelevantCaseForMedia.as_view()),
+    # 推荐资源
     url(r'^recommend_media_list/$', views.RecommendMediaList.as_view()),
 
     url(r'^information_detail/$', views.InformationDetail.as_view()),
