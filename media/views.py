@@ -351,12 +351,12 @@ class RelevantCaseForMedia(APIView):
     资源相关案例
     """
     def get_relevant_case_list(self, media_id):
-        media = MediaCache().get_media_detail_by_id(media_id)
-        if isinstance(media, Exception):
-            return media
+        media_detail = MediaCache().get_media_detail_by_id(media_id)
+        if isinstance(media_detail, Exception):
+            return media_detail
 
         case_tags_key_dict = MediaCache().get_case_tags_dict()
-        match_result = self.match_action_for_relevant_tags(case_tags_key_dict, media.tags)
+        match_result = self.match_action_for_relevant_tags(case_tags_key_dict, media_detail['tags'])
         if isinstance(match_result, Exception):
             return match_result
 
@@ -371,7 +371,7 @@ class RelevantCaseForMedia(APIView):
             count += 1
             if count >= match_count:
                 break
-        return match_result[:2]
+        return case_list[:2]
 
     def match_action_for_relevant_tags(self, tags_dict, tags):
         import json

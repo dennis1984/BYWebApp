@@ -122,6 +122,8 @@ class InformationDetailSerializer(BaseSerializer):
     read_count = serializers.IntegerField()
     # 点赞数
     like = serializers.IntegerField()
+    # 收藏数量
+    collection_count = serializers.IntegerField()
     # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=3)
 
@@ -149,6 +151,8 @@ class CaseDetailSerializer(BaseSerializer):
     read_count = serializers.IntegerField()
     # 点赞数
     like = serializers.IntegerField()
+    # 收藏数量
+    collection_count = serializers.IntegerField()
     # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=2)
 
