@@ -57,12 +57,22 @@ class MediaCache(object):
     def get_case_id_key(self, case_id):
         return 'case:id:%s' % case_id
 
+    def get_case_tags_dict_key(self):
+        return 'case_tags_dict:tags'
+
     def set_instance_to_cache(self, key, data):
         self.handle.set(key, data)
         self.handle.expire(key, EXPIRES_24_HOURS)
 
+    def set_list_to_cache(self, key, *list_data):
+        self.handle.rpush(key, *list_data)
+        self.handle.expire(key, EXPIRES_24_HOURS)
+
     def get_instance_from_cache(self, key):
         return self.handle.get(key)
+
+    def get_list_from_cache(self, key, start=0, end=-1):
+        return self.handle.lrange(key, start, end)
 
     def get_perfect_data(self, key, model_function, **kwargs):
         data = self.get_instance_from_cache(key)
@@ -72,6 +82,15 @@ class MediaCache(object):
                 return data
             self.set_instance_to_cache(key, data)
         return data
+
+    def get_perfect_list_data(self, key, model_function, **kwargs):
+        list_data = self.get_list_from_cache(key)
+        if not list_data:
+            list_data = model_function(**kwargs)
+            if isinstance(list_data, Exception):
+                return list_data
+            self.set_list_to_cache(key, *list_data)
+        return list_data
 
     # # 获取维度model对象
     # def get_dimension_by_id(self, dimension_id):
@@ -129,4 +148,10 @@ class MediaCache(object):
         key = self.get_case_id_key(case_id)
         kwargs = {'pk': case_id}
         return self.get_perfect_data(key, Case.get_detail, **kwargs)
+
+    # 获取案例的标签为Key的列表
+    def get_case_tags_dict(self):
+        key = self.get_case_tags_dict_key()
+        return self.get_perfect_data(key, Case.get_tags_key_dict)
+
 

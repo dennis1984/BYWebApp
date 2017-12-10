@@ -73,3 +73,7 @@ class AdvertResourceListForm(forms.Form):
                                     })
     page_index = forms.IntegerField(min_value=1, required=False)
     page_size = forms.IntegerField(min_value=1, required=False)
+
+
+class RelevantCaseForMediaForm(forms.Form):
+    media_id = forms.IntegerField(min_value=1)

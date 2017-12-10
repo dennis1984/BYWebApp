@@ -705,6 +705,25 @@ class Case(models.Model):
             details.append(ins.perfect_detail)
         return details
 
+    @classmethod
+    def get_tags_key_dict(cls):
+        """
+        获取以案例所属的标签为Key，以案例ID为Value的字典
+        """
+        instances = cls.filter_objects()
+        tags_dict = {}
+        for ins in instances:
+            try:
+                tags = json.loads(ins.tags)
+            except:
+                continue
+            tags = [str(tag) for tag in sorted(tags)]
+            tags_key = ':'.join(tags)
+            id_list = tags_dict.get(tags_key, [])
+            id_list.append(ins.id)
+            tags_dict[tags_key] = id_list
+        return tags_dict
+
 
 class ResourceOpinionRecord(models.Model):
     """

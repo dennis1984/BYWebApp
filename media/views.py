@@ -24,7 +24,8 @@ from media.forms import (MediaTypeListForm,
                          CaseDetailForm,
                          CaseListForm,
                          SourceLikeActionForm,
-                         AdvertResourceListForm)
+                         AdvertResourceListForm,
+                         RelevantCaseForMediaForm)
 from media.serializers import (MediaTypeListSerailizer,
                                ThemeTypeListSerializer,
                                ProgressListSerializer,
@@ -343,4 +344,79 @@ class AdvertResourceList(APIView):
         if isinstance(list_data, Exception):
             return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
         return Response(list_data, status=status.HTTP_200_OK)
+
+
+class RelevantCaseForMedia(APIView):
+    """
+    资源相关案例
+    """
+    def get_relevant_case_list(self, media_id):
+        media = MediaCache().get_media_detail_by_id(media_id)
+        if isinstance(media, Exception):
+            return media
+
+        case_tags_key_dict = MediaCache().get_case_tags_dict()
+        match_result = self.match_action_for_relevant_tags(case_tags_key_dict, media.tags)
+        if isinstance(match_result, Exception):
+            return match_result
+
+        case_list = []
+        match_count = 2
+        count = 0
+        for case_id in match_result:
+            case = MediaCache().get_case_detail_by_id(case_id)
+            if isinstance(case, Exception):
+                continue
+            case_list.append(case)
+            count += 1
+            if count >= match_count:
+                break
+        return match_result[:2]
+
+    def match_action_for_relevant_tags(self, tags_dict, tags):
+        import json
+        if isinstance(tags, (str, unicode)):
+            try:
+                tags = json.loads(tags)
+            except Exception as e:
+                return e
+        else:
+            if not isinstance(tags, list):
+                return Exception('Params tags is incorrect.')
+
+        match_result = []
+        for tags_key, item_ids in tags_dict.items():
+            perfect_key = tags_key.split(':')
+            match_count = 0
+            for item2_key in tags:
+                if item2_key in perfect_key:
+                    match_count += 1
+            match_result.append({'tags_key': tags_key,
+                                 'match_count': match_count})
+        match_result = sorted(match_result, key=lambda x: x['match_count'], reverse=True)
+        perfect_result = []
+        for match_item in match_result:
+            tags_key = match_item['tags_key']
+            perfect_result.extend(tags_dict[tags_key])
+
+        return perfect_result
+
+    def post(self, request, *args, **kwargs):
+        form = RelevantCaseForMediaForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        details = self.get_relevant_case_list(cld['media_id'])
+        if isinstance(details, Exception):
+            return Response({'Detail': details.args}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = CaseListSerializer(data=details)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        list_data = serializer.list_data()
+        if isinstance(list_data, Exception):
+            return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(list_data, status=status.HTTP_200_OK)
+
 
