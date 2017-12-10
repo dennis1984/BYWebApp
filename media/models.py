@@ -764,7 +764,7 @@ class AdvertResource(models.Model):
     created = models.DateTimeField('创建时间', default=now)
     updated = models.DateTimeField('更新时间', auto_now=True)
 
-    object = BaseManager()
+    objects = BaseManager()
 
     class Meta:
         db_table = 'by_advert_resource'
