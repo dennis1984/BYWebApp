@@ -25,7 +25,8 @@ from media.forms import (MediaTypeListForm,
                          CaseListForm,
                          SourceLikeActionForm,
                          AdvertResourceListForm,
-                         RelevantCaseForMediaForm)
+                         RelevantCaseForMediaForm,
+                         RecommendMediaForm)
 from media.serializers import (MediaTypeListSerailizer,
                                ThemeTypeListSerializer,
                                ProgressListSerializer,
@@ -346,17 +347,47 @@ class AdvertResourceList(APIView):
         return Response(list_data, status=status.HTTP_200_OK)
 
 
+# 根据提供的标签列表，匹配相关度最高的资源
+def match_resource_action_with_tags(tags_dict, tags):
+    import json
+    if isinstance(tags, (str, unicode)):
+        try:
+            tags = json.loads(tags)
+        except Exception as e:
+            return e
+    else:
+        if not isinstance(tags, list):
+            return Exception('Params tags is incorrect.')
+
+    match_result = []
+    for tags_key, item_ids in tags_dict.items():
+        perfect_key = tags_key.split(':')
+        match_count = 0
+        for item2_key in tags:
+            if str(item2_key) in perfect_key:
+                match_count += 1
+        match_result.append({'tags_key': tags_key,
+                             'match_count': match_count})
+    match_result = sorted(match_result, key=lambda x: x['match_count'], reverse=True)
+    perfect_result = []
+    for match_item in match_result:
+        tags_key = match_item['tags_key']
+        perfect_result.extend(tags_dict[tags_key])
+
+    return perfect_result
+
+
 class RelevantCaseForMedia(APIView):
     """
     资源相关案例
     """
     def get_relevant_case_list(self, media_id):
-        media_detail = MediaCache().get_media_detail_by_id(media_id)
-        if isinstance(media_detail, Exception):
-            return media_detail
+        media = MediaCache().get_media_by_id(media_id)
+        if isinstance(media, Exception):
+            return media
 
         case_tags_key_dict = MediaCache().get_case_tags_dict()
-        match_result = self.match_action_for_relevant_tags(case_tags_key_dict, media_detail['tags'])
+        match_result = match_resource_action_with_tags(case_tags_key_dict, media.tags)
         if isinstance(match_result, Exception):
             return match_result
 
@@ -372,34 +403,6 @@ class RelevantCaseForMedia(APIView):
             if count >= match_count:
                 break
         return case_list[:2]
-
-    def match_action_for_relevant_tags(self, tags_dict, tags):
-        import json
-        if isinstance(tags, (str, unicode)):
-            try:
-                tags = json.loads(tags)
-            except Exception as e:
-                return e
-        else:
-            if not isinstance(tags, list):
-                return Exception('Params tags is incorrect.')
-
-        match_result = []
-        for tags_key, item_ids in tags_dict.items():
-            perfect_key = tags_key.split(':')
-            match_count = 0
-            for item2_key in tags:
-                if item2_key in perfect_key:
-                    match_count += 1
-            match_result.append({'tags_key': tags_key,
-                                 'match_count': match_count})
-        match_result = sorted(match_result, key=lambda x: x['match_count'], reverse=True)
-        perfect_result = []
-        for match_item in match_result:
-            tags_key = match_item['tags_key']
-            perfect_result.extend(tags_dict[tags_key])
-
-        return perfect_result
 
     def post(self, request, *args, **kwargs):
         form = RelevantCaseForMediaForm(request.data)
@@ -420,3 +423,47 @@ class RelevantCaseForMedia(APIView):
         return Response(list_data, status=status.HTTP_200_OK)
 
 
+class RecommendMediaList(APIView):
+    """
+    推荐资源
+    """
+    def get_recommend_media_list(self, media_id):
+        media = MediaCache().get_media_by_id(media_id)
+        if isinstance(media, Exception):
+            return media
+
+        media_tags_key_dict = MediaCache().get_media_tags_dict()
+        match_result = match_resource_action_with_tags(media_tags_key_dict, media.tags)
+        if isinstance(match_result, Exception):
+            return match_result
+
+        media_list = []
+        match_count = 2
+        count = 0
+        for item_media_id in match_result:
+            if item_media_id == media_id:
+                continue
+            item_media = MediaCache().get_media_detail_by_id(item_media_id)
+            if isinstance(item_media, Exception):
+                continue
+            media_list.append(item_media)
+            count += 1
+            if count >= match_count:
+                break
+        return media_list[:2]
+
+    def post(self, request, *args, **kwargs):
+        form = RecommendMediaForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        details = self.get_recommend_media_list(cld['media_id'])
+        if isinstance(details, Exception):
+            return Response({'Detail': details.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = MediaListSerializer(data=details)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        list_data = serializer.list_data()
+        return Response(list_data, status=status.HTTP_200_OK)

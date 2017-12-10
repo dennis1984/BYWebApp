@@ -77,3 +77,7 @@ class AdvertResourceListForm(forms.Form):
 
 class RelevantCaseForMediaForm(forms.Form):
     media_id = forms.IntegerField(min_value=1)
+
+
+class RecommendMediaForm(forms.Form):
+    media_id = forms.IntegerField(min_value=1)

@@ -36,6 +36,9 @@ class MediaCache(object):
     # def get_tag_id_key(self, tag_id):
     #     return 'tag_id:%s' % tag_id
 
+    def get_media_instance_id_key(self, media_id):
+        return 'media:instance:id:%s' % media_id
+
     def get_media_id_key(self, media_id):
         return 'media:id:%s' % media_id
 
@@ -59,6 +62,12 @@ class MediaCache(object):
 
     def get_case_tags_dict_key(self):
         return 'case_tags_dict:tags'
+
+    def get_media_tags_dict_key(self):
+        return 'media_tags_dict:tags'
+
+    def get_information_tags_dict_key(self):
+        return 'information_tags_dict:tags'
 
     def set_instance_to_cache(self, key, data):
         self.handle.set(key, data)
@@ -107,11 +116,22 @@ class MediaCache(object):
     #     key = self.get_tag_id_key(tag_id)
     #     return self.get_base_instance_by_key(tag_id, key, Tag)
 
+    # 获取媒体资源Model对象
+    def get_media_by_id(self, media_id):
+        key = self.get_media_instance_id_key(media_id)
+        kwargs = {'pk': media_id}
+        return self.get_perfect_data(key, Media.get_object, **kwargs)
+
     # 获取媒体资源detail
     def get_media_detail_by_id(self, media_id):
         key = self.get_media_id_key(media_id)
         kwargs = {'pk': media_id}
         return self.get_perfect_data(key, Media.get_detail, **kwargs)
+
+    # 获取媒体资源的标签为Key的列表
+    def get_media_tags_dict(self):
+        key = self.get_media_tags_dict_key()
+        return self.get_perfect_data(key, Media.get_tags_key_dict)
 
     # 获取资源类型model对象
     def get_media_type_by_id(self, media_type_id):
@@ -143,6 +163,11 @@ class MediaCache(object):
         kwargs = {'pk': information_id}
         return self.get_perfect_data(key, Information.get_detail, **kwargs)
 
+    # 获取资讯的标签为Key的列表
+    def get_information_tags_dict(self):
+        key = self.get_information_tags_dict_key()
+        return self.get_perfect_data(key, Information.get_tags_key_dict)
+
     # 获取案例详情
     def get_case_detail_by_id(self, case_id):
         key = self.get_case_id_key(case_id)
@@ -153,5 +178,4 @@ class MediaCache(object):
     def get_case_tags_dict(self):
         key = self.get_case_tags_dict_key()
         return self.get_perfect_data(key, Case.get_tags_key_dict)
-
 

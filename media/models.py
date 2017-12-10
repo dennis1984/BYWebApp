@@ -19,6 +19,25 @@ import os
 MEDIA_PICTURE_PATH = settings.PICTURE_DIRS['web']['media']
 
 
+def base_get_tags_key_dict(cls):
+    """
+    获取以资源所属的标签为Key，以案例ID为Value的字典
+    """
+    instances = cls.filter_objects()
+    tags_dict = {}
+    for ins in instances:
+        try:
+            tags = json.loads(ins.tags)
+        except:
+            continue
+        tags = [str(tag) for tag in sorted(tags)]
+        tags_key = ':'.join(tags)
+        id_list = tags_dict.get(tags_key, [])
+        id_list.append(ins.id)
+        tags_dict[tags_key] = id_list
+    return tags_dict
+
+
 class Media(models.Model):
     """
     媒体资源
@@ -97,12 +116,6 @@ class Media(models.Model):
     picture_detail = models.ImageField('详情图片', max_length=200,
                                        upload_to=MEDIA_PICTURE_PATH,
                                        default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
-    # picture_profile = models.CharField('简介图片',
-    #                                    max_length=200,
-    #                                    default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
-    # picture_detail = models.CharField('详情图片',
-    #                                   max_length=200,
-    #                                   default=os.path.join(MEDIA_PICTURE_PATH, 'noImage.png'))
     # 资源状态：1：正常 非1：已删除
     status = models.IntegerField('资源状态', default=1)
     created = models.DateTimeField('创建时间', default=now)
@@ -198,6 +211,13 @@ class Media(models.Model):
         for ins in instances:
             details.append(ins.perfect_detail)
         return details
+
+    @classmethod
+    def get_tags_key_dict(cls):
+        """
+        获取以媒体资源所属的标签为Key，以案例ID为Value的字典
+        """
+        return base_get_tags_key_dict(cls)
 
 
 class MediaConfigure(models.Model):
@@ -570,6 +590,13 @@ class Information(models.Model):
             details.append(ins.perfect_detail)
         return details
 
+    @classmethod
+    def get_tags_key_dict(cls):
+        """
+        获取以资讯所属的标签为Key，以案例ID为Value的字典
+        """
+        return base_get_tags_key_dict(cls)
+
 
 CASE_FILE_PATH = settings.PICTURE_DIRS['web']['case']
 
@@ -710,19 +737,7 @@ class Case(models.Model):
         """
         获取以案例所属的标签为Key，以案例ID为Value的字典
         """
-        instances = cls.filter_objects()
-        tags_dict = {}
-        for ins in instances:
-            try:
-                tags = json.loads(ins.tags)
-            except:
-                continue
-            tags = [str(tag) for tag in sorted(tags)]
-            tags_key = ':'.join(tags)
-            id_list = tags_dict.get(tags_key, [])
-            id_list.append(ins.id)
-            tags_dict[tags_key] = id_list
-        return tags_dict
+        return base_get_tags_key_dict(cls)
 
 
 class ResourceOpinionRecord(models.Model):

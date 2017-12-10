@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^media_detail/$', views.MediaDetail.as_view()),
     url(r'^media_list/$', views.MediaList.as_view()),
     url(r'^relevant_case_for_media/$', views.RelevantCaseForMedia.as_view()),
+    url(r'^recommend_media_list/$', views.RecommendMediaList.as_view()),
 
     url(r'^information_detail/$', views.InformationDetail.as_view()),
     url(r'^information_list/$', views.InformationList.as_view()),
