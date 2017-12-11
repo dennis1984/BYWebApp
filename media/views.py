@@ -28,7 +28,8 @@ from media.forms import (MediaTypeListForm,
                          RelevantCaseForMediaForm,
                          RecommendMediaForm,
                          RelevantInformationListForm,
-                         RelevantCaseListForm)
+                         RelevantCaseListForm,
+                         SearchResourceActionForm)
 from media.serializers import (MediaTypeListSerailizer,
                                ThemeTypeListSerializer,
                                ProgressListSerializer,
@@ -38,8 +39,12 @@ from media.serializers import (MediaTypeListSerailizer,
                                InformationListSerializer,
                                CaseDetailSerializer,
                                CaseListSerializer,
-                               AdvertResourceListSerializer)
+                               AdvertResourceListSerializer,
+                               ResourceListSerializer)
+from comment.models import SOURCE_TYPE_DB
 from media.caches import MediaCache
+
+import re
 
 
 class MediaTypeList(APIView):
@@ -512,7 +517,7 @@ class RelevantInformationList(APIView):
 
         cld = form.cleaned_data
         kwargs = {}
-        if cld['page_size']:
+        if cld.get('page_size'):
             kwargs['match_count'] = cld['page_size']
         details = self.get_relevant_information_list(cld['information_id'], **kwargs)
         if isinstance(details, Exception):
@@ -562,7 +567,7 @@ class RelevantCaseList(APIView):
 
         cld = form.cleaned_data
         kwargs = {}
-        if cld['page_size']:
+        if cld.get('page_size'):
             kwargs['match_count'] = cld['page_size']
         details = self.get_relevant_case_list(cld['case_id'], **kwargs)
         if isinstance(details, Exception):
@@ -589,7 +594,7 @@ class InformationDetailForNext(APIView):
             return e
         if len(sort_order_list) <= index + 1:
             return None
-        detail = MediaCache().get_information_by_id(sort_order_list[index+1])
+        detail = MediaCache().get_information_detail_by_id(sort_order_list[index+1])
         return detail
 
     def post(self, request, *args, **kwargs):
@@ -600,7 +605,7 @@ class InformationDetailForNext(APIView):
         cld = form.cleaned_data
         detail = self.get_next_information_detail(cld['id'])
         if isinstance(detail, Exception) or not detail:
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({}, status=status.HTTP_200_OK)
         serializer = InformationDetailSerializer(data=detail)
         if not serializer.is_valid():
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -630,10 +635,71 @@ class CaseDetailForNext(APIView):
         cld = form.cleaned_data
         detail = self.get_next_case_detail(cld['id'])
         if isinstance(detail, Exception) or not detail:
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({}, status=status.HTTP_200_OK)
         serializer = CaseDetailSerializer(data=detail)
         if not serializer.is_valid():
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class SearchResourceAction(APIView):
+    """
+    搜索资源
+    """
+    search_dict_config = {
+        Media: MediaCache().get_media_search_dict(),
+        Information: MediaCache().get_information_search_dict(),
+        Case: MediaCache().get_case_search_dict(),
+    }
+    resource_detail_config = {
+        Media: MediaCache().get_media_detail_by_id,
+        Information: MediaCache().get_information_detail_by_id,
+        Case: MediaCache().get_case_detail_by_id,
+    }
+
+    def search_action(self, search_dict, keywords):
+        if isinstance(keywords, (str, unicode)):
+            keywords = keywords.split()
+        match_result = []
+        re_com_list = [re.compile(keyword) for keyword in keywords]
+        for source_id in search_dict:
+            count = 0
+            for key2, value2 in search_dict[source_id].items():
+                if key2 == 'tags':
+                    value2 = ' '.join(value2)
+                for re_com in re_com_list:
+                    count += len(re_com.findall(value2))
+            item_result = {'resource_id': source_id,
+                           'match_count': count}
+            match_result.append(item_result)
+
+        return sorted(match_result, key=lambda x: x['match_count'], reverse=True)
+
+    def get_search_resource_list(self, source_type, keywords):
+        model_class = SOURCE_TYPE_DB[source_type]
+        search_dict = self.search_dict_config[model_class]
+        match_result = self.search_action(search_dict, keywords)
+
+        detail_function = self.resource_detail_config[model_class]
+        perfect_result = []
+        for item in match_result:
+            resource_id = item['resource_id']
+            detail = detail_function(resource_id)
+            perfect_result.append(detail)
+        return perfect_result
+
+    def post(self, request, *args, **kwargs):
+        form = SearchResourceActionForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        details = self.get_search_resource_list(cld['source_type'], cld['keywords'])
+        serializer = ResourceListSerializer(data=details)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        list_data = serializer.list_data()
+        if isinstance(list_data, Exception):
+            return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(list_data, status=status.HTTP_200_OK)
 

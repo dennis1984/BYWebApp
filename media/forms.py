@@ -101,3 +101,16 @@ class RelevantCaseListForm(forms.Form):
     case_id = forms.IntegerField(min_value=1)
     page_index = forms.IntegerField(min_value=1, required=False)
     page_size = forms.IntegerField(min_value=1, required=False)
+
+
+class SearchResourceActionForm(forms.Form):
+    # 资源类型： 1：资源 2：案例 3：资讯
+    source_type = forms.ChoiceField(choices=((1, 1),
+                                             (2, 2),
+                                             (3, 3)),
+                                    error_messages={
+                                        'required': 'Param source_type must in [1, 2, 3]'
+                                    })
+    # 搜索关键词
+    keywords = forms.CharField(max_length=200)
+

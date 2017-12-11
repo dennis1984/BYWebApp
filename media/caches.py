@@ -84,6 +84,15 @@ class MediaCache(object):
     def get_case_sort_order_list_key(self):
         return 'case_sort_order_list:updated'
 
+    def get_media_search_dict_title_tags_key(self):
+        return 'media_search_dict:title_tags'
+
+    def get_information_search_dict_title_tags_key(self):
+        return 'information_search_dict:title_tags'
+
+    def get_case_search_dict_title_tags_key(self):
+        return 'case_search_dict:title_tags'
+
     def set_instance_to_cache(self, key, data):
         self.handle.set(key, data)
         self.handle.expire(key, EXPIRES_24_HOURS)
@@ -220,4 +229,19 @@ class MediaCache(object):
     def get_case_sort_order_list(self):
         key = self.get_case_sort_order_list_key()
         return self.get_perfect_data(key, Case.get_sort_order_list)
+
+    # 获取媒体资源ID为Key，title和tags为Value的字典（搜索用）
+    def get_media_search_dict(self):
+        key = self.get_media_search_dict_title_tags_key()
+        return self.get_perfect_data(key, Media.get_search_dict)
+
+    # 获取资讯ID为Key，title和tags为Value的字典（搜索用）
+    def get_information_search_dict(self):
+        key = self.get_information_search_dict_title_tags_key()
+        return self.get_perfect_data(key, Information.get_search_dict)
+
+    # 获取案例ID为Key，title和tags为Value的字典（搜索用）
+    def get_case_search_dict(self):
+        key = self.get_case_search_dict_title_tags_key()
+        return self.get_perfect_data(key, Case.get_search_dict)
 

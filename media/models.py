@@ -235,6 +235,21 @@ class Media(models.Model):
         sort_order_list = [ins.id for ins in instances]
         return sort_order_list
 
+    @classmethod
+    def get_search_dict(cls):
+        """
+        获取搜索字典（以ID为Key， 以title和tags为Value）
+        :return: search dict
+        """
+        instances = cls.filter_objects()
+        search_dict = {}
+        for ins in instances:
+            item_dict = {'title': ins.title,
+                         'subtitle': ins.subtitle,
+                         'tags': ins.perfect_detail['tags']}
+            search_dict[ins.id] = item_dict
+        return search_dict
+
 
 class MediaConfigure(models.Model):
     """
@@ -628,6 +643,21 @@ class Information(models.Model):
         sort_order_list = [ins.id for ins in instances]
         return sort_order_list
 
+    @classmethod
+    def get_search_dict(cls):
+        """
+        获取搜索字典（以ID为Key， 以title和tags为Value）
+        :return: search dict
+        """
+        instances = cls.filter_objects()
+        search_dict = {}
+        for ins in instances:
+            item_dict = {'title': ins.title,
+                         'subtitle': ins.subtitle,
+                         'tags': ins.perfect_detail['tags']}
+            search_dict[ins.id] = item_dict
+        return search_dict
+
 
 CASE_FILE_PATH = settings.PICTURE_DIRS['web']['case']
 
@@ -784,6 +814,21 @@ class Case(models.Model):
         instances = cls.filter_objects()
         sort_order_list = [ins.id for ins in instances]
         return sort_order_list
+
+    @classmethod
+    def get_search_dict(cls):
+        """
+        获取搜索字典（以ID为Key， 以title和tags为Value）
+        :return: search dict
+        """
+        instances = cls.filter_objects()
+        search_dict = {}
+        for ins in instances:
+            item_dict = {'title': ins.title,
+                         'subtitle': ins.subtitle,
+                         'tags': ins.perfect_detail['tags']}
+            search_dict[ins.id] = item_dict
+        return search_dict
 
 
 class ResourceOpinionRecord(models.Model):

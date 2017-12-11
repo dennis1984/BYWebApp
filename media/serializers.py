@@ -173,3 +173,29 @@ class AdvertResourceSerializer(BaseModelSerializer):
 class AdvertResourceListSerializer(BaseListSerializer):
     child = AdvertResourceSerializer()
 
+
+class ResourceDetailSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    subtitle = serializers.CharField(allow_blank=True, allow_null=True)
+    description = serializers.CharField(allow_blank=True, allow_null=True)
+
+    # 简介图片
+    picture = serializers.ImageField()
+    # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
+    tags = serializers.ListField(allow_null=True)
+    # 浏览数
+    read_count = serializers.IntegerField(default=0)
+    # 点赞数
+    like = serializers.IntegerField(default=0)
+    # 收藏数量
+    collection_count = serializers.IntegerField(default=0)
+    # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
+    source_type = serializers.IntegerField(default=2)
+
+    created = serializers.DateTimeField()
+    updated = serializers.DateTimeField()
+
+
+class ResourceListSerializer(BaseListSerializer):
+    child = ResourceDetailSerializer()
