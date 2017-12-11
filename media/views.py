@@ -668,10 +668,14 @@ class SearchResourceAction(APIView):
                 if key2 == 'tags':
                     value2 = ' '.join(value2)
                 for re_com in re_com_list:
-                    count += len(re_com.findall(value2))
-            item_result = {'resource_id': source_id,
-                           'match_count': count}
-            match_result.append(item_result)
+                    try:
+                        count += len(re_com.findall(value2))
+                    except:
+                        continue
+            if count > 0:
+                item_result = {'resource_id': source_id,
+                               'match_count': count}
+                match_result.append(item_result)
 
         return sorted(match_result, key=lambda x: x['match_count'], reverse=True)
 
