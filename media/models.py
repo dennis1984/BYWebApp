@@ -15,6 +15,12 @@ import json
 import datetime
 import os
 
+RESOURCE_COLUMN_CONFIG = {
+    'newest': 1,    # 最新发布
+    'movie_event': 2,  # 电影大事件
+    'marketing': 3,  # 娱乐营销观察
+    'information': 4,   # 影片资讯
+}
 
 MEDIA_PICTURE_PATH = settings.PICTURE_DIRS['web']['media']
 
@@ -218,6 +224,16 @@ class Media(models.Model):
         获取以媒体资源所属的标签为Key，以案例ID为Value的字典
         """
         return base_get_tags_key_dict(cls)
+
+    @classmethod
+    def get_sort_order_list(cls):
+        """
+        获取排序顺序列表（已updated倒序排序）
+        :return: sort order list
+        """
+        instances = cls.filter_objects()
+        sort_order_list = [ins.id for ins in instances]
+        return sort_order_list
 
 
 class MediaConfigure(models.Model):
@@ -494,6 +510,7 @@ class Information(models.Model):
 
     class Meta:
         db_table = 'by_information'
+        ordering = ['-updated']
 
     class AdminMeta:
         json_fields = ['tags']
@@ -601,6 +618,16 @@ class Information(models.Model):
         """
         return base_get_tags_key_dict(cls)
 
+    @classmethod
+    def get_sort_order_list(cls):
+        """
+        获取排序顺序列表（已updated倒序排序）
+        :return: sort order list
+        """
+        instances = cls.filter_objects()
+        sort_order_list = [ins.id for ins in instances]
+        return sort_order_list
+
 
 CASE_FILE_PATH = settings.PICTURE_DIRS['web']['case']
 
@@ -640,6 +667,7 @@ class Case(models.Model):
 
     class Meta:
         db_table = 'by_case'
+        ordering = ['-updated']
 
     class AdminMeta:
         json_fields = ['tags']
@@ -746,6 +774,16 @@ class Case(models.Model):
         获取以案例所属的标签为Key，以案例ID为Value的字典
         """
         return base_get_tags_key_dict(cls)
+
+    @classmethod
+    def get_sort_order_list(cls):
+        """
+        获取排序顺序列表（已updated倒序排序）
+        :return: sort order list
+        """
+        instances = cls.filter_objects()
+        sort_order_list = [ins.id for ins in instances]
+        return sort_order_list
 
 
 class ResourceOpinionRecord(models.Model):

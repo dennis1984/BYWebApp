@@ -46,6 +46,10 @@ class InformationDetailForm(forms.Form):
 
 
 class InformationListForm(forms.Form):
+    # 运营标记：0：无标示 1：重磅发布
+    mark = forms.IntegerField(min_value=1, required=False)
+    # 栏目：1：最新发布 2：电影大事件 3：娱乐营销观察 4：影片资讯
+    column = forms.IntegerField(min_value=1, required=False)
     page_index = forms.IntegerField(min_value=1, required=False)
     page_size = forms.IntegerField(min_value=1, required=False)
 
@@ -55,6 +59,10 @@ class CaseDetailForm(forms.Form):
 
 
 class CaseListForm(forms.Form):
+    # 运营标记：0：无标示 1：重磅发布
+    mark = forms.IntegerField(min_value=1, required=False)
+    # 栏目：1：最新发布 2：电影大事件 3：娱乐营销观察 4：影片资讯
+    column = forms.IntegerField(min_value=1, required=False)
     page_index = forms.IntegerField(min_value=1, required=False)
     page_size = forms.IntegerField(min_value=1, required=False)
 
@@ -81,3 +89,15 @@ class RelevantCaseForMediaForm(forms.Form):
 
 class RecommendMediaForm(forms.Form):
     media_id = forms.IntegerField(min_value=1)
+
+
+class RelevantInformationListForm(forms.Form):
+    information_id = forms.IntegerField(min_value=1)
+    page_index = forms.IntegerField(min_value=1, required=False)
+    page_size = forms.IntegerField(min_value=1, required=False)
+
+
+class RelevantCaseListForm(forms.Form):
+    case_id = forms.IntegerField(min_value=1)
+    page_index = forms.IntegerField(min_value=1, required=False)
+    page_size = forms.IntegerField(min_value=1, required=False)

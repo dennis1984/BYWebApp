@@ -10,7 +10,7 @@ from media.models import (Media, ResourceTags,
                           MediaType,
                           ProjectProgress,
                           Information,
-                          Case,
+                          Case, RESOURCE_COLUMN_CONFIG,
                           ResourceOpinionRecord,
                           SourceModelAction,
                           AdvertResource)
@@ -26,7 +26,9 @@ from media.forms import (MediaTypeListForm,
                          SourceLikeActionForm,
                          AdvertResourceListForm,
                          RelevantCaseForMediaForm,
-                         RecommendMediaForm)
+                         RecommendMediaForm,
+                         RelevantInformationListForm,
+                         RelevantCaseListForm)
 from media.serializers import (MediaTypeListSerailizer,
                                ThemeTypeListSerializer,
                                ProgressListSerializer,
@@ -211,6 +213,9 @@ class InformationList(APIView):
     资讯列表
     """
     def get_information_detail_list(self, **kwargs):
+        # 最新发布（栏目）
+        if kwargs.get('column') == RESOURCE_COLUMN_CONFIG['newest']:
+            kwargs.pop('column')
         return Information.filter_details(**kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -269,6 +274,9 @@ class CaseList(APIView):
     案例列表
     """
     def get_case_detail_list(self, **kwargs):
+        # 最新发布（栏目）
+        if kwargs.get('column') == RESOURCE_COLUMN_CONFIG['newest']:
+            kwargs.pop('column')
         return Case.filter_details(**kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -467,3 +475,165 @@ class RecommendMediaList(APIView):
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         list_data = serializer.list_data()
         return Response(list_data, status=status.HTTP_200_OK)
+
+
+class RelevantInformationList(APIView):
+    """
+    资讯：相关文章
+    """
+    def get_relevant_information_list(self, information_id, match_count=6):
+        information = MediaCache().get_information_by_id(information_id)
+        if isinstance(information, Exception):
+            return information
+
+        information_tags_key_dict = MediaCache().get_information_tags_dict()
+        match_result = match_resource_action_with_tags(information_tags_key_dict, information.tags)
+        if isinstance(match_result, Exception):
+            return match_result
+
+        information_list = []
+        count = 0
+        for item_information_id in match_result:
+            if item_information_id == information_id:
+                continue
+            item_information = MediaCache().get_information_detail_by_id(item_information_id)
+            if isinstance(item_information, Exception):
+                continue
+            information_list.append(item_information)
+            count += 1
+            if count >= match_count:
+                break
+        return information_list[:match_count]
+
+    def post(self, request, *args, **kwargs):
+        form = RelevantInformationListForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        kwargs = {}
+        if cld['page_size']:
+            kwargs['match_count'] = cld['page_size']
+        details = self.get_relevant_information_list(cld['information_id'], **kwargs)
+        if isinstance(details, Exception):
+            return Response({'Detail': details.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = InformationListSerializer(data=details)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        list_data = serializer.list_data(**cld)
+        if isinstance(list_data, Exception):
+            return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(list_data, status=status.HTTP_200_OK)
+
+
+class RelevantCaseList(APIView):
+    """
+    案例：相关文章
+    """
+    def get_relevant_case_list(self, case_id, match_count=6):
+        case = MediaCache().get_case_by_id(case_id)
+        if isinstance(case, Exception):
+            return case
+
+        case_tags_key_dict = MediaCache().get_case_tags_dict()
+        match_result = match_resource_action_with_tags(case_tags_key_dict, case.tags)
+        if isinstance(match_result, Exception):
+            return match_result
+
+        case_list = []
+        count = 0
+        for item_case_id in match_result:
+            if item_case_id == case_id:
+                continue
+            item_case = MediaCache().get_case_detail_by_id(item_case_id)
+            if isinstance(item_case, Exception):
+                continue
+            case_list.append(item_case)
+            count += 1
+            if count >= match_count:
+                break
+        return case_list[:match_count]
+
+    def post(self, request, *args, **kwargs):
+        form = RelevantCaseListForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        kwargs = {}
+        if cld['page_size']:
+            kwargs['match_count'] = cld['page_size']
+        details = self.get_relevant_case_list(cld['case_id'], **kwargs)
+        if isinstance(details, Exception):
+            return Response({'Detail': details.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = CaseListSerializer(data=details)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        list_data = serializer.list_data(**cld)
+        if isinstance(list_data, Exception):
+            return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(list_data, status=status.HTTP_200_OK)
+
+
+class InformationDetailForNext(APIView):
+    """
+    资讯：下一篇
+    """
+    def get_next_information_detail(self, information_id):
+        sort_order_list = MediaCache().get_information_sort_order_list()
+        try:
+            index = sort_order_list.index(information_id)
+        except Exception as e:
+            return e
+        if len(sort_order_list) <= index + 1:
+            return None
+        detail = MediaCache().get_information_by_id(sort_order_list[index+1])
+        return detail
+
+    def post(self, request, *args, **kwargs):
+        form = InformationDetailForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        detail = self.get_next_information_detail(cld['id'])
+        if isinstance(detail, Exception) or not detail:
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = InformationDetailSerializer(data=detail)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CaseDetailForNext(APIView):
+    """
+    案例：下一篇
+    """
+    def get_next_case_detail(self, case_id):
+        sort_order_list = MediaCache().get_case_sort_order_list()
+        try:
+            index = sort_order_list.index(case_id)
+        except Exception as e:
+            return e
+        if len(sort_order_list) <= index + 1:
+            return None
+        detail = MediaCache().get_case_detail_by_id(sort_order_list[index+1])
+        return detail
+
+    def post(self, request, *args, **kwargs):
+        form = CaseDetailForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        detail = self.get_next_case_detail(cld['id'])
+        if isinstance(detail, Exception) or not detail:
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = CaseDetailSerializer(data=detail)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+

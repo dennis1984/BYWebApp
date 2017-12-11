@@ -54,8 +54,14 @@ class MediaCache(object):
     def get_resource_tag_id_key(self, resource_tag_id):
         return 'resource_tag:id:%s' % resource_tag_id
 
+    def get_information_instance_id_key(self, information_id):
+        return 'information:instance:id:%s' % information_id
+
     def get_information_id_key(self, information_id):
         return 'information:id:%s' % information_id
+
+    def get_case_instance_id_key(self, case_id):
+        return 'case:instance:id:%s' % case_id
 
     def get_case_id_key(self, case_id):
         return 'case:id:%s' % case_id
@@ -68,6 +74,15 @@ class MediaCache(object):
 
     def get_information_tags_dict_key(self):
         return 'information_tags_dict:tags'
+
+    def get_media_sort_order_list_key(self):
+        return 'media_sort_order_list:updated'
+
+    def get_information_sort_order_list_key(self):
+        return 'information_sort_order_list:updated'
+
+    def get_case_sort_order_list_key(self):
+        return 'case_sort_order_list:updated'
 
     def set_instance_to_cache(self, key, data):
         self.handle.set(key, data)
@@ -157,6 +172,12 @@ class MediaCache(object):
         kwargs = {'pk': resource_tag_id}
         return self.get_perfect_data(key, ResourceTags.get_object, **kwargs)
 
+    # 获取资讯Model对象
+    def get_information_by_id(self, information_id):
+        key = self.get_information_instance_id_key(information_id)
+        kwargs = {'pk': information_id}
+        return self.get_perfect_data(key, Information.get_object, **kwargs)
+
     # 获取资讯详情
     def get_information_detail_by_id(self, information_id):
         key = self.get_information_id_key(information_id)
@@ -168,6 +189,12 @@ class MediaCache(object):
         key = self.get_information_tags_dict_key()
         return self.get_perfect_data(key, Information.get_tags_key_dict)
 
+    # 获取案例Model对象
+    def get_case_by_id(self, case_id):
+        key = self.get_case_instance_id_key(case_id)
+        kwargs = {'pk': case_id}
+        return self.get_perfect_data(key, Case.get_object, **kwargs)
+
     # 获取案例详情
     def get_case_detail_by_id(self, case_id):
         key = self.get_case_id_key(case_id)
@@ -178,4 +205,19 @@ class MediaCache(object):
     def get_case_tags_dict(self):
         key = self.get_case_tags_dict_key()
         return self.get_perfect_data(key, Case.get_tags_key_dict)
+
+    # 获取媒体资源排序顺序列表
+    def get_media_sort_order_list(self):
+        key = self.get_media_sort_order_list_key()
+        return self.get_perfect_data(key, Media.get_sort_order_list)
+
+    # 获取媒体资源排序顺序列表
+    def get_information_sort_order_list(self):
+        key = self.get_information_sort_order_list_key()
+        return self.get_perfect_data(key, Information.get_sort_order_list)
+
+    # 获取媒体资源排序顺序列表
+    def get_case_sort_order_list(self):
+        key = self.get_case_sort_order_list_key()
+        return self.get_perfect_data(key, Case.get_sort_order_list)
 
