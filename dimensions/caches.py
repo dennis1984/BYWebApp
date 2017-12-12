@@ -73,7 +73,7 @@ class DimensionCache(object):
         list_data = self.get_list_from_cache(key)
         if not list_data:
             list_data = model_function(**kwargs)
-            if isinstance(list_data, Exception):
+            if isinstance(list_data, Exception) or not list_data:
                 return list_data
             self.set_list_to_cache(key, *list_data)
         return list_data

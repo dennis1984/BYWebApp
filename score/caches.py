@@ -71,7 +71,7 @@ class ScoreCache(object):
         list_data = self.handle.lrange(key)
         if not list_data:
             list_data = ScoreRecord.filter_objects(**{'user_id': user_id})
-            if isinstance(list_data, Exception):
+            if isinstance(list_data, Exception) or not list_data:
                 return list_data
             self.handle.rpush(key, *list_data)
         return list_data
