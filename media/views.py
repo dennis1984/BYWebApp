@@ -689,6 +689,8 @@ class SearchResourceAction(APIView):
         for item in match_result:
             resource_id = item['resource_id']
             detail = detail_function(resource_id)
+            if model_class == Media:
+                detail['picture'] = detail['picture_profile']
             perfect_result.append(detail)
         return perfect_result
 
