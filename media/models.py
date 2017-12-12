@@ -246,7 +246,14 @@ class Media(models.Model):
         for ins in instances:
             item_dict = {'title': ins.title,
                          'subtitle': ins.subtitle,
-                         'tags': ins.perfect_detail['tags']}
+                         'tags': ins.perfect_detail['tags'],
+                         'media_type_id': ins.media_type,
+                         'theme_type_id': ins.theme_type,
+                         'progress_id': ins.progress,
+                         'mark': ins.mark,
+                         'temperature': ins.temperature,
+                         'updated': ins.updated,
+                         'air_time': ins.air_time}
             search_dict[ins.id] = item_dict
         return search_dict
 
@@ -646,7 +653,7 @@ class Information(models.Model):
     @classmethod
     def get_search_dict(cls):
         """
-        获取搜索字典（以ID为Key， 以title和tags为Value）
+        获取搜索字典（以ID为Key， 以title和tags等等为Value）
         :return: search dict
         """
         instances = cls.filter_objects()

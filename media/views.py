@@ -45,6 +45,7 @@ from comment.models import SOURCE_TYPE_DB
 from media.caches import MediaCache
 
 import re
+import copy
 
 
 class MediaTypeList(APIView):
@@ -153,14 +154,41 @@ class MediaList(APIView):
     """
     媒体资源列表
     """
+    def search_action(self, **search_kwargs):
+        media_search_dict = MediaCache().get_media_search_dict()
+        match_result = []
+        for media_id, media_detail in media_search_dict.items():
+            does_match = False
+            for kw, value in search_kwargs.items():
+                if media_detail.get(kw) != value:
+                    break
+            else:
+                does_match = True
+            if does_match:
+                match_result.append({'media_id': media_id,
+                                     'media_detail': media_detail})
+        return match_result
+
     def get_media_detail_list(self, **kwargs):
-        if 'media_type_id' in kwargs:
-            kwargs['media_type'] = kwargs.pop('media_type_id')
-        if 'theme_type_id' in kwargs:
-            kwargs['theme_type'] = kwargs.pop('theme_type_id')
-        if 'progress_id' in kwargs:
-            kwargs['progress'] = kwargs.pop('progress_id')
-        return Media.filter_details(**kwargs)
+        s_kwargs = copy.deepcopy(kwargs)
+        pop_keys = ('sort', 'page_size', 'page_index')
+        for key in pop_keys:
+            if key in s_kwargs:
+                s_kwargs.pop(key)
+
+        match_media_list = self.search_action(**s_kwargs)
+        if 'sort' in kwargs:
+            sort_key = kwargs['sort']
+        else:
+            sort_key = 'updated'
+        match_media_list = sorted(match_media_list,
+                                  key=lambda x: x['media_detail'][sort_key], reverse=True)
+
+        perfect_details = []
+        for item_media in match_media_list:
+            media_detail = MediaCache().get_media_detail_by_id(item_media['media_id'])
+            perfect_details.append(media_detail)
+        return perfect_details
 
     def post(self, request, *args, **kwargs):
         """
