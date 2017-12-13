@@ -5,10 +5,11 @@ from django.utils.timezone import now
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from oauth2_provider.models import AccessToken
+
 from horizon.models import (model_to_dict,
                             get_perfect_filter_params,
                             BaseManager)
-from horizon.main import minutes_15_plus
+from horizon.main import minutes_15_plus, minutes_2_plus
 import datetime
 import re
 import os
@@ -259,3 +260,38 @@ class Role(models.Model):
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+
+class WXAuthorizedIdentifyingCode(models.Model):
+    """
+    微信授权登录随机码
+    """
+    identifying_code = models.CharField('授权登录随机码', max_length=256)
+    expires = models.DateTimeField('过期时间', default=minutes_2_plus)
+    created = models.DateTimeField('创建时间', default=now)
+
+    class Meta:
+        db_table = 'by_wx_authorized_identifying_code'
+        ordering = ['-created']
+
+    def __unicode__(self):
+        return self.identifying_code
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+
+    @classmethod
+    def filter_objects(cls, **kwargs):
+        kwargs = get_perfect_filter_params(cls, **kwargs)
+        try:
+            return cls.objects.filter(**kwargs)
+        except Exception as e:
+            return e
+
+
+

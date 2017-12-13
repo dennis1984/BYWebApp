@@ -246,6 +246,7 @@ PICTURE_DIRS = {
         'information': os.path.join(WEB_FILE_ROOT, 'information'),        # 资讯文件目录
         'case': os.path.join(WEB_FILE_ROOT, 'case'),                      # 案例文件目录
         'advert': os.path.join(WEB_PICTURE_ROOT, 'advert'),               # 广告图片目录
+        'qrcode': os.path.join(WEB_PICTURE_ROOT, 'qrcode'),          # 二维码图片目录
     },
     'admin': {
         'dishes': os.path.join(BUSINESS_PICTURE_ROOT, 'dishes'),               # 菜品图片目录

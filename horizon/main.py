@@ -25,6 +25,10 @@ from email.utils import COMMASPACE, formatdate
 from horizon.http_requests import send_http_request
 
 
+def minutes_2_plus():
+    return now() + datetime.timedelta(minutes=2)
+
+
 def minutes_5_plus():
     return now() + datetime.timedelta(minutes=5)
 
@@ -108,7 +112,7 @@ def timezoneStringTostring(timezone_string):
     return str(timezone)
 
 
-QRCODE_PICTURE_PATH = settings.PICTURE_DIRS['admin']['qrcode']
+QRCODE_PICTURE_PATH = settings.PICTURE_DIRS['web']['qrcode']
 
 
 def make_qrcode(source_data, save_path=QRCODE_PICTURE_PATH, version=5):

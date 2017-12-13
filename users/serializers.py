@@ -11,7 +11,7 @@ from horizon.serializers import (BaseListSerializer,
                                  BaseModelSerializer,
                                  BaseSerializer,
                                  timezoneStringTostring)
-from users.models import User, IdentifyingCode, Role
+from users.models import User, IdentifyingCode, Role, WXAuthorizedIdentifyingCode
 
 from Admin_App.ad_coupons.models import CouponsSendRecord
 
@@ -198,3 +198,15 @@ class RoleDetailSerializer(BaseModelSerializer):
 
 class RoleListSerializer(BaseListSerializer):
     child = RoleDetailSerializer()
+
+
+class WXAuthorizedIdentifyingCodeSerializer(BaseModelSerializer):
+    class Meta:
+        model = WXAuthorizedIdentifyingCode
+        fields = '__all__'
+
+
+class WXAuthorizedIdentifyingCodeDetailSerializer(BaseSerializer):
+    identifying_code = serializers.CharField()
+    qrcode_url = serializers.CharField()
+
