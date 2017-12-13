@@ -34,9 +34,11 @@ from users.forms import (CreateUserForm,
                          WXAuthLoginForm,
                          WBAuthLoginForm,
                          PhoneForm,
-                         EmailForm)
+                         EmailForm,
+                         WXAuthorizedResultForm)
 from users.caches import UserCache
 from users.wx_auth.views import Oauth2AccessToken
+from users.wx_auth.models import WXRandomString
 
 from horizon.views import APIView
 from horizon.main import (make_random_number_of_string,
@@ -519,6 +521,32 @@ class RoleList(generics.GenericAPIView):
             return Response({'Detail': data_list.args}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(data_list, status=status.HTTP_200_OK)
+
+
+class WXAuthorizedResult(APIView):
+    """
+    获取微信授权登录的结果
+    """
+    success_result = {'result': True,
+                      'access_token_data': None}
+    failed_result = {'result': False,
+                     'access_token_data': None}
+
+    def get_random_string_object(self, random_string):
+        return WXRandomString.get_object_by_random_str(random_string)
+
+    def post(self, request, *args, **kwargs):
+        form = WXAuthorizedResultForm(request.data)
+        if not form.is_valid():
+            return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        cld = form.cleaned_data
+        instance = self.get_random_string_object(cld['state'])
+        if isinstance(instance, Exception):
+            return Response(self.failed_result, status=status.HTTP_200_OK)
+
+        self.success_result['access_token_data'] = instance.access_token_data
+        return Response(self.success_result, status=status.HTTP_200_OK)
 
 
 class UserViewSet(viewsets.ModelViewSet):

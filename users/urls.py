@@ -22,6 +22,8 @@ urlpatterns = [
     url(r'^wx_login/$', users_view.WXAuthAction.as_view()),
     # 微信授权登录后获取token
     url(r'^wxauth/token/$', wx_auth_views.AuthCallback.as_view()),
+    # 获取微信授权登录的结果
+    url(r'^wx_authorized_result/$', users_view.WXAuthorizedResult.as_view()),
 
     # 微博授权登录
     url(r'^wb_login/$', users_view.WBAuthAction.as_view()),

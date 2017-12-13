@@ -120,3 +120,7 @@ class WXAuthLoginForm(forms.Form):
 
 class WBAuthLoginForm(forms.Form):
     callback_url = forms.CharField(max_length=256, required=False)
+
+
+class WXAuthorizedResultForm(forms.Form):
+    state = forms.CharField(max_length=128)
