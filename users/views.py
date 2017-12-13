@@ -532,10 +532,10 @@ class WXAuthorizedResult(APIView):
     failed_result = {'result': False,
                      'access_token_data': None}
 
-    def get_random_string_object(self, random_str):
+    def get_random_string_detail(self, random_str):
         kwargs = {'random_str': random_str,
                   'status': 1}
-        return WXRandomString.get_object(**kwargs)
+        return WXRandomString.get_detail(**kwargs)
 
     def post(self, request, *args, **kwargs):
         form = WXAuthorizedResultForm(request.data)
@@ -543,11 +543,11 @@ class WXAuthorizedResult(APIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        instance = self.get_random_string_object(cld['state'])
-        if isinstance(instance, Exception):
+        detail = self.get_random_string_detail(cld['state'])
+        if isinstance(detail, Exception):
             return Response(self.failed_result, status=status.HTTP_200_OK)
 
-        self.success_result['access_token_data'] = instance.access_token_data
+        self.success_result['access_token_data'] = detail['access_token_data']
         return Response(self.success_result, status=status.HTTP_200_OK)
 
 

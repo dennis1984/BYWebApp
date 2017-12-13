@@ -6,10 +6,11 @@ from oauth2_provider.models import (Application as Oauth2_Application,
                                     RefreshToken as Oauth2_RefreshToken)
 
 from horizon.main import minutes_15_plus, minutes_5_plus
-from horizon.models import BaseTimeLimitManager
+from horizon.models import BaseTimeLimitManager, model_to_dict
 
 from hashlib import md5
 import datetime
+import json
 
 
 class WXAccessToken(models.Model):
@@ -67,6 +68,15 @@ class WXRandomString(models.Model):
         else:
             return None
 
+    @property
+    def perfect_data(self):
+        detail = model_to_dict(self)
+        try:
+            detail['access_token_data'] = json.loads(detail['access_token_data'])
+        except:
+            pass
+        return detail
+
     @classmethod
     def get_object(cls, **kwargs):
         try:
@@ -74,6 +84,13 @@ class WXRandomString(models.Model):
         except Exception as e:
             return e
         return instance
+
+    @classmethod
+    def get_detail(cls, **kwargs):
+        instance = cls.get_object(**kwargs)
+        if isinstance(instance, Exception):
+            return instance
+        return instance.perfect_data
 
 
 class WXAPPInformation(models.Model):
