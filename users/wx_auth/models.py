@@ -1,7 +1,7 @@
 # -*- coding:utf8 -*-
 from django.db import models
 from django.utils.timezone import now
-from horizon.main import minutes_15_plus
+from horizon.main import minutes_15_plus, minutes_5_plus
 from oauth2_provider.models import (Application as Oauth2_Application,
                                     AccessToken as Oauth2_AccessToken,
                                     RefreshToken as Oauth2_RefreshToken)
@@ -35,9 +35,14 @@ class WXAccessToken(models.Model):
 
 
 class WXRandomString(models.Model):
+    """
+    微信授权登录随机码
+    """
     random_str = models.CharField(u'随机字符串', max_length=32, db_index=True)
     status = models.IntegerField(u'随机字符串状态', default=0)     # 0：未使用，1：已使用
-    expires = models.DateTimeField(u'过期时间', default=minutes_15_plus)
+    expires = models.DateTimeField(u'过期时间', default=minutes_5_plus)
+    access_token_data = models.CharField(u'微信授权登陆后获取的token信息(JSON字符串)',
+                                         max_length=256, null=True, blank=True)
 
     class Meta:
         db_table = 'by_wxauth_randomstring'

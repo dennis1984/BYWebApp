@@ -17,8 +17,7 @@ from users.serializers import (UserSerializer,
                                UserListSerializer,
                                IdentifyingCodeSerializer,
                                RoleListSerializer,
-                               WXAuthorizedIdentifyingCodeSerializer,
-                               WXAuthorizedIdentifyingCodeDetailSerializer)
+                               WXAuthorizedDetailSerializer)
 from users.permissions import IsOwnerOrReadOnly
 from users.models import (User,
                           make_token_expire,
@@ -368,7 +367,7 @@ class UserDetail(generics.GenericAPIView):
 
 
 class WXAuthAction(APIView):
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         """
         微信第三方登录授权
         """
@@ -391,11 +390,21 @@ class WXAuthAction(APIView):
                                   main.make_dict_to_verify_string(wx_auth_params),
                                   end_params)
         serializer = RandomStringSerializer(data={'random_str': state})
-        if serializer.is_valid():
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        try:
             serializer.save()
-            return_data = {'wx_auth_url': return_url}
-            return Response(return_data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 生成二维码
+        qrcode_file_path = make_qrcode(return_url)
+        response_data = {'qrcode_url': make_static_url_by_file_path(qrcode_file_path),
+                         'state': state}
+        wx_serializer = WXAuthorizedDetailSerializer(data=response_data)
+        if not wx_serializer.is_valid():
+            return Response({'Detail': wx_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(wx_serializer.data, status=status.HTTP_200_OK)
 
 
 class WBAuthAction(APIView):
@@ -510,33 +519,6 @@ class RoleList(generics.GenericAPIView):
             return Response({'Detail': data_list.args}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(data_list, status=status.HTTP_200_OK)
-
-
-class WXAuthorizedIdentifyingCodeDetail(APIView):
-    """
-    微信授权登录随机码
-    """
-    def post(self, request, *args, **kwargs):
-        # 生成随机码
-        identifying_code = make_random_char_and_number_of_string(str_length=32)
-        init_data = {'identifying_code': identifying_code}
-        serializer = WXAuthorizedIdentifyingCodeSerializer(data=init_data)
-
-        if not serializer.is_valid():
-            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            serializer.save()
-        except Exception as e:
-            return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
-
-        # 生成二维码
-        file_path = make_qrcode(identifying_code)
-        response_data = serializer.data
-        response_data['qrcode_url'] = make_static_url_by_file_path(file_path)
-        res_serializer = WXAuthorizedIdentifyingCodeDetailSerializer(data=response_data)
-        if not res_serializer.is_valid():
-            return Response({'Detail': res_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(res_serializer.data, status=status.HTTP_200_OK)
 
 
 class UserViewSet(viewsets.ModelViewSet):

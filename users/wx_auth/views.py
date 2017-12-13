@@ -64,11 +64,11 @@ class AuthCallback(APIView):
         result = self.verify_random_str(cld)
         if isinstance(result, Exception):
             return Response({'Detail': result.args}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = RandomStringSerializer(result)
-        try:
-            serializer.update(result, {'status': 1})
-        except:
-            pass
+        # serializer = RandomStringSerializer(result)
+        # try:
+        #     serializer.update(result, {'status': 1})
+        # except:
+        #     pass
 
         # 获取access token
         access_token_params = wx_auth_settings.WX_AUTH_PARAMS['get_access_token']
@@ -123,6 +123,15 @@ class AuthCallback(APIView):
             return Response({'Detail': _token.args},
                             status=status.HTTP_400_BAD_REQUEST)
         # _token.update(**{'is_binding': is_binding})
+
+        # 更新微信授权登录随机码状态
+        serializer = RandomStringSerializer(result)
+        random_init_data = {'status': 1,
+                            'access_token_data': json.dumps(_token)}
+        try:
+            serializer.update(result, random_init_data)
+        except:
+            pass
 
         # 标记用户已经登录
         self.mark_user_login(_user)
