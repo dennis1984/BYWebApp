@@ -55,7 +55,7 @@ class BaseManager(models.Manager):
 class BaseTimeLimitManager(models.Manager):
     def get_perfect_params(self, **kwargs):
         if 'expires' not in kwargs:
-            kwargs['expires__gt'] = now
+            kwargs['expires__gt'] = now()
         return kwargs
 
     def get(self, *args, **kwargs):

@@ -12,7 +12,7 @@ import hashlib
 class RandomStringSerializer(serializers.ModelSerializer):
     def __init__(self, instance=None, data=None, **kwargs):
         if data:
-            data['random_str'] = hashlib.md5(data['random_str']).hexdigest()
+            # data['random_str'] = hashlib.md5(data['random_str']).hexdigest()
             super(RandomStringSerializer, self).__init__(data=data, **kwargs)
         else:
             super(RandomStringSerializer, self).__init__(instance, **kwargs)

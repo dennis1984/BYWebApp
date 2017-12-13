@@ -57,17 +57,6 @@ class WXRandomString(models.Model):
     def __unicode__(self):
         return self.random_str
 
-    @classmethod
-    def get_object_by_random_str(cls, random_str):
-        random_str = md5(random_str).hexdigest()
-        instances = cls.objects.filter(**{'random_str': random_str,
-                                          'expires__gt': now(),
-                                          'status': 0})
-        if instances:
-            return instances[0]
-        else:
-            return None
-
     @property
     def perfect_data(self):
         detail = model_to_dict(self)
@@ -76,6 +65,17 @@ class WXRandomString(models.Model):
         except:
             pass
         return detail
+
+    @classmethod
+    def get_object_by_random_str(cls, random_str):
+        # random_str = md5(random_str).hexdigest()
+        instances = cls.objects.filter(**{'random_str': random_str,
+                                          'expires__gt': now(),
+                                          'status': 0})
+        if instances:
+            return instances[0]
+        else:
+            return None
 
     @classmethod
     def get_object(cls, **kwargs):
