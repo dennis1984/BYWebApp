@@ -1,12 +1,15 @@
 # -*- coding:utf8 -*-
 from django.db import models
 from django.utils.timezone import now
-from horizon.main import minutes_15_plus, minutes_5_plus
 from oauth2_provider.models import (Application as Oauth2_Application,
                                     AccessToken as Oauth2_AccessToken,
                                     RefreshToken as Oauth2_RefreshToken)
-import datetime
+
+from horizon.main import minutes_15_plus, minutes_5_plus
+from horizon.models import BaseTimeLimitManager
+
 from hashlib import md5
+import datetime
 
 
 class WXAccessToken(models.Model):
@@ -44,6 +47,8 @@ class WXRandomString(models.Model):
     access_token_data = models.CharField(u'微信授权登陆后获取的token信息(JSON字符串)',
                                          max_length=256, null=True, blank=True)
 
+    objects = BaseTimeLimitManager()
+
     class Meta:
         db_table = 'by_wxauth_randomstring'
         ordering = ['-expires']
@@ -61,6 +66,14 @@ class WXRandomString(models.Model):
             return instances[0]
         else:
             return None
+
+    @classmethod
+    def get_object(cls, **kwargs):
+        try:
+            instance = cls.objects.get(**kwargs)
+        except Exception as e:
+            return e
+        return instance
 
 
 class WXAPPInformation(models.Model):

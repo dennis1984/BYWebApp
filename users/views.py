@@ -532,8 +532,10 @@ class WXAuthorizedResult(APIView):
     failed_result = {'result': False,
                      'access_token_data': None}
 
-    def get_random_string_object(self, random_string):
-        return WXRandomString.get_object_by_random_str(random_string)
+    def get_random_string_object(self, random_str):
+        kwargs = {'random_str': random_str,
+                  'status': 1}
+        return WXRandomString.get_object(**kwargs)
 
     def post(self, request, *args, **kwargs):
         form = WXAuthorizedResultForm(request.data)

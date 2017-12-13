@@ -1,3 +1,6 @@
+# -*- coding:utf8 -*-
+from django.utils.timezone import now
+
 from itertools import chain
 from django.db import models
 from django.conf import settings
@@ -33,16 +36,36 @@ def model_to_dict(instance, fields=None, exclude=None):
 
 
 class BaseManager(models.Manager):
-    def get(self, *args, **kwargs):
+    def get_perfect_params(self, **kwargs):
         if 'status' not in kwargs:
             kwargs['status'] = 1
+        return kwargs
+
+    def get(self, *args, **kwargs):
+        kwargs = self.get_perfect_params(**kwargs)
         instance = super(BaseManager, self).get(*args, **kwargs)
         return instance
 
     def filter(self, *args, **kwargs):
-        if 'status' not in kwargs:
-            kwargs['status'] = 1
+        kwargs = self.get_perfect_params(**kwargs)
         instances = super(BaseManager, self).filter(*args, **kwargs)
+        return instances
+
+
+class BaseTimeLimitManager(models.Manager):
+    def get_perfect_params(self, **kwargs):
+        if 'expires' not in kwargs:
+            kwargs['expires__gt'] = now
+        return kwargs
+
+    def get(self, *args, **kwargs):
+        kwargs = self.get_perfect_params(**kwargs)
+        instance = super(BaseTimeLimitManager, self).get(*args, **kwargs)
+        return instance
+
+    def filter(self, *args, **kwargs):
+        kwargs = self.get_perfect_params(**kwargs)
+        instances = super(BaseTimeLimitManager, self).filter(*args, **kwargs)
         return instances
 
 
