@@ -14,7 +14,6 @@ from media.models import (Media,
                           ResourceTags,
                           Information,
                           Case,
-                          SOURCE_TYPE_DB,
                           ResourceOpinionRecord)
 
 # 过期时间（单位：秒）
@@ -333,22 +332,12 @@ class SourceModelAction(object):
     资源点赞、增加浏览数等操作
     """
     @classmethod
-    def get_source_object(cls, source_type, source_id):
-        if source_type not in SOURCE_TYPE_DB:
-            return Exception('Params [resource_type] is incorrect.')
-
-        source_class = SOURCE_TYPE_DB[source_type]
-        return source_class.get_object(pk=source_id)
-
-    @classmethod
     def update_read_count(cls, source_type, source_id):
         if source_type not in SOURCE_TYPE_CACHE_FUNCTION:
             return Exception('Params [resource_type] is incorrect.')
 
         action_function = SOURCE_TYPE_CACHE_FUNCTION[source_type]
         return action_function(source_id, column='read', action='plus')
-        # # source_class = SOURCE_TYPE_DB[source_type]
-        # return source_class.plus_action(source_id, 'read_count')
 
     @classmethod
     def update_like_count(cls, source_type, source_id):
@@ -357,8 +346,6 @@ class SourceModelAction(object):
 
         action_function = SOURCE_TYPE_CACHE_FUNCTION[source_type]
         return action_function(source_id, column='like', action='plus')
-        # source_class = SOURCE_TYPE_DB[source_type]
-        # return source_class.plus_action(source_id, 'like')
 
     @classmethod
     def update_collection_count(cls, source_type, source_id, method='plus'):
@@ -388,9 +375,6 @@ class SourceModelAction(object):
 
     @classmethod
     def create_like_record(cls, request, source_type, source_id):
-        # source_ins = cls.get_source_object(source_type, source_id)
-        # if isinstance(source_ins, Exception):
-        #     return source_ins
         init_data = {'user_id': request.user.id,
                      'source_type': source_type,
                      'source_id': source_id}
