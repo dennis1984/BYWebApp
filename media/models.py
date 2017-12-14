@@ -996,89 +996,89 @@ class AdvertResource(models.Model):
             return e
 
 
-SOURCE_TYPE_DB = {
-    1: Media,         # 资源
-    2: Case,          # 案例
-    3: Information,   # 资讯
-}
-
-
-class SourceModelAction(object):
-    """
-    资源点赞、增加浏览数等操作
-    """
-    @classmethod
-    def get_source_object(cls, source_type, source_id):
-        if source_type not in SOURCE_TYPE_DB:
-            return Exception('Params [resource_type] is incorrect.')
-
-        source_class = SOURCE_TYPE_DB[source_type]
-        return source_class.get_object(pk=source_id)
-
-    @classmethod
-    def update_read_count(cls, source_type, source_id):
-        if source_type not in SOURCE_TYPE_DB:
-            return Exception('Params [resource_type] is incorrect.')
-
-        source_class = SOURCE_TYPE_DB[source_type]
-        return source_class.plus_action(source_id, 'read_count')
-
-    @classmethod
-    def update_like_count(cls, source_type, source_id):
-        if source_type not in SOURCE_TYPE_DB:
-            return Exception('Params [resource_type] is incorrect.')
-
-        source_class = SOURCE_TYPE_DB[source_type]
-        return source_class.plus_action(source_id, 'like')
-
-    @classmethod
-    def update_collection_count(cls, source_type, source_id, method='plus'):
-        if source_type not in SOURCE_TYPE_DB:
-            return Exception('Params [resource_type] is incorrect.')
-        if method not in ['plus', 'reduce']:
-            return Exception('Params [resource_type] is incorrect.')
-
-        source_class = SOURCE_TYPE_DB[source_type]
-        if method == 'plus':
-            return source_class.plus_action(source_id, 'collection_count')
-        else:
-            return source_class.reduce_action(source_id, 'collection_count')
-
-    @classmethod
-    def update_comment_count(cls, source_type, source_id, method='plus'):
-        if source_type not in SOURCE_TYPE_DB:
-            return Exception('Params [resource_type] is incorrect.')
-        if method not in ['plus', 'reduce']:
-            return Exception('Params [resource_type] is incorrect.')
-
-        source_class = SOURCE_TYPE_DB[source_type]
-        if method == 'plus':
-            return source_class.plus_action(source_id, 'comment_count')
-        else:
-            return source_class.reduce_action(source_id, 'comment_count')
-
-    @classmethod
-    def create_like_record(cls, request, source_type, source_id):
-        # source_ins = cls.get_source_object(source_type, source_id)
-        # if isinstance(source_ins, Exception):
-        #     return source_ins
-        init_data = {'user_id': request.user.id,
-                     'source_type': source_type,
-                     'source_id': source_id}
-        record = ResourceOpinionRecord(**init_data)
-        try:
-            record.save()
-        except Exception as e:
-            return e
-        return record
-
-    @classmethod
-    def like_action(cls, request, source_type, source_id):
-        record = cls.create_like_record(request, source_type, source_id)
-        if isinstance(record, Exception):
-            return record
-        source_ins = cls.update_like_count(source_type, source_id)
-        if isinstance(source_ins, Exception):
-            return source_ins
-        return record, source_ins
+# SOURCE_TYPE_DB = {
+#     1: Media,         # 资源
+#     2: Case,          # 案例
+#     3: Information,   # 资讯
+# }
+#
+#
+# class SourceModelAction(object):
+#     """
+#     资源点赞、增加浏览数等操作
+#     """
+#     @classmethod
+#     def get_source_object(cls, source_type, source_id):
+#         if source_type not in SOURCE_TYPE_DB:
+#             return Exception('Params [resource_type] is incorrect.')
+#
+#         source_class = SOURCE_TYPE_DB[source_type]
+#         return source_class.get_object(pk=source_id)
+#
+#     @classmethod
+#     def update_read_count(cls, source_type, source_id):
+#         if source_type not in SOURCE_TYPE_DB:
+#             return Exception('Params [resource_type] is incorrect.')
+#
+#         source_class = SOURCE_TYPE_DB[source_type]
+#         return source_class.plus_action(source_id, 'read_count')
+#
+#     @classmethod
+#     def update_like_count(cls, source_type, source_id):
+#         if source_type not in SOURCE_TYPE_DB:
+#             return Exception('Params [resource_type] is incorrect.')
+#
+#         source_class = SOURCE_TYPE_DB[source_type]
+#         return source_class.plus_action(source_id, 'like')
+#
+#     @classmethod
+#     def update_collection_count(cls, source_type, source_id, method='plus'):
+#         if source_type not in SOURCE_TYPE_DB:
+#             return Exception('Params [resource_type] is incorrect.')
+#         if method not in ['plus', 'reduce']:
+#             return Exception('Params [resource_type] is incorrect.')
+#
+#         source_class = SOURCE_TYPE_DB[source_type]
+#         if method == 'plus':
+#             return source_class.plus_action(source_id, 'collection_count')
+#         else:
+#             return source_class.reduce_action(source_id, 'collection_count')
+#
+#     @classmethod
+#     def update_comment_count(cls, source_type, source_id, method='plus'):
+#         if source_type not in SOURCE_TYPE_DB:
+#             return Exception('Params [resource_type] is incorrect.')
+#         if method not in ['plus', 'reduce']:
+#             return Exception('Params [resource_type] is incorrect.')
+#
+#         source_class = SOURCE_TYPE_DB[source_type]
+#         if method == 'plus':
+#             return source_class.plus_action(source_id, 'comment_count')
+#         else:
+#             return source_class.reduce_action(source_id, 'comment_count')
+#
+#     @classmethod
+#     def create_like_record(cls, request, source_type, source_id):
+#         # source_ins = cls.get_source_object(source_type, source_id)
+#         # if isinstance(source_ins, Exception):
+#         #     return source_ins
+#         init_data = {'user_id': request.user.id,
+#                      'source_type': source_type,
+#                      'source_id': source_id}
+#         record = ResourceOpinionRecord(**init_data)
+#         try:
+#             record.save()
+#         except Exception as e:
+#             return e
+#         return record
+#
+#     @classmethod
+#     def like_action(cls, request, source_type, source_id):
+#         record = cls.create_like_record(request, source_type, source_id)
+#         if isinstance(record, Exception):
+#             return record
+#         source_ins = cls.update_like_count(source_type, source_id)
+#         if isinstance(source_ins, Exception):
+#             return source_ins
+#         return record, source_ins
 
