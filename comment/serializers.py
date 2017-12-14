@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from comment.models import Comment, CommentOpinionRecord
+from media.models import SourceModelAction
 
 from horizon.decorators import has_permission_to_update
 from horizon.serializers import (BaseSerializer,
@@ -26,7 +27,15 @@ class CommentSerializer(BaseModelSerializer):
         model = Comment
         fields = '__all__'
 
+    def save(self, **kwargs):
+        # 增加资源的评论数量
+        SourceModelAction.update_comment_count(kwargs['source_type'], kwargs['source_id'])
+        return super(CommentSerializer, self).save(**kwargs)
+
     def delete(self, instance):
+        # 减少资源的评论数量
+        SourceModelAction.update_comment_count(instance.source_type, instance.source_id,
+                                               method='reduce')
         validated_data = {'status': instance.id + 1}
         return super(CommentSerializer, self).update(instance, validated_data)
 

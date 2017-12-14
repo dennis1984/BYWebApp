@@ -85,6 +85,14 @@ class MediaDetailSerializer(BaseSerializer):
 
     # 运营标记 0: 未设定 1：热门
     mark = serializers.IntegerField()
+    # 浏览数
+    read_count = serializers.IntegerField()
+    # 点赞数量
+    like = serializers.IntegerField()
+    # 收藏数量
+    collection_count = serializers.IntegerField()
+    # 评论数量
+    comment_count = serializers.IntegerField()
 
     # 电影表现大数据分析 数据格式为字典形式的JSON字符串，如：{"导演号召力": 3.5,
     #                                                "男主角号召力": 4.0,
@@ -124,6 +132,8 @@ class InformationDetailSerializer(BaseSerializer):
     like = serializers.IntegerField()
     # 收藏数量
     collection_count = serializers.IntegerField()
+    # 评论数量
+    comment_count = serializers.IntegerField()
     # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=3)
 
@@ -153,6 +163,8 @@ class CaseDetailSerializer(BaseSerializer):
     like = serializers.IntegerField()
     # 收藏数量
     collection_count = serializers.IntegerField()
+    # 评论数量
+    comment_count = serializers.IntegerField()
     # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=2)
 
@@ -190,6 +202,8 @@ class ResourceDetailSerializer(BaseSerializer):
     like = serializers.IntegerField(default=0)
     # 收藏数量
     collection_count = serializers.IntegerField(default=0)
+    # 评论数量
+    comment_count = serializers.IntegerField(default=0)
     # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=2)
 

@@ -103,6 +103,14 @@ class Media(models.Model):
     # # 预计播出平台：数据格式为JSON字符串，如：['一线卫视', '视频网络渠道']
     # play_platform = models.CharField('播出平台', max_length=256)
 
+    # 浏览数
+    read_count = models.IntegerField('浏览数', default=0)
+    # 点赞数量
+    like = models.IntegerField('点赞数量', default=0)
+    # 收藏数量
+    collection_count = models.IntegerField('收藏数量', default=0)
+    # 评论数量
+    comment_count = models.IntegerField('评论数量', default=0)
     # 运营标记 0: 未设定 1：热门
     mark = models.IntegerField('运营标记', default=0)
 
@@ -217,6 +225,44 @@ class Media(models.Model):
         for ins in instances:
             details.append(ins.perfect_detail)
         return details
+
+    @classmethod
+    def plus_action(cls, media_id, attr='read_count'):
+        media = None
+        attr_keys = ('read_count', 'like', 'collection_count', 'comment_count')
+
+        if attr not in attr_keys:
+            return Exception('Params [attr] is incorrect.')
+        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+        with transaction.atomic():
+            _media = cls.get_object(pk=media_id)
+            if isinstance(_media, Exception):
+                return _media
+
+            opinion_value = getattr(_media, attr)
+            setattr(_media, attr, opinion_value + 1)
+            _media.save()
+            media = _media
+        return media
+
+    @classmethod
+    def reduce_action(cls, media_id, attr='collection_count'):
+        media = None
+        attr_keys = ('like', 'collection_count', 'comment_count')
+
+        if attr not in attr_keys:
+            return Exception('Params [attr] is incorrect.')
+        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+        with transaction.atomic():
+            _media = cls.get_object(pk=media_id)
+            if isinstance(_media, Exception):
+                return _media
+
+            opinion_value = getattr(_media, attr)
+            setattr(_media, attr, opinion_value - 1)
+            _media.save()
+            media = _media
+        return media
 
     @classmethod
     def get_tags_key_dict(cls):
@@ -518,6 +564,8 @@ class Information(models.Model):
     like = models.IntegerField('点赞数量', default=0)
     # 收藏数量
     collection_count = models.IntegerField('收藏数量', default=0)
+    # 评论数量
+    comment_count = models.IntegerField('评论数量', default=0)
     # 运营标记：0：无标记 1：重磅发布
     mark = models.IntegerField('运营标记', default=0)
     # 栏目 0:无标记 1: 最新发布 2：电影大事件 3:娱乐营销观察 4:影片资讯
@@ -564,7 +612,7 @@ class Information(models.Model):
     @classmethod
     def plus_action(cls, information_id, attr='read_count'):
         information = None
-        attr_keys = ['read_count', 'like', 'collection_count']
+        attr_keys = ('read_count', 'like', 'collection_count', 'comment_count')
 
         if attr not in attr_keys:
             return Exception('Params [attr] is incorrect.')
@@ -583,7 +631,7 @@ class Information(models.Model):
     @classmethod
     def reduce_action(cls, information_id, attr='collection_count'):
         information = None
-        attr_keys = ['like', 'collection_count']
+        attr_keys = ('like', 'collection_count', 'comment_count')
 
         if attr not in attr_keys:
             return Exception('Params [attr] is incorrect.')
@@ -690,6 +738,8 @@ class Case(models.Model):
     like = models.IntegerField('点赞数量', default=0)
     # 收藏数量
     collection_count = models.IntegerField('收藏数量', default=0)
+    # 评论数量
+    comment_count = models.IntegerField('评论数量', default=0)
     # 运营标记：0：无标记 1：重磅发布
     mark = models.IntegerField('运营标记', default=0)
     # 栏目 0:无标记 1: 最新发布 2：电影大事件 3:娱乐营销观察 4:影片资讯
@@ -736,7 +786,7 @@ class Case(models.Model):
     @classmethod
     def plus_action(cls, case_id, attr='read_count'):
         case = None
-        attr_keys = ['read_count', 'like', 'collection_count']
+        attr_keys = ('read_count', 'like', 'collection_count', 'comment_count')
 
         if attr not in attr_keys:
             return Exception('Params [attr] is incorrect.')
@@ -753,23 +803,23 @@ class Case(models.Model):
         return case
 
     @classmethod
-    def reduce_action(cls, information_id, attr='collection_count'):
-        information = None
-        attr_keys = ['like', 'collection_count']
+    def reduce_action(cls, case_id, attr='collection_count'):
+        case = None
+        attr_keys = ('like', 'collection_count', 'comment_count')
 
         if attr not in attr_keys:
             return Exception('Params [attr] is incorrect.')
         # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
         with transaction.atomic():
-            _information = cls.get_object(pk=information_id)
-            if isinstance(_information, Exception):
-                return _information
+            _case = cls.get_object(pk=case_id)
+            if isinstance(_case, Exception):
+                return _case
 
-            opinion_value = getattr(_information, attr)
-            setattr(_information, attr, opinion_value - 1)
-            _information.save()
-            information = _information
-        return information
+            opinion_value = getattr(_case, attr)
+            setattr(_case, attr, opinion_value - 1)
+            _case.save()
+            case = _case
+        return case
 
     @classmethod
     def get_object(cls, **kwargs):
@@ -969,6 +1019,19 @@ class SourceModelAction(object):
             return source_class.plus_action(source_id, 'collection_count')
         else:
             return source_class.reduce_action(source_id, 'collection_count')
+
+    @classmethod
+    def update_comment_count(cls, source_type, source_id, method='plus'):
+        if source_type not in SOURCE_TYPE_DB:
+            return Exception('Params [resource_type] is incorrect.')
+        if method not in ['plus', 'reduce']:
+            return Exception('Params [resource_type] is incorrect.')
+
+        source_class = SOURCE_TYPE_DB[source_type]
+        if method == 'plus':
+            return source_class.plus_action(source_id, 'comment_count')
+        else:
+            return source_class.reduce_action(source_id, 'comment_count')
 
     @classmethod
     def create_like_record(cls, request, source_type, source_id):

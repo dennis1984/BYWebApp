@@ -32,7 +32,8 @@ class CollectSerializer(BaseModelSerializer):
 
     def delete(self, instance):
         # 减少资源的收藏数量
-        SourceModelAction.update_collection_count(instance.source_type, instance.source_id)
+        SourceModelAction.update_collection_count(instance.source_type, instance.source_id,
+                                                  method='reduce')
         validated_data = {'status': instance.id + 1}
         return super(CollectSerializer, self).update(instance, validated_data)
 

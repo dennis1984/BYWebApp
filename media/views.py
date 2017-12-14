@@ -147,6 +147,9 @@ class MediaDetail(APIView):
         serializer = MediaDetailSerializer(data=detail)
         if not serializer.is_valid():
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 增加浏览量
+        SourceModelAction.update_read_count(source_type=1, source_id=cld['id'])
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
