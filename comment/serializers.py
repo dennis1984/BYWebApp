@@ -2,7 +2,7 @@
 from rest_framework import serializers
 
 from comment.models import Comment, CommentOpinionRecord
-from media.models import SourceModelAction
+from media.caches import SourceModelAction
 
 from horizon.decorators import has_permission_to_update
 from horizon.serializers import (BaseSerializer,

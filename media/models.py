@@ -265,6 +265,14 @@ class Media(models.Model):
         return media
 
     @classmethod
+    def get_relevant_count(cls, media_id, column='read'):
+        instance = cls.get_object(pk=media_id)
+        if isinstance(instance, Exception):
+            return instance
+        attr = '%s_count' % column if column != 'like' else column
+        return getattr(instance, attr, 0)
+
+    @classmethod
     def get_tags_key_dict(cls):
         """
         获取以媒体资源所属的标签为Key，以案例ID为Value的字典
@@ -682,6 +690,14 @@ class Information(models.Model):
         return details
 
     @classmethod
+    def get_relevant_count(cls, information_id, column='read'):
+        instance = cls.get_object(pk=information_id)
+        if isinstance(instance, Exception):
+            return instance
+        attr = '%s_count' % column if column != 'like' else column
+        return getattr(instance, attr, 0)
+
+    @classmethod
     def get_tags_key_dict(cls):
         """
         获取以资讯所属的标签为Key，以案例ID为Value的字典
@@ -854,6 +870,14 @@ class Case(models.Model):
         for ins in instances:
             details.append(ins.perfect_detail)
         return details
+
+    @classmethod
+    def get_relevant_count(cls, case_id, column='read'):
+        instance = cls.get_object(pk=case_id)
+        if isinstance(instance, Exception):
+            return instance
+        attr = '%s_count' % column if column != 'like' else column
+        return getattr(instance, attr, 0)
 
     @classmethod
     def get_tags_key_dict(cls):

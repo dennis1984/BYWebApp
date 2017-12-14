@@ -13,7 +13,9 @@ from media.models import (Media,
                           ProjectProgress,
                           ResourceTags,
                           Information,
-                          Case)
+                          Case,
+                          SOURCE_TYPE_DB,
+                          ResourceOpinionRecord)
 
 # 过期时间（单位：秒）
 EXPIRES_24_HOURS = 24 * 60 * 60
@@ -92,6 +94,24 @@ class MediaCache(object):
 
     def get_case_search_dict_title_tags_key(self):
         return 'case_search_dict:title_tags'
+
+    def get_media_relevant_count_id_key(self, media_id, column='read'):
+        column_list = ('read', 'like', 'collection', 'comment')
+        if column not in column_list:
+            return None
+        return 'media_%s_count:id:%s' % media_id
+
+    def get_information_relevant_count_id_key(self, information_id, column='read'):
+        column_list = ('read', 'like', 'collection', 'comment')
+        if column not in column_list:
+            return None
+        return 'information_%s_count:id:%s' % information_id
+
+    def get_case_relevant_count_id_key(self, case_id, column='read'):
+        column_list = ('read', 'like', 'collection', 'comment')
+        if column not in column_list:
+            return None
+        return 'case_%s_count:id:%s' % case_id
 
     def set_instance_to_cache(self, key, data):
         self.handle.set(key, data)
@@ -244,4 +264,150 @@ class MediaCache(object):
     def get_case_search_dict(self):
         key = self.get_case_search_dict_title_tags_key()
         return self.get_perfect_data(key, Case.get_search_dict)
+
+    # 获取媒体资源相关数量
+    def get_media_relevant_count(self, media_id, column='read'):
+        column_list = ('read', 'like', 'collection', 'comment')
+        if column not in column_list:
+            return Exception('Params [column] is must in %s' % list(column_list))
+
+        key = self.get_media_relevant_count_id_key(media_id, column)
+        kwargs = {'media_id': media_id, 'column': column}
+        return self.get_perfect_data(key, Media.get_relevant_count, **kwargs)
+
+    # 获取资讯相关数量
+    def get_information_relevant_count(self, information_id, column='read'):
+        column_list = ('read', 'like', 'collection', 'comment')
+        if column not in column_list:
+            return Exception('Params [column] is must in %s' % list(column_list))
+
+        key = self.get_media_relevant_count_id_key(information_id, column)
+        kwargs = {'information_id': information_id, 'column': column}
+        return self.get_perfect_data(key, Information.get_relevant_count, **kwargs)
+
+    # 获取案例相关数量
+    def get_case_relevant_count(self, case_id, column='read'):
+        column_list = ('read', 'like', 'collection', 'comment')
+        if column not in column_list:
+            return Exception('Params [column] is must in %s' % list(column_list))
+
+        key = self.get_media_relevant_count_id_key(case_id, column)
+        kwargs = {'case_id': case_id, 'column': column}
+        return self.get_perfect_data(key, Case.get_relevant_count, **kwargs)
+
+    # 媒体资源相关数量加、减操作
+    def media_relevant_count_action(self, media_id, column='read', action='plus', amount=1):
+        key = self.get_media_relevant_count_id_key(media_id, column)
+        if action == 'plus':
+            return self.handle.incr(key, amount)
+        else:
+            return self.handle.decr(key, amount)
+
+    # 资讯相关数量加、减操作
+    def information_relevant_count_action(self, information_id, column='read',
+                                          action='plus', amount=1):
+        key = self.get_media_relevant_count_id_key(information_id, column)
+        if action == 'plus':
+            return self.handle.incr(key, amount)
+        else:
+            return self.handle.decr(key, amount)
+
+    # 案例相关数量加、减操作
+    def case_relevant_count_action(self, case_id, column='read', action='plus', amount=1):
+        key = self.get_media_relevant_count_id_key(case_id, column)
+        if action == 'plus':
+            return self.handle.incr(key, amount)
+        else:
+            return self.handle.decr(key, amount)
+
+
+SOURCE_TYPE_CACHE_FUNCTION = {
+    1: MediaCache().media_relevant_count_action,    # 媒体资源
+    2: MediaCache().case_relevant_count_action,     # 案例
+    3: MediaCache().information_relevant_count_action,    # 资讯
+}
+
+
+class SourceModelAction(object):
+    """
+    资源点赞、增加浏览数等操作
+    """
+    @classmethod
+    def get_source_object(cls, source_type, source_id):
+        if source_type not in SOURCE_TYPE_DB:
+            return Exception('Params [resource_type] is incorrect.')
+
+        source_class = SOURCE_TYPE_DB[source_type]
+        return source_class.get_object(pk=source_id)
+
+    @classmethod
+    def update_read_count(cls, source_type, source_id):
+        if source_type not in SOURCE_TYPE_CACHE_FUNCTION:
+            return Exception('Params [resource_type] is incorrect.')
+
+        action_function = SOURCE_TYPE_CACHE_FUNCTION[source_type]
+        return action_function(source_id, column='read', action='plus')
+        # # source_class = SOURCE_TYPE_DB[source_type]
+        # return source_class.plus_action(source_id, 'read_count')
+
+    @classmethod
+    def update_like_count(cls, source_type, source_id):
+        if source_type not in SOURCE_TYPE_CACHE_FUNCTION:
+            return Exception('Params [resource_type] is incorrect.')
+
+        action_function = SOURCE_TYPE_CACHE_FUNCTION[source_type]
+        return action_function(source_id, column='like', action='plus')
+        # source_class = SOURCE_TYPE_DB[source_type]
+        # return source_class.plus_action(source_id, 'like')
+
+    @classmethod
+    def update_collection_count(cls, source_type, source_id, method='plus'):
+        if source_type not in SOURCE_TYPE_CACHE_FUNCTION:
+            return Exception('Params [resource_type] is incorrect.')
+        if method not in ['plus', 'reduce']:
+            return Exception('Params [resource_type] is incorrect.')
+
+        action_function = SOURCE_TYPE_CACHE_FUNCTION[source_type]
+        if method == 'plus':
+            return action_function(source_id, column='collection', action='plus')
+        else:
+            return action_function(source_id, column='collection', action='reduce')
+
+    @classmethod
+    def update_comment_count(cls, source_type, source_id, method='plus'):
+        if source_type not in SOURCE_TYPE_CACHE_FUNCTION:
+            return Exception('Params [resource_type] is incorrect.')
+        if method not in ['plus', 'reduce']:
+            return Exception('Params [resource_type] is incorrect.')
+
+        action_function = SOURCE_TYPE_CACHE_FUNCTION[source_type]
+        if method == 'plus':
+            return action_function(source_id, column='collection', action='plus')
+        else:
+            return action_function(source_id, column='collection', action='reduce')
+
+    @classmethod
+    def create_like_record(cls, request, source_type, source_id):
+        # source_ins = cls.get_source_object(source_type, source_id)
+        # if isinstance(source_ins, Exception):
+        #     return source_ins
+        init_data = {'user_id': request.user.id,
+                     'source_type': source_type,
+                     'source_id': source_id}
+        record = ResourceOpinionRecord(**init_data)
+        try:
+            record.save()
+        except Exception as e:
+            return e
+        return record
+
+    @classmethod
+    def like_action(cls, request, source_type, source_id):
+        record = cls.create_like_record(request, source_type, source_id)
+        if isinstance(record, Exception):
+            return record
+        source_ins = cls.update_like_count(source_type, source_id)
+        if isinstance(source_ins, Exception):
+            return source_ins
+        return record, source_ins
 

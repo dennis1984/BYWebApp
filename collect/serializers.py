@@ -8,7 +8,7 @@ from rest_framework import serializers
 
 from horizon.main import make_random_number_of_string
 from horizon.decorators import has_permission_to_update
-from media.models import SourceModelAction
+from media.caches import SourceModelAction
 
 import os
 

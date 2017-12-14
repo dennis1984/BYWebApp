@@ -12,7 +12,6 @@ from media.models import (Media, ResourceTags,
                           Information,
                           Case, RESOURCE_COLUMN_CONFIG,
                           ResourceOpinionRecord,
-                          SourceModelAction,
                           AdvertResource)
 from media.forms import (MediaTypeListForm,
                          ThemeTypeListForm,
@@ -42,7 +41,7 @@ from media.serializers import (MediaTypeListSerailizer,
                                AdvertResourceListSerializer,
                                ResourceListSerializer)
 from comment.models import SOURCE_TYPE_DB
-from media.caches import MediaCache
+from media.caches import MediaCache, SourceModelAction
 
 import re
 import copy
