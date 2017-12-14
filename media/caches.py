@@ -98,19 +98,19 @@ class MediaCache(object):
         column_list = ('read', 'like', 'collection', 'comment')
         if column not in column_list:
             return None
-        return 'media_%s_count:id:%s' % media_id
+        return 'media_%s_count:id:%s' % (column, media_id)
 
     def get_information_relevant_count_id_key(self, information_id, column='read'):
         column_list = ('read', 'like', 'collection', 'comment')
         if column not in column_list:
             return None
-        return 'information_%s_count:id:%s' % information_id
+        return 'information_%s_count:id:%s' % (column, information_id)
 
     def get_case_relevant_count_id_key(self, case_id, column='read'):
         column_list = ('read', 'like', 'collection', 'comment')
         if column not in column_list:
             return None
-        return 'case_%s_count:id:%s' % case_id
+        return 'case_%s_count:id:%s' % (column, case_id)
 
     def set_instance_to_cache(self, key, data):
         self.handle.set(key, data)
