@@ -86,13 +86,13 @@ class MediaDetailSerializer(BaseSerializer):
     # 运营标记 0: 未设定 1：热门
     mark = serializers.IntegerField()
     # 浏览数
-    read_count = serializers.IntegerField()
+    read_count = serializers.IntegerField(default=0)
     # 点赞数量
-    like = serializers.IntegerField()
+    like = serializers.IntegerField(default=0)
     # 收藏数量
-    collection_count = serializers.IntegerField()
+    collection_count = serializers.IntegerField(default=0)
     # 评论数量
-    comment_count = serializers.IntegerField()
+    comment_count = serializers.IntegerField(default=0)
 
     # 电影表现大数据分析 数据格式为字典形式的JSON字符串，如：{"导演号召力": 3.5,
     #                                                "男主角号召力": 4.0,
@@ -127,13 +127,13 @@ class InformationDetailSerializer(BaseSerializer):
     # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
     tags = serializers.ListField(allow_null=True)
     # 浏览数
-    read_count = serializers.IntegerField()
+    read_count = serializers.IntegerField(default=0)
     # 点赞数
-    like = serializers.IntegerField()
+    like = serializers.IntegerField(default=0)
     # 收藏数量
-    collection_count = serializers.IntegerField()
+    collection_count = serializers.IntegerField(default=0)
     # 评论数量
-    comment_count = serializers.IntegerField()
+    comment_count = serializers.IntegerField(default=0)
     # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=3)
 
@@ -158,13 +158,13 @@ class CaseDetailSerializer(BaseSerializer):
     # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
     tags = serializers.ListField(allow_null=True)
     # 浏览数
-    read_count = serializers.IntegerField()
+    read_count = serializers.IntegerField(default=0)
     # 点赞数
-    like = serializers.IntegerField()
+    like = serializers.IntegerField(default=0)
     # 收藏数量
-    collection_count = serializers.IntegerField()
+    collection_count = serializers.IntegerField(default=0)
     # 评论数量
-    comment_count = serializers.IntegerField()
+    comment_count = serializers.IntegerField(default=0)
     # 媒体资源类型  1: 媒体资源  2：案例   3：资讯
     source_type = serializers.IntegerField(default=2)
 
