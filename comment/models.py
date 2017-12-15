@@ -52,7 +52,7 @@ class Comment(models.Model):
 
     class Meta:
         db_table = 'by_comment'
-        unique_together = ['user_id', 'source_type', 'source_id']
+        unique_together = ['user_id', 'source_type', 'source_id', 'status']
         index_together = ['source_type', 'source_id']
         ordering = ['-created']
 
