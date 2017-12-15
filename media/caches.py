@@ -14,7 +14,8 @@ from media.models import (Media,
                           ResourceTags,
                           Information,
                           Case,
-                          ResourceOpinionRecord)
+                          ResourceOpinionRecord,
+                          AdvertResource)
 from comment.models import Comment, SOURCE_TYPE_DB
 from collect.models import Collect
 
@@ -128,11 +129,18 @@ class MediaCache(object):
             return None
         return 'case_%s_count:id:%s' % (column, case_id)
 
+    def get_advert_list_source_type_key(self, source_type):
+        return 'advert_list:source_type:%s' % source_type
+
+    def get_advert_detail_id_key(self, advert_id):
+        return 'advert_detail:id:%s' % advert_id
+
     def set_instance_to_cache(self, key, data):
         self.handle.set(key, data)
         self.handle.expire(key, EXPIRES_24_HOURS)
 
     def set_list_to_cache(self, key, *list_data):
+        self.handle.delete(key)
         self.handle.rpush(key, *list_data)
         self.handle.expire(key, EXPIRES_24_HOURS)
 
@@ -158,6 +166,24 @@ class MediaCache(object):
             if isinstance(list_data, Exception) or not list_data:
                 return list_data
             self.set_list_to_cache(key, *list_data)
+        return list_data
+
+    def get_perfect_ids_list_data(self, key, model_function, detail_key_function, **kwargs):
+        list_data = self.get_list_from_cache(key)
+        if not list_data:
+            list_data = model_function(**kwargs)
+            if isinstance(list_data, Exception):
+                return list_data
+
+            # 把每条数据逐次添加都缓存中
+            for item_data in list_data:
+                detail_key = detail_key_function(item_data['id'])
+                if not self.get_instance_from_cache(detail_key):
+                    self.set_instance_to_cache(detail_key, item_data)
+            # 生成列表
+            perfect_list_data = [item['id'] for item in list_data]
+            self.set_list_to_cache(key, *perfect_list_data)
+            return perfect_list_data
         return list_data
 
     # # 获取维度model对象
@@ -391,6 +417,51 @@ class MediaCache(object):
             return self.handle.incr(key, amount)
         else:
             return self.handle.decr(key, amount)
+
+    # def base_relevant_count_action(self, source_type, source_id, column='read',
+    #                                action='plus', amount=1):
+    #     source_type_key_dict = {
+    #         # 媒体资源
+    #         1: {'init': self.get_media_relevant_count,
+    #             'key': self.get_media_relevant_count_id_key},
+    #         # 案例
+    #         2: {'init': self.get_case_relevant_count,
+    #             'key': self.get_case_relevant_count_id_key},
+    #         # 资讯
+    #         3: {'init': self.get_information_relevant_count,
+    #             'key': self.get_information_relevant_count}
+    #     }
+    #     get_count_function = source_type_key_dict[source_type]['init']
+    #     key_function = source_type_key_dict[source_type]['key']
+    #
+    #     # 获取相关数量
+    #     get_count_function(source_id, column=column)
+    #     key = key_function(source_id, column)
+    #     if action == 'plus':
+    #         return self.handle.incr(key, amount)
+    #     else:
+    #         return self.handle.decr(key, amount)
+
+    # 获取广告列表
+    def get_advert_list(self, source_type):
+        key = self.get_advert_list_source_type_key(source_type)
+        kwargs = {'source_type': source_type}
+        ids_list = self.get_perfect_ids_list_data(key,
+                                                  AdvertResource.filter_objects,
+                                                  self.get_advert_detail_id_key,
+                                                  **kwargs)
+        return self.get_perfect_list_data_by_ids(ids_list, self.get_advert_detail_id_key)
+
+    def get_perfect_list_data_by_ids(self, ids_list, key_function):
+        perfect_list_data = []
+        for comment_id in ids_list:
+            id_key = key_function(comment_id)
+            kwargs = {'id': comment_id}
+            detail = self.get_perfect_data(id_key, Comment.get_detail, **kwargs)
+            if isinstance(detail, Exception):
+                continue
+            perfect_list_data.append(detail)
+        return perfect_list_data
 
 
 SOURCE_TYPE_CACHE_FUNCTION = {
