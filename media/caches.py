@@ -415,7 +415,12 @@ class SourceModelAction(object):
             return Exception('Params [resource_type] is incorrect.')
 
         action_function = SOURCE_TYPE_CACHE_FUNCTION[source_type]
-        return action_function(source_id, column='read', action='plus')
+        count = action_function(source_id, column='read', action='plus')
+        if count % 50 == 0:
+            # 通过缓存数据到数据库
+            sync_function = SYNC_CACHE_TO_DB[source_type]
+            sync_function(source_id, attr=COUNT_COLUMN_KEY_DICT['read'], amount=count)
+        return count
 
     @classmethod
     def update_like_count(cls, source_type, source_id):
@@ -423,12 +428,7 @@ class SourceModelAction(object):
             return Exception('Params [resource_type] is incorrect.')
 
         action_function = SOURCE_TYPE_CACHE_FUNCTION[source_type]
-        count = action_function(source_id, column='like', action='plus')
-        if count % 50 == 0:
-            # 通过数据到数据库
-            sync_function = SYNC_CACHE_TO_DB[source_type]
-            sync_function(source_id, attr='like', amount=count)
-        return count
+        return action_function(source_id, column='like', action='plus')
 
     @classmethod
     def update_collection_count(cls, source_type, source_id, method='plus'):
