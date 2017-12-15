@@ -457,7 +457,7 @@ class MediaCache(object):
         for comment_id in ids_list:
             id_key = key_function(comment_id)
             kwargs = {'id': comment_id}
-            detail = self.get_perfect_data(id_key, Comment.get_detail, **kwargs)
+            detail = self.get_perfect_data(id_key, AdvertResource.get_detail, **kwargs)
             if isinstance(detail, Exception):
                 continue
             perfect_list_data.append(detail)
