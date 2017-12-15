@@ -769,7 +769,9 @@ class Information(models.Model):
         for ins in instances:
             item_dict = {'title': ins.title,
                          'subtitle': ins.subtitle,
-                         'tags': ins.perfect_detail['tags']}
+                         'tags': ins.perfect_detail['tags'],
+                         'mark': ins.mark,
+                         'column': ins.column,}
             search_dict[ins.id] = item_dict
         return search_dict
 
@@ -973,7 +975,9 @@ class Case(models.Model):
         for ins in instances:
             item_dict = {'title': ins.title,
                          'subtitle': ins.subtitle,
-                         'tags': ins.perfect_detail['tags']}
+                         'tags': ins.perfect_detail['tags'],
+                         'mark': ins.mark,
+                         'column': ins.column}
             search_dict[ins.id] = item_dict
         return search_dict
 

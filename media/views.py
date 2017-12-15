@@ -172,17 +172,13 @@ class MediaList(APIView):
         return match_result
 
     def get_media_detail_list(self, **kwargs):
-        s_kwargs = copy.deepcopy(kwargs)
+        sort_key = kwargs['sort'] if kwargs.get('sort') else 'updated'
         pop_keys = ('sort', 'page_size', 'page_index')
         for key in pop_keys:
-            if key in s_kwargs:
-                s_kwargs.pop(key)
+            if key in kwargs:
+                kwargs.pop(key)
 
-        match_media_list = self.search_action(**s_kwargs)
-        if 'sort' in kwargs:
-            sort_key = kwargs['sort']
-        else:
-            sort_key = 'updated'
+        match_media_list = self.search_action(**kwargs)
         match_media_list = sorted(match_media_list,
                                   key=lambda x: x['media_detail'][sort_key], reverse=True)
 
@@ -247,11 +243,43 @@ class InformationList(APIView):
     """
     资讯列表
     """
+    def search_action(self, **search_kwargs):
+        information_search_dict = MediaCache().get_information_search_dict()
+        match_result = []
+        for information_id, information_detail in information_search_dict.items():
+            does_match = False
+            for kw, value in search_kwargs.items():
+                if information_detail.get(kw) != value:
+                    break
+            else:
+                does_match = True
+            if does_match:
+                match_result.append({'information_id': information_id,
+                                     'information_detail': information_detail})
+        return match_result
+
     def get_information_detail_list(self, **kwargs):
+        sort_key = kwargs['sort'] if 'sort' in kwargs else 'updated'
         # 最新发布（栏目）
         if kwargs.get('column') == RESOURCE_COLUMN_CONFIG['newest']:
             kwargs.pop('column')
-        return Information.filter_details(**kwargs)
+        pop_keys = ('page_size', 'page_index')
+        for key in pop_keys:
+            if key in kwargs:
+                kwargs.pop(key)
+
+        match_information_list = self.search_action(**kwargs)
+        match_information_list = sorted(
+            match_information_list,
+            key=lambda x: x['information_detail'][sort_key],
+            reverse=True
+        )
+
+        perfect_details = []
+        for item_media in match_information_list:
+            detail = MediaCache().get_information_detail_by_id(item_media['information_id'])
+            perfect_details.append(detail)
+        return perfect_details
 
     def post(self, request, *args, **kwargs):
         """
@@ -308,11 +336,40 @@ class CaseList(APIView):
     """
     案例列表
     """
+    def search_action(self, **search_kwargs):
+        case_search_dict = MediaCache().get_case_search_dict()
+        match_result = []
+        for case_id, case_detail in case_search_dict.items():
+            does_match = False
+            for kw, value in search_kwargs.items():
+                if case_detail.get(kw) != value:
+                    break
+            else:
+                does_match = True
+            if does_match:
+                match_result.append({'case_id': case_id,
+                                     'case_detail': case_detail})
+        return match_result
+
     def get_case_detail_list(self, **kwargs):
+        sort_key = kwargs['sort'] if 'sort' in kwargs else 'updated'
         # 最新发布（栏目）
         if kwargs.get('column') == RESOURCE_COLUMN_CONFIG['newest']:
             kwargs.pop('column')
-        return Case.filter_details(**kwargs)
+        pop_keys = ('page_size', 'page_index')
+        for key in pop_keys:
+            if key in kwargs:
+                kwargs.pop(key)
+
+        match_case_list = self.search_action(**kwargs)
+        match_case_list = sorted(match_case_list,
+                                 key=lambda x: x['media_detail'][sort_key], reverse=True)
+
+        perfect_details = []
+        for item_case in match_case_list:
+            detail = MediaCache().get_case_detail_by_id(item_case['case_id'])
+            perfect_details.append(detail)
+        return perfect_details
 
     def post(self, request, *args, **kwargs):
         """
