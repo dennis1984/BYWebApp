@@ -226,10 +226,52 @@ class Media(models.Model):
             details.append(ins.perfect_detail)
         return details
 
+    # @classmethod
+    # def plus_action(cls, media_id, attr='read_count'):
+    #     media = None
+    #     attr_keys = ('read_count', 'like', 'collection_count', 'comment_count')
+    #
+    #     if attr not in attr_keys:
+    #         return Exception('Params [attr] is incorrect.')
+    #     # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+    #     with transaction.atomic():
+    #         _media = cls.get_object(pk=media_id)
+    #         if isinstance(_media, Exception):
+    #             return _media
+    #
+    #         opinion_value = getattr(_media, attr)
+    #         setattr(_media, attr, opinion_value + 1)
+    #         _media.save()
+    #         media = _media
+    #     return media
+    #
+    # @classmethod
+    # def reduce_action(cls, media_id, attr='collection_count'):
+    #     media = None
+    #     attr_keys = ('like', 'collection_count', 'comment_count')
+    #
+    #     if attr not in attr_keys:
+    #         return Exception('Params [attr] is incorrect.')
+    #     # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+    #     with transaction.atomic():
+    #         _media = cls.get_object(pk=media_id)
+    #         if isinstance(_media, Exception):
+    #             return _media
+    #
+    #         opinion_value = getattr(_media, attr)
+    #         setattr(_media, attr, opinion_value - 1)
+    #         _media.save()
+    #         media = _media
+    #     return media
+
     @classmethod
-    def plus_action(cls, media_id, attr='read_count'):
+    def update_relevant_count_action(cls, media_id, attr='read_count', amount=0):
+        """
+        更新资源的相关数量（点赞、阅读、收藏及评论数量）
+        返回：model instance
+        """
         media = None
-        attr_keys = ('read_count', 'like', 'collection_count', 'comment_count')
+        attr_keys = ('like', 'collection_count', 'comment_count', 'read_count')
 
         if attr not in attr_keys:
             return Exception('Params [attr] is incorrect.')
@@ -239,27 +281,7 @@ class Media(models.Model):
             if isinstance(_media, Exception):
                 return _media
 
-            opinion_value = getattr(_media, attr)
-            setattr(_media, attr, opinion_value + 1)
-            _media.save()
-            media = _media
-        return media
-
-    @classmethod
-    def reduce_action(cls, media_id, attr='collection_count'):
-        media = None
-        attr_keys = ('like', 'collection_count', 'comment_count')
-
-        if attr not in attr_keys:
-            return Exception('Params [attr] is incorrect.')
-        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
-        with transaction.atomic():
-            _media = cls.get_object(pk=media_id)
-            if isinstance(_media, Exception):
-                return _media
-
-            opinion_value = getattr(_media, attr)
-            setattr(_media, attr, opinion_value - 1)
+            setattr(_media, attr, amount)
             _media.save()
             media = _media
         return media
@@ -656,6 +678,28 @@ class Information(models.Model):
         return information
 
     @classmethod
+    def update_relevant_count_action(cls, information_id, attr='read_count', amount=0):
+        """
+        更新资源的相关数量（点赞、阅读、收藏及评论数量）
+        返回：model instance
+        """
+        information = None
+        attr_keys = ('like', 'collection_count', 'comment_count', 'read_count')
+
+        if attr not in attr_keys:
+            return Exception('Params [attr] is incorrect.')
+        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+        with transaction.atomic():
+            _information = cls.get_object(pk=information_id)
+            if isinstance(_information, Exception):
+                return _information
+
+            setattr(_information, attr, amount)
+            _information.save()
+            information = _information
+        return information
+
+    @classmethod
     def get_object(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
         try:
@@ -799,10 +843,52 @@ class Case(models.Model):
                     detail[key] = json.loads(detail[key])
         return detail
 
+    # @classmethod
+    # def plus_action(cls, case_id, attr='read_count'):
+    #     case = None
+    #     attr_keys = ('read_count', 'like', 'collection_count', 'comment_count')
+    #
+    #     if attr not in attr_keys:
+    #         return Exception('Params [attr] is incorrect.')
+    #     # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+    #     with transaction.atomic():
+    #         _case = cls.get_object(pk=case_id)
+    #         if isinstance(_case, Exception):
+    #             return _case
+    #
+    #         opinion_value = getattr(_case, attr)
+    #         setattr(_case, attr, opinion_value + 1)
+    #         _case.save()
+    #         case = _case
+    #     return case
+    #
+    # @classmethod
+    # def reduce_action(cls, case_id, attr='collection_count'):
+    #     case = None
+    #     attr_keys = ('like', 'collection_count', 'comment_count')
+    #
+    #     if attr not in attr_keys:
+    #         return Exception('Params [attr] is incorrect.')
+    #     # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
+    #     with transaction.atomic():
+    #         _case = cls.get_object(pk=case_id)
+    #         if isinstance(_case, Exception):
+    #             return _case
+    #
+    #         opinion_value = getattr(_case, attr)
+    #         setattr(_case, attr, opinion_value - 1)
+    #         _case.save()
+    #         case = _case
+    #     return case
+
     @classmethod
-    def plus_action(cls, case_id, attr='read_count'):
+    def update_relevant_count_action(cls, case_id, attr='read_count', amount=0):
+        """
+        更新资源的相关数量（点赞、阅读、收藏及评论数量）
+        返回：model instance
+        """
         case = None
-        attr_keys = ('read_count', 'like', 'collection_count', 'comment_count')
+        attr_keys = ('like', 'collection_count', 'comment_count', 'read_count')
 
         if attr not in attr_keys:
             return Exception('Params [attr] is incorrect.')
@@ -812,27 +898,7 @@ class Case(models.Model):
             if isinstance(_case, Exception):
                 return _case
 
-            opinion_value = getattr(_case, attr)
-            setattr(_case, attr, opinion_value + 1)
-            _case.save()
-            case = _case
-        return case
-
-    @classmethod
-    def reduce_action(cls, case_id, attr='collection_count'):
-        case = None
-        attr_keys = ('like', 'collection_count', 'comment_count')
-
-        if attr not in attr_keys:
-            return Exception('Params [attr] is incorrect.')
-        # 数据库加排它锁，保证更改信息是列队操作的，防止数据混乱
-        with transaction.atomic():
-            _case = cls.get_object(pk=case_id)
-            if isinstance(_case, Exception):
-                return _case
-
-            opinion_value = getattr(_case, attr)
-            setattr(_case, attr, opinion_value - 1)
+            setattr(_case, attr, amount)
             _case.save()
             case = _case
         return case
@@ -947,6 +1013,17 @@ class ResourceOpinionRecord(models.Model):
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+    @classmethod
+    def get_like_count(cls, source_type, source_id):
+        """
+        获取点赞数
+        """
+        kwargs = {'source_type': source_type, 'source_id': source_id}
+        instances = cls.filter_objects(**kwargs)
+        if isinstance(instances, Exception):
+            return 0
+        return len(instances)
 
 
 ADVERT_PICTURE_PATH = settings.PICTURE_DIRS['web']['advert']

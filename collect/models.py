@@ -81,3 +81,14 @@ class Collect(models.Model):
             item_dict['tags'] = source_detail['tags']
             details.append(item_dict)
         return details
+
+    @classmethod
+    def get_collection_count(cls, source_type, source_id):
+        """
+        获取收藏数
+        """
+        kwargs = {'source_type': source_type, 'source_id': source_id}
+        instances = cls.filter_objects(**kwargs)
+        if isinstance(instances, Exception):
+            return 0
+        return len(instances)

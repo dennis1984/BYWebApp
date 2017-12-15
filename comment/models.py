@@ -143,6 +143,17 @@ class Comment(models.Model):
 
         return source_class.get_object(pk=source_id)
 
+    @classmethod
+    def get_comment_count(cls, source_type, source_id):
+        """
+        获取评论数
+        """
+        kwargs = {'source_type': source_type, 'source_id': source_id}
+        instances = cls.filter_objects(**kwargs)
+        if isinstance(instances, Exception):
+            return 0
+        return len(instances)
+
 
 class ReplyComment(models.Model):
     """

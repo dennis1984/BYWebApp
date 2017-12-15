@@ -15,10 +15,26 @@ from media.models import (Media,
                           Information,
                           Case,
                           ResourceOpinionRecord)
+from comment.models import Comment, SOURCE_TYPE_DB
+from collect.models import Collect
 
 # 过期时间（单位：秒）
 EXPIRES_24_HOURS = 24 * 60 * 60
 EXPIRES_10_HOURS = 10 * 60 * 60
+
+RELEVANT_COUNT_CONFIG = {
+    'like': ResourceOpinionRecord.get_like_count,
+    'comment': Comment.get_comment_count,
+    'collection': Collect.get_collection_count,
+    'read': None,
+}
+COUNT_COLUMN_LIST = ('read', 'like', 'collection', 'comment')
+COUNT_COLUMN_KEY_DICT = {
+    'read': 'read_count',
+    'like': 'like',
+    'collection': 'collection_count',
+    'comment': 'comment_count',
+}
 
 
 class MediaCache(object):
@@ -169,7 +185,15 @@ class MediaCache(object):
     def get_media_detail_by_id(self, media_id):
         key = self.get_media_id_key(media_id)
         kwargs = {'pk': media_id}
-        return self.get_perfect_data(key, Media.get_detail, **kwargs)
+
+        detail = self.get_perfect_data(key, Media.get_detail, **kwargs)
+        if isinstance(detail, Exception):
+            return detail
+        for column in COUNT_COLUMN_LIST:
+            count = self.get_media_relevant_count(media_id, column=column)
+            count_key = COUNT_COLUMN_KEY_DICT[column]
+            detail[count_key] = count
+        return detail
 
     # 获取媒体资源的标签为Key的列表
     def get_media_tags_dict(self):
@@ -210,7 +234,15 @@ class MediaCache(object):
     def get_information_detail_by_id(self, information_id):
         key = self.get_information_id_key(information_id)
         kwargs = {'pk': information_id}
-        return self.get_perfect_data(key, Information.get_detail, **kwargs)
+
+        detail = self.get_perfect_data(key, Information.get_detail, **kwargs)
+        if isinstance(detail, Exception):
+            return detail
+        for column in COUNT_COLUMN_LIST:
+            count = self.get_information_relevant_count(information_id, column=column)
+            count_key = COUNT_COLUMN_KEY_DICT[column]
+            detail[count_key] = count
+        return detail
 
     # 获取资讯的标签为Key的列表
     def get_information_tags_dict(self):
@@ -227,7 +259,15 @@ class MediaCache(object):
     def get_case_detail_by_id(self, case_id):
         key = self.get_case_id_key(case_id)
         kwargs = {'pk': case_id}
-        return self.get_perfect_data(key, Case.get_detail, **kwargs)
+
+        detail = self.get_perfect_data(key, Case.get_detail, **kwargs)
+        if isinstance(detail, Exception):
+            return detail
+        for column in COUNT_COLUMN_LIST:
+            count = self.get_media_relevant_count(case_id, column=column)
+            count_key = COUNT_COLUMN_KEY_DICT[column]
+            detail[count_key] = count
+        return detail
 
     # 获取案例的标签为Key的列表
     def get_case_tags_dict(self):
@@ -270,9 +310,19 @@ class MediaCache(object):
         if column not in column_list:
             return Exception('Params [column] is must in %s' % list(column_list))
 
+        source_type = None
+        for m_key, model_class in SOURCE_TYPE_DB.items():
+            if model_class == Media:
+                source_type = m_key
+                break
         key = self.get_media_relevant_count_id_key(media_id, column)
-        kwargs = {'media_id': media_id, 'column': column}
-        return self.get_perfect_data(key, Media.get_relevant_count, **kwargs)
+        if column != 'read':
+            kwargs = {'source_type': source_type, 'source_id': media_id}
+            model_function = RELEVANT_COUNT_CONFIG[column]
+            return self.get_perfect_data(key, model_function, **kwargs)
+        else:
+            kwargs = {'media_id': media_id, 'column': column}
+            return self.get_perfect_data(key, Media.get_relevant_count, **kwargs)
 
     # 获取资讯相关数量
     def get_information_relevant_count(self, information_id, column='read'):
@@ -280,9 +330,19 @@ class MediaCache(object):
         if column not in column_list:
             return Exception('Params [column] is must in %s' % list(column_list))
 
+        source_type = None
+        for m_key, model_class in SOURCE_TYPE_DB.items():
+            if model_class == Information:
+                source_type = m_key
+                break
         key = self.get_media_relevant_count_id_key(information_id, column)
-        kwargs = {'information_id': information_id, 'column': column}
-        return self.get_perfect_data(key, Information.get_relevant_count, **kwargs)
+        if column != 'read':
+            kwargs = {'source_type': source_type, 'source_id': information_id}
+            model_function = RELEVANT_COUNT_CONFIG[column]
+            return self.get_perfect_data(key, model_function, **kwargs)
+        else:
+            kwargs = {'information_id': information_id, 'column': column}
+            return self.get_perfect_data(key, Information.get_relevant_count, **kwargs)
 
     # 获取案例相关数量
     def get_case_relevant_count(self, case_id, column='read'):
@@ -290,9 +350,19 @@ class MediaCache(object):
         if column not in column_list:
             return Exception('Params [column] is must in %s' % list(column_list))
 
+        source_type = None
+        for m_key, model_class in SOURCE_TYPE_DB.items():
+            if model_class == Case:
+                source_type = m_key
+                break
         key = self.get_media_relevant_count_id_key(case_id, column)
-        kwargs = {'case_id': case_id, 'column': column}
-        return self.get_perfect_data(key, Case.get_relevant_count, **kwargs)
+        if column != 'read':
+            kwargs = {'source_type': source_type, 'source_id': case_id}
+            model_function = RELEVANT_COUNT_CONFIG[column]
+            return self.get_perfect_data(key, model_function, **kwargs)
+        else:
+            kwargs = {'case_id': case_id, 'column': column}
+            return self.get_perfect_data(kwargs, Case.get_relevant_count, **kwargs)
 
     # 媒体资源相关数量加、减操作
     def media_relevant_count_action(self, media_id, column='read', action='plus', amount=1):
@@ -324,9 +394,14 @@ class MediaCache(object):
 
 
 SOURCE_TYPE_CACHE_FUNCTION = {
-    1: MediaCache().media_relevant_count_action,    # 媒体资源
-    2: MediaCache().case_relevant_count_action,     # 案例
+    1: MediaCache().media_relevant_count_action,          # 媒体资源
+    2: MediaCache().case_relevant_count_action,           # 案例
     3: MediaCache().information_relevant_count_action,    # 资讯
+}
+SYNC_CACHE_TO_DB = {
+    1: Media.update_relevant_count_action,          # 媒体资源
+    2: Case.update_relevant_count_action,           # 案例
+    3: Information.update_relevant_count_action,    # 资讯
 }
 
 
@@ -348,7 +423,12 @@ class SourceModelAction(object):
             return Exception('Params [resource_type] is incorrect.')
 
         action_function = SOURCE_TYPE_CACHE_FUNCTION[source_type]
-        return action_function(source_id, column='like', action='plus')
+        count = action_function(source_id, column='like', action='plus')
+        if count % 50 == 0:
+            # 通过数据到数据库
+            sync_function = SYNC_CACHE_TO_DB[source_type]
+            sync_function(source_id, attr='like', amount=count)
+        return count
 
     @classmethod
     def update_collection_count(cls, source_type, source_id, method='plus'):
