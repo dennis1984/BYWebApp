@@ -435,11 +435,13 @@ class AdvertResourceList(APIView):
             return Response({'Detail': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         cld = form.cleaned_data
-        instances = self.get_advert_resource_list(cld['source_type'])
-        if isinstance(instances, Exception):
-            return Response({'Detail': instances.args}, status=status.HTTP_400_BAD_REQUEST)
+        details = self.get_advert_resource_list(cld['source_type'])
+        if isinstance(details, Exception):
+            return Response({'Detail': details.args}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = AdvertResourceListSerializer(instances)
+        serializer = AdvertResourceListSerializer(data=details)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         list_data = serializer.list_data(**cld)
         if isinstance(list_data, Exception):
             return Response({'Detail': list_data.args}, status=status.HTTP_400_BAD_REQUEST)
