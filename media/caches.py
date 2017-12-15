@@ -362,7 +362,7 @@ class MediaCache(object):
             return self.get_perfect_data(key, model_function, **kwargs)
         else:
             kwargs = {'case_id': case_id, 'column': column}
-            return self.get_perfect_data(kwargs, Case.get_relevant_count, **kwargs)
+            return self.get_perfect_data(key, Case.get_relevant_count, **kwargs)
 
     # 媒体资源相关数量加、减操作
     def media_relevant_count_action(self, media_id, column='read', action='plus', amount=1):
