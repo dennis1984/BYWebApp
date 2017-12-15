@@ -335,7 +335,7 @@ class MediaCache(object):
             if model_class == Information:
                 source_type = m_key
                 break
-        key = self.get_media_relevant_count_id_key(information_id, column)
+        key = self.get_information_relevant_count_id_key(information_id, column)
         if column != 'read':
             kwargs = {'source_type': source_type, 'source_id': information_id}
             model_function = RELEVANT_COUNT_CONFIG[column]
@@ -355,7 +355,7 @@ class MediaCache(object):
             if model_class == Case:
                 source_type = m_key
                 break
-        key = self.get_media_relevant_count_id_key(case_id, column)
+        key = self.get_case_relevant_count_id_key(case_id, column)
         if column != 'read':
             kwargs = {'source_type': source_type, 'source_id': case_id}
             model_function = RELEVANT_COUNT_CONFIG[column]
