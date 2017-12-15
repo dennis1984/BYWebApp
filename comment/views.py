@@ -36,9 +36,10 @@ class CommentAction(generics.GenericAPIView):
         if isinstance(instance, Exception):
             return False, 'The source of %s does not exist.' % kwargs['source_id']
 
+        kwargs.pop('content')
         instance = Comment.get_object(user_id=request.user.id, **kwargs)
         if isinstance(instance, Comment):
-            return False, 'Can not repeat commenting.'
+            return False, 'Can not repeat commented.'
         return True, None
 
     def get_comment_object(self, request, comment_id):
