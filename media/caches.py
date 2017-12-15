@@ -377,7 +377,7 @@ class MediaCache(object):
     def information_relevant_count_action(self, information_id, column='read',
                                           action='plus', amount=1):
         self.get_information_relevant_count(information_id, column=column)
-        key = self.get_media_relevant_count_id_key(information_id, column)
+        key = self.get_information_relevant_count_id_key(information_id, column)
         if action == 'plus':
             return self.handle.incr(key, amount)
         else:
@@ -386,7 +386,7 @@ class MediaCache(object):
     # 案例相关数量加、减操作
     def case_relevant_count_action(self, case_id, column='read', action='plus', amount=1):
         self.get_case_relevant_count(case_id, column=column)
-        key = self.get_media_relevant_count_id_key(case_id, column)
+        key = self.get_case_relevant_count_id_key(case_id, column)
         if action == 'plus':
             return self.handle.incr(key, amount)
         else:
