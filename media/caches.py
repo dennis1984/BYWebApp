@@ -454,9 +454,9 @@ class MediaCache(object):
 
     def get_perfect_list_data_by_ids(self, ids_list, key_function):
         perfect_list_data = []
-        for comment_id in ids_list:
-            id_key = key_function(comment_id)
-            kwargs = {'id': comment_id}
+        for item_id in ids_list:
+            id_key = key_function(item_id)
+            kwargs = {'id': item_id}
             detail = self.get_perfect_data(id_key, AdvertResource.get_detail, **kwargs)
             if isinstance(detail, Exception):
                 continue
