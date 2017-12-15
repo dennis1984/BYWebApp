@@ -771,7 +771,8 @@ class Information(models.Model):
                          'subtitle': ins.subtitle,
                          'tags': ins.perfect_detail['tags'],
                          'mark': ins.mark,
-                         'column': ins.column,}
+                         'column': ins.column,
+                         'updated': ins.updated}
             search_dict[ins.id] = item_dict
         return search_dict
 
@@ -977,7 +978,8 @@ class Case(models.Model):
                          'subtitle': ins.subtitle,
                          'tags': ins.perfect_detail['tags'],
                          'mark': ins.mark,
-                         'column': ins.column}
+                         'column': ins.column,
+                         'updated': ins.updated}
             search_dict[ins.id] = item_dict
         return search_dict
 
