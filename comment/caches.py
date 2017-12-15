@@ -29,6 +29,9 @@ class CommentCache(object):
     def get_comment_list_source_id_key(self, source_type, source_id):
         return 'comment:list:source_id:%s-%s' % (source_type, source_id)
 
+    def get_comment_detail_id_key(self, comment_id):
+        return 'comment_detail:comment_id:%s' % comment_id
+
     def set_instance_to_cache(self, key, data):
         self.handle.set(key, data)
         self.handle.expire(key, EXPIRES_24_HOURS)
@@ -37,6 +40,7 @@ class CommentCache(object):
         return self.handle.get(key)
 
     def set_list_to_cache(self, key, *list_data):
+        self.handle.delete(key)
         self.handle.rpush(key, *list_data)
         self.handle.expire(key, EXPIRES_24_HOURS)
 
@@ -58,21 +62,71 @@ class CommentCache(object):
             list_data = model_function(**kwargs)
             if isinstance(list_data, Exception):
                 return list_data
-            self.set_list_to_cache(key, *list_data)
+
+            # 把每条评论逐次添加都缓存中
+            for item_data in list_data:
+                detail_key = self.get_comment_detail_id_key(item_data['id'])
+                if not self.get_instance_from_cache(detail_key):
+                    self.set_instance_to_cache(detail_key, item_data)
+            # 生成评论列表
+            perfect_list_data = [item['id'] for item in list_data]
+            self.set_list_to_cache(key, *perfect_list_data)
+            return list_data
         return list_data
 
     # 获取用户评论列表
     def get_comment_list_by_user_id(self, user_id):
         key = self.get_comment_list_user_id_key(user_id)
         kwargs = {'user_id': user_id}
-        return self.get_perfect_list_data(key, Comment.filter_details, **kwargs)
+        ids_list = self.get_perfect_list_data(key, Comment.filter_details, **kwargs)
+        return self.get_perfect_list_data_by_ids(ids_list)
 
     # 获取资源的评论列表
     def get_comment_list_by_source_id(self, source_type, source_id):
         key = self.get_comment_list_source_id_key(source_type, source_id)
         kwargs = {'source_type': source_type,
                   'source_id': source_id}
-        return self.get_perfect_list_data(key, Comment.filter_details, **kwargs)
+        ids_list = self.get_perfect_list_data(key, Comment.filter_details, **kwargs)
+        return self.get_perfect_list_data_by_ids(ids_list)
+
+    def get_perfect_list_data_by_ids(self, ids_list):
+        perfect_list_data = []
+        for comment_id in ids_list:
+            id_key = self.get_comment_detail_id_key(comment_id)
+            kwargs = {'id': comment_id}
+            detail = self.get_perfect_data(id_key, Comment.get_detail, **kwargs)
+            if isinstance(detail, Exception):
+                continue
+            perfect_list_data.append(detail)
+        return perfect_list_data
+
+    # 从用户评论列表中删除评论数据
+    def delete_comment_from_user_comment_list(self, user_id, comment_id):
+        key = self.get_comment_list_user_id_key(user_id)
+        return self.delete_from_cache_list_action(key, comment_id)
+
+    # 从资源评论列表中删除评论数据
+    def delete_comment_form_source_comment_list(self, source_type, source_id, comment_id):
+        key = self.get_comment_list_source_id_key(source_type, source_id)
+        return self.delete_from_cache_list_action(key, comment_id)
+
+    def delete_from_cache_list_action(self, key, comment_id):
+        ids_list = self.get_list_from_cache(key)
+        if comment_id in ids_list:
+            ids_list.remove(comment_id)
+            self.set_list_to_cache(key, ids_list)
+            return 1
+        return 0
+
+    # 往用户评论列表中添加评论数据
+    def add_comment_to_user_comment_list(self, user_id, comment_id):
+        key = self.get_comment_list_user_id_key(user_id)
+        return self.handle.lpushx(key, comment_id)
+
+    # 往资源评论列表中添加评论数据
+    def add_comment_to_source_comment_list(self, source_type, source_id, comment_id):
+        key = self.get_comment_list_source_id_key(source_type, source_id)
+        return self.handle.lpushx(key, comment_id)
 
 
 class CommentOpinionModelAction(object):

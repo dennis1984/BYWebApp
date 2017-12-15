@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from comment.models import Comment, CommentOpinionRecord
+from comment.caches import CommentCache
 from media.caches import SourceModelAction
 
 from horizon.decorators import has_permission_to_update
@@ -28,16 +29,32 @@ class CommentSerializer(BaseModelSerializer):
         fields = '__all__'
 
     def save(self, **kwargs):
+        instance = super(CommentSerializer, self).save(**kwargs)
+        if isinstance(instance, Exception):
+            return instance
+
         # 增加资源的评论数量
-        SourceModelAction.update_comment_count(self.validated_data['source_type'],
-                                               self.validated_data['source_id'])
-        return super(CommentSerializer, self).save(**kwargs)
+        SourceModelAction.update_comment_count(self.data['source_type'], self.data['source_id'])
+        # 添加评论数据到评论列表中
+        CommentCache().add_comment_to_user_comment_list(self.data['user_id'], instance.id)
+        CommentCache().add_comment_to_source_comment_list(source_type=self.data['source_type'],
+                                                          source_id=self.data['source_id'],
+                                                          comment_id=instance.id)
+        return instance
 
     def delete(self, instance):
         # 减少资源的评论数量
-        SourceModelAction.update_comment_count(instance.source_type, instance.source_id,
+        SourceModelAction.update_comment_count(instance.source_type,
+                                               instance.source_id,
                                                method='reduce')
+        # 添加评论数据到评论列表中
+        CommentCache().delete_comment_from_user_comment_list(instance.user_id, instance.id)
+        CommentCache().delete_comment_form_source_comment_list(source_type=instance.source_type,
+                                                               source_id=instance.source_id,
+                                                               comment_id=instance.id)
+
         validated_data = {'status': instance.id + 1}
+
         return super(CommentSerializer, self).update(instance, validated_data)
 
 

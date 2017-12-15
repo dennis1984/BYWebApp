@@ -11,18 +11,20 @@ class Redis(redis.Redis):
         super(Redis, self).__init__(*args, **kwargs)
 
     def incr(self, name, amount=1):
-        value = self.get(name) + amount
+        current_count = self.get(name) if self.get(name) else 0
+        value = current_count + amount
         if self.set(name, value):
             return value
         else:
-            return self.get(name)
+            return current_count
 
     def decr(self, name, amount=1):
-        value = self.get(name) + amount
+        current_count = self.get(name) if self.get(name) else 0
+        value = current_count + amount
         if self.set(name, value):
             return value
         else:
-            return self.get(name)
+            return current_count
 
     def rpush(self, name, *values):
         pk_values = self.translate_instance_to_str(*values)
