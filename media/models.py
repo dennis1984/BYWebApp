@@ -1062,6 +1062,10 @@ class AdvertResource(models.Model):
     def __unicode__(self):
         return self.title
 
+    @property
+    def perfect_detail(self):
+        return model_to_dict(self)
+
     @classmethod
     def get_object(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
@@ -1077,6 +1081,17 @@ class AdvertResource(models.Model):
             return cls.objects.filter(**kwargs)
         except Exception as e:
             return e
+
+    @classmethod
+    def filter_detail(cls, **kwargs):
+        instances = cls.filter_objects(**kwargs)
+        if isinstance(instances, Exception):
+            return instances
+
+        details = []
+        for ins in instances:
+            details.append(ins.perfect_detail)
+        return details
 
 
 # SOURCE_TYPE_DB = {

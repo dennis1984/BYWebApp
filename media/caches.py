@@ -447,7 +447,7 @@ class MediaCache(object):
         key = self.get_advert_list_source_type_key(source_type)
         kwargs = {'source_type': source_type}
         ids_list = self.get_perfect_ids_list_data(key,
-                                                  AdvertResource.filter_objects,
+                                                  AdvertResource.filter_detail,
                                                   self.get_advert_detail_id_key,
                                                   **kwargs)
         return self.get_perfect_list_data_by_ids(ids_list, self.get_advert_detail_id_key)
