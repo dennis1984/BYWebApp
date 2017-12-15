@@ -427,8 +427,7 @@ class AdvertResourceList(APIView):
     广告资源列表
     """
     def get_advert_resource_list(self, source_type):
-        kwargs = {'source_type': source_type}
-        return AdvertResource.filter_objects(**kwargs)
+        return MediaCache().get_advert_list(source_type)
 
     def post(self, request, *args, **kwargs):
         form = AdvertResourceListForm(request.data)
