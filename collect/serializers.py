@@ -27,7 +27,7 @@ class CollectSerializer(BaseModelSerializer):
 
     def save(self, **kwargs):
         # 增加资源的收藏数量
-        SourceModelAction.update_collection_count(kwargs['source_type'], kwargs['source_id'])
+        SourceModelAction.update_collection_count(self.data['source_type'], self.data['source_id'])
         return super(CollectSerializer, self).save(**kwargs)
 
     def delete(self, instance):

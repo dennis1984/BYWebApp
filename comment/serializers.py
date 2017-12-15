@@ -29,7 +29,7 @@ class CommentSerializer(BaseModelSerializer):
 
     def save(self, **kwargs):
         # 增加资源的评论数量
-        SourceModelAction.update_comment_count(kwargs['source_type'], kwargs['source_id'])
+        SourceModelAction.update_comment_count(self.data['source_type'], self.data['source_id'])
         return super(CommentSerializer, self).save(**kwargs)
 
     def delete(self, instance):
