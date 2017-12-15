@@ -264,7 +264,7 @@ class MediaCache(object):
         if isinstance(detail, Exception):
             return detail
         for column in COUNT_COLUMN_LIST:
-            count = self.get_media_relevant_count(case_id, column=column)
+            count = self.get_case_relevant_count(case_id, column=column)
             count_key = COUNT_COLUMN_KEY_DICT[column]
             detail[count_key] = count
         return detail
