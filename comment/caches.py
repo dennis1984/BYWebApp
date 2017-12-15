@@ -71,7 +71,7 @@ class CommentCache(object):
             # 生成评论列表
             perfect_list_data = [item['id'] for item in list_data]
             self.set_list_to_cache(key, *perfect_list_data)
-            return list_data
+            return perfect_list_data
         return list_data
 
     # 获取用户评论列表
