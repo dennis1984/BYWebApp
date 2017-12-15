@@ -363,7 +363,7 @@ class CaseList(APIView):
 
         match_case_list = self.search_action(**kwargs)
         match_case_list = sorted(match_case_list,
-                                 key=lambda x: x['media_detail'][sort_key], reverse=True)
+                                 key=lambda x: x['case_detail'][sort_key], reverse=True)
 
         perfect_details = []
         for item_case in match_case_list:
