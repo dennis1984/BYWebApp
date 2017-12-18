@@ -4,6 +4,11 @@ from rest_framework import fields as Fields
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.db import models
+from django.utils.functional import cached_property
+from rest_framework.fields import (  # NOQA # isort:skip
+    CreateOnlyDefault, CurrentUserDefault, SkipField, empty
+)
+
 from horizon.main import timezoneStringTostring
 from horizon.models import model_to_dict
 import os
@@ -87,6 +92,13 @@ class BaseModelSerializer(serializers.ModelSerializer):
             super(BaseModelSerializer, self).__init__(data=data, **kwargs)
         else:
             super(BaseModelSerializer, self).__init__(instance, **kwargs)
+
+    @cached_property
+    def _writable_fields(self):
+        return [
+            field for field in self.fields.values()
+            if (not field.read_only) or (field.default is not empty)
+        ]
 
     def update(self, instance, validated_data):
         self.make_perfect_initial_data(validated_data)
