@@ -176,10 +176,17 @@ class CaseListSerializer(BaseListSerializer):
     child = CaseDetailSerializer()
 
 
-class AdvertResourceSerializer(BaseModelSerializer):
-    class Meta:
-        model = AdvertResource
-        fields = '__all__'
+class AdvertResourceSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    subtitle = serializers.CharField()
+    # 点评资源类型： 1：资源 2：案例 3：资讯
+    source_type = serializers.IntegerField()
+
+    link_url = serializers.CharField()
+    picture = serializers.ImageField()
+    created = serializers.DateTimeField()
+    updated = serializers.DateTimeField()
 
 
 class AdvertResourceListSerializer(BaseListSerializer):

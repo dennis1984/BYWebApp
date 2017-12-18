@@ -93,12 +93,6 @@ class BaseModelSerializer(serializers.ModelSerializer):
         else:
             super(BaseModelSerializer, self).__init__(instance, **kwargs)
 
-    @cached_property
-    def _writable_fields(self):
-        return [
-            field for field in self.fields.values()
-        ]
-
     def update(self, instance, validated_data):
         self.make_perfect_initial_data(validated_data)
         return super(BaseModelSerializer, self).update(instance, validated_data)
