@@ -179,12 +179,12 @@ class CaseListSerializer(BaseListSerializer):
 class AdvertResourceSerializer(BaseSerializer):
     id = serializers.IntegerField()
     title = serializers.CharField()
-    subtitle = serializers.CharField()
+    subtitle = serializers.CharField(allow_null=True, allow_blank=True)
     # 点评资源类型： 1：资源 2：案例 3：资讯
     source_type = serializers.IntegerField()
 
-    link_url = serializers.CharField()
-    picture = serializers.ImageField()
+    link_url = serializers.CharField(allow_null=True, allow_blank=True)
+    picture = serializers.ImageField(allow_null=True)
     created = serializers.DateTimeField()
     updated = serializers.DateTimeField()
 
