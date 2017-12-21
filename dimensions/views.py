@@ -125,16 +125,22 @@ class ResourceMatchAction(APIView):
         # 查找属性ID
         for item in tags_list:
             if item['is_default_tag']:
-                dimension_dict[item['dimension_id']] = {}
-                continue
+                tags_list = DimensionCache().get_tag_list_by_dimension_id(item['dimension_id'])
+                item['tag_ids'] = [tag.id for tag in tags_list]
+                # dimension_dict[item['dimension_id']] = {}
+                # continue
 
             tag_config_instances = TagConfigure.filter_objects(tag_id__in=item['tag_ids'])
             attribute_dict = {}
             for item2 in tag_config_instances:
                 attr_dict = attribute_dict.get(item2.attribute_id, {})
                 tag_config_list = attr_dict.get('tag_config', [])
+
+                match_value = item2.match_value
+                if item['is_default_tag']:
+                    match_value = 3.0
                 tag_config_list.append({'tag_id': item2.tag_id,
-                                        'match_value': item2.match_value})
+                                        'match_value': match_value})
                 attr_dict['tag_config'] = tag_config_list
 
                 media_ids = attr_dict.get('media_ids', [])
