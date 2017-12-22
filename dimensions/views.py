@@ -15,7 +15,7 @@ from dimensions.forms import (DimensionListForm,
                               TagsListForm,
                               ResourceMatchActionForm)
 from dimensions.caches import DimensionCache
-from media.models import Media, MediaConfigure
+from media.models import Media, MediaConfigure, MediaType
 from media.serializers import MediaDetailSerializer
 
 
@@ -117,9 +117,17 @@ class ResourceMatchAction(APIView):
                 for tag_id in item['tag_ids']:
                     if tag_id not in tag_ids_dict[item['dimension_id']]:
                         return False, error_message_for_tags_list
+
+        # 判断资源类型是否正确
+        media_type = kwargs.get('media_type')
+        if media_type:
+            media_type_ids = [media_type_instance.id
+                              for media_type_instance in MediaType.filter_objects()]
+            if media_type not in media_type_ids:
+                return False, 'Params [media_type] is not incorrect.'
         return True, None
 
-    def match_action(self, first_dimension_id, tags_list):
+    def match_action(self, first_dimension_id, tags_list, media_type=None):
         dimension_dict = {}
         media_match_dict = {}
         # 查找属性ID
@@ -191,10 +199,18 @@ class ResourceMatchAction(APIView):
             media_value_result[media_id] = media_compute_dict_item
 
         # 对计算结果进行"阿尔法"调整优化
-        media_instances = Media.filter_objects(media_id__in=media_value_result.keys())
+        kwargs = {'id__in': media_value_result.keys()}
+        if media_type:
+            media_type_ids = [media_type_instance.id
+                              for media_type_instance in MediaType.filter_objects()]
+            media_type_ids.remove(media_type)
+            kwargs['media_type__in'] = media_type_ids
+        media_instances = self.get_media_list(**kwargs)
         media_instances_dict = {ins.id: ins for ins in media_instances}
         media_sum_result = []
         for media_id, value_dict in media_value_result.items():
+            if media_id not in media_instances_dict:
+                continue
             sum_value = 0
             for key, value in value_dict.items():
                 sum_value += value

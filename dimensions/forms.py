@@ -20,3 +20,5 @@ class ResourceMatchActionForm(forms.Form):
     #   'is_default_tag': false}, ...
     # ]
     tags_list = forms.CharField()
+    # 资源类型：10：电影 20：电视剧 30：综艺节目
+    media_type = forms.IntegerField(min_value=1, required=False)
