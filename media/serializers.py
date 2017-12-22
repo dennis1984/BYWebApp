@@ -208,6 +208,8 @@ class ResourceDetailSerializer(BaseSerializer):
     # 项目进度  1：筹备期 2：策划期 3：xxx
     progress = serializers.IntegerField(required=False)
     progress_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    # 预计上映/播出时间
+    air_time = serializers.DateTimeField(required=False)
     # 浏览数
     read_count = serializers.IntegerField(default=0)
     # 点赞数
