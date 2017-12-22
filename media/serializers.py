@@ -203,6 +203,11 @@ class ResourceDetailSerializer(BaseSerializer):
     picture = serializers.ImageField()
     # 标签：数据格式为JSON字符串，如：['综艺', '植入', '片头']
     tags = serializers.ListField(allow_null=True)
+    # 资源热度
+    temperature = serializers.FloatField(required=False)
+    # 项目进度  1：筹备期 2：策划期 3：xxx
+    progress = serializers.IntegerField(required=False)
+    progress_name = serializers.CharField(allow_null=True, allow_blank=True)
     # 浏览数
     read_count = serializers.IntegerField(default=0)
     # 点赞数
