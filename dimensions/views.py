@@ -201,10 +201,7 @@ class ResourceMatchAction(APIView):
         # 对计算结果进行"阿尔法"调整优化
         kwargs = {'id__in': media_value_result.keys()}
         if media_type:
-            media_type_ids = [media_type_instance.id
-                              for media_type_instance in MediaType.filter_objects()]
-            media_type_ids.remove(media_type)
-            kwargs['media_type__in'] = media_type_ids
+            kwargs['media_type'] = media_type
         media_instances = Media.filter_objects(**kwargs)
         media_instances_dict = {ins.id: ins for ins in media_instances}
         media_sum_result = []
