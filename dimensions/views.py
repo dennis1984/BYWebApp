@@ -259,9 +259,10 @@ class ResourceMatchAction(APIView):
         if not is_valid:
             return Response({'Detail': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
-        first_dimension_id = cld['first_dimension_id']
         tags_list = json.loads(cld['tags_list'])
-        match_result = self.match_action(first_dimension_id, tags_list)
+        match_result = self.match_action(cld['first_dimension_id'],
+                                         tags_list,
+                                         media_type=cld.get('media_type'))
         media_ids = [item['media_id'] for item in match_result]
         media_list = self.get_media_list(id__in=media_ids)
         media_result = self.get_perfect_media_result(match_result, media_list)
