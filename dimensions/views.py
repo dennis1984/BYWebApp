@@ -205,7 +205,7 @@ class ResourceMatchAction(APIView):
                               for media_type_instance in MediaType.filter_objects()]
             media_type_ids.remove(media_type)
             kwargs['media_type__in'] = media_type_ids
-        media_instances = self.get_media_list(**kwargs)
+        media_instances = Media.filter_objects(**kwargs)
         media_instances_dict = {ins.id: ins for ins in media_instances}
         media_sum_result = []
         for media_id, value_dict in media_value_result.items():
