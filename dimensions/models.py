@@ -128,6 +128,7 @@ class Tag(models.Model):
     """
     name = models.CharField('标签名称', max_length=64, db_index=True)
     description = models.CharField('描述', max_length=256, null=True, blank=True)
+    dimension_id = models.IntegerField('所属维度ID', null=True)
 
     picture = models.ImageField('简介图片', max_length=200,
                                 upload_to=IMAGE_PICTURE_PATH,
