@@ -70,7 +70,7 @@ class Comment(models.Model):
         source_ins = self.get_source_object(source_type=self.source_type,
                                             source_id=self.source_id)
         if isinstance(source_ins, Exception):
-            source_title = ''
+            return source_ins
         else:
             source_title = source_ins.title
 
@@ -132,6 +132,9 @@ class Comment(models.Model):
         instances = cls.filter_objects(**kwargs)
         details = []
         for ins in instances:
+            per_detail = ins.perfect_detail
+            if isinstance(per_detail, Exception):
+                continue
             details.append(ins.perfect_detail)
         return details
 
