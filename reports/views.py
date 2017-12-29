@@ -90,7 +90,7 @@ class ReportFileDownload(generics.GenericAPIView):
         if isinstance(instance, Exception):
             return Response({'Detail': instance.args}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = ReportDownloadRecordSerializer(data={}, request=request)
+        serializer = ReportDownloadRecordSerializer(data={'report_id': instance.id}, request=request)
         if not serializer.is_valid():
             return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         try:
