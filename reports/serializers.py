@@ -30,7 +30,7 @@ class ReportListSerializer(BaseListSerializer):
 
 
 class ReportDownloadRecordSerializer(BaseModelSerializer):
-    def __int__(self, instance=None, data=None, request=None, **kwargs):
+    def __init__(self, instance=None, data=None, request=None, **kwargs):
         if data:
             user_id = request.user.id
             data['report_id'] = data.pop('media_id')
