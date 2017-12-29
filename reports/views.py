@@ -4,7 +4,8 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 
-from reports.serializers import (ReportListSerializer,)
+from reports.serializers import (ReportListSerializer,
+                                 ReportDownloadRecordSerializer)
 from reports.permissions import IsOwnerOrReadOnly
 from reports.models import (Report, ReportDownloadRecord)
 from reports.forms import (ReportListForm,
@@ -88,6 +89,14 @@ class ReportFileDownload(generics.GenericAPIView):
         instance = self.get_report_object(cld['media_id'])
         if isinstance(instance, Exception):
             return Response({'Detail': instance.args}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ReportDownloadRecordSerializer(data=cld, request=request)
+        if not serializer.is_valid():
+            return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer.save()
+        except Exception as e:
+            return Response({'Detail': e.args}, status=status.HTTP_400_BAD_REQUEST)
 
         # # 扣除积分及添加积分记录
         # result = self.score_action(request)

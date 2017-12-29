@@ -125,6 +125,17 @@ class ReportDownloadRecord(models.Model):
     def __unicode__(self):
         return '%s:%s' % (self.report_id, self.user_id)
 
+    @property
+    def perfect_detail(self):
+        report_detail = Report.get_detail(pk=self.report_id)
+        if isinstance(report_detail, Exception):
+            return report_detail
+        detail = model_to_dict(self)
+        for pop_key in ['created', 'updated']:
+            report_detail.pop(pop_key)
+        detail.update(**report_detail)
+        return detail
+
     @classmethod
     def get_object(cls, **kwargs):
         kwargs = get_perfect_filter_params(cls, **kwargs)
@@ -149,12 +160,8 @@ class ReportDownloadRecord(models.Model):
 
         details = []
         for ins in instances:
-            report_detail = Report.get_detail(pk=ins.report_id)
-            if isinstance(report_detail, Exception):
+            perfect_detail = ins.perfect_detail
+            if isinstance(perfect_detail, Exception):
                 continue
-            item_detail = model_to_dict(ins)
-            for pop_key in ['created', 'updated']:
-                report_detail.pop(pop_key)
-            item_detail.update(**report_detail)
-            details.append(item_detail)
+            details.append(perfect_detail)
         return details
