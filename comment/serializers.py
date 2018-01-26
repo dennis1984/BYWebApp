@@ -62,6 +62,7 @@ class CommentDetailSerializer(BaseSerializer):
     id = serializers.IntegerField()
     user_id = serializers.IntegerField()
     user_nickname = serializers.CharField(allow_blank=True, allow_null=True)
+    user_head_picture = serializers.ImageField(allow_null=True)
     source_type = serializers.IntegerField()
     source_id = serializers.IntegerField()
     source_title = serializers.CharField()

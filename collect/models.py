@@ -79,6 +79,7 @@ class Collect(models.Model):
             item_dict['source_description'] = source_detail['description']
             item_dict['updated'] = source_detail['created']
             item_dict['tags'] = source_detail['tags']
+            item_dict['picture'] = source_detail['picture']
             details.append(item_dict)
         return details
 

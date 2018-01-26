@@ -46,6 +46,7 @@ class CollectDetailSerializer(BaseSerializer):
     source_title = serializers.CharField()
     source_description = serializers.CharField(allow_blank=True, allow_null=True)
     tags = serializers.ListField()
+    picture = serializers.ImageField(allow_null=True)
     updated = serializers.DateTimeField()
 
 

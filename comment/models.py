@@ -84,6 +84,7 @@ class Comment(models.Model):
         detail['reply_message'] = reply_message
         detail['source_title'] = source_title
         detail['user_nickname'] = user_nickname
+        detail['user_head_picture'] = user.head_picture
         return detail
 
     @classmethod
