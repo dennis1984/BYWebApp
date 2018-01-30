@@ -34,7 +34,7 @@ ENVIRONMENT_DICT = {
     'TEST': 20,       # 测试环境
     'PRODUCE': 30,    # 生产环境
 }
-ENVIRONMENT = 10
+ENVIRONMENT = 20
 
 # Application definition
 
