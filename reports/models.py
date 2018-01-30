@@ -6,6 +6,7 @@ from django.utils.timezone import now
 from django.conf import settings
 
 from media.models import Media, ResourceTags
+from media.caches import MediaCache
 from horizon.models import (model_to_dict,
                             BaseManager,
                             get_perfect_filter_params)
@@ -96,6 +97,11 @@ class Report(models.Model):
                         detail[field] = self.get_perfect_tags(tag_ids)
                     else:
                         detail[field] = json.loads(detail[field])
+
+        media = MediaCache().get_media_by_id(self.media_id)
+        if isinstance(media, Exception):
+            return media
+        detail['media_picture'] = media.picture
         return detail
 
     def get_perfect_tags(self, tag_ids):

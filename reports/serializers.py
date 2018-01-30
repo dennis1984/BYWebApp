@@ -20,6 +20,7 @@ class ReportDetailSerializer(BaseSerializer):
     subtitle = serializers.CharField(allow_blank=True, allow_null=True)
     description = serializers.CharField(allow_blank=True, allow_null=True)
     media_id = serializers.IntegerField()
+    media_picture = serializers.ImageField(allow_null=True)
     tags = serializers.ListField()
     # report_file = serializers.FileField()
     created = serializers.DateTimeField()
