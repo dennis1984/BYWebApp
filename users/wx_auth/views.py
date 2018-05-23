@@ -41,7 +41,7 @@ class AuthCallback(APIView):
         return instance
 
     def get_user_by_open_id(self, out_open_id):
-        kwargs = {'out_open_id': out_open_id}
+        kwargs = {'wx_out_open_id': out_open_id}
         return User.get_object(**kwargs)
 
     def mark_user_login(self, user):
@@ -74,13 +74,13 @@ class AuthCallback(APIView):
         access_token_params = wx_auth_settings.WX_AUTH_PARAMS['get_access_token']
         access_token_params['code'] = cld['code']
         access_token_url = wx_auth_settings.WX_AUTH_URLS['get_access_token']
-        result = send_http_request(access_token_url, access_token_params)
-        if isinstance(result, Exception) or not getattr(result, 'text'):
-            return Response({'Detail': result.args},
+        response = send_http_request(access_token_url, access_token_params)
+        if isinstance(response, Exception) or not getattr(response, 'text'):
+            return Response({'Detail': response.args},
                             status=status.HTTP_400_BAD_REQUEST)
 
         # 存储token
-        response_dict = json.loads(result.text)
+        response_dict = json.loads(response.text)
         if 'access_token' not in response_dict:
             return Response({'Detail': 'Get access token failed'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -97,13 +97,13 @@ class AuthCallback(APIView):
         userinfo_params['openid'] = response_dict['openid']
         userinfo_params['access_token'] = response_dict['access_token']
         userinfo_url = wx_auth_settings.WX_AUTH_URLS['get_userinfo']
-        result = send_http_request(userinfo_url, userinfo_params)
-        if isinstance(result, Exception) or not getattr(result, 'text'):
-            return Response({'Detail': result.args},
+        response = send_http_request(userinfo_url, userinfo_params)
+        if isinstance(response, Exception) or not getattr(response, 'text'):
+            return Response({'Detail': response.args},
                             status=status.HTTP_400_BAD_REQUEST)
 
         # 存储数据到用户表
-        userinfo_response_dict = json.loads(result.text)
+        userinfo_response_dict = json.loads(response.text)
         if 'openid' not in userinfo_response_dict:
             return Response({'Detail': 'Get User Info failed'},
                             status=status.HTTP_400_BAD_REQUEST)
